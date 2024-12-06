@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pencil, Trash2 } from "lucide-react";
 import { Product } from "@/utils/types";
+import { Input } from "@/components/ui/input";
 
 interface ProductCardProps {
   product: Product;
@@ -14,8 +15,6 @@ interface ProductCardProps {
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b";
 
 const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCardProps) => {
-  console.log("Product data:", product);
-
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.src = DEFAULT_IMAGE;
   };
@@ -25,8 +24,7 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
       <CardHeader>
         <div className="flex justify-between items-start">
           <CardTitle className="text-xl">
-            <span className="line-clamp-2">{product.reference}</span>
-            <span className="text-sm text-muted-foreground block mt-1">{product.name}</span>
+            <span className="line-clamp-2">{product.name}</span>
           </CardTitle>
           <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
@@ -60,9 +58,18 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
             <p className="text-sm text-muted-foreground line-clamp-3">
               {product.description}
             </p>
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">Quantité initiale: {product.initialQuantity}</span>
-              <span className="text-sm font-medium">Disponible: {product.availableQuantity}</span>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">SKU: {product.reference}</p>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">Quantité souhaitée:</span>
+                <Input
+                  type="number"
+                  value={product.initialQuantity}
+                  onChange={(e) => onQuantityChange(product.reference, e.target.value)}
+                  className="w-24 h-8"
+                  min="0"
+                />
+              </div>
             </div>
           </div>
         </div>
