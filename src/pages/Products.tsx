@@ -3,7 +3,50 @@ import { Product } from "@/utils/types";
 import { useState } from "react";
 
 const Products = () => {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products] = useState<Product[]>([
+    {
+      reference: "TBL-001",
+      description: "Table à manger extensible en chêne",
+      initialQuantity: 20,
+      availableQuantity: 20,
+      imageUrl: "https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=500"
+    },
+    {
+      reference: "TBL-002",
+      description: "Table basse design scandinave",
+      initialQuantity: 15,
+      availableQuantity: 15,
+      imageUrl: "https://images.unsplash.com/photo-1533090368676-1fd25485db88?w=500"
+    },
+    {
+      reference: "CHR-001",
+      description: "Chaise en velours bleu",
+      initialQuantity: 40,
+      availableQuantity: 40,
+      imageUrl: "https://images.unsplash.com/photo-1503602642458-232111445657?w=500"
+    },
+    {
+      reference: "CHR-002",
+      description: "Chaise de salle à manger moderne",
+      initialQuantity: 30,
+      availableQuantity: 30,
+      imageUrl: "https://images.unsplash.com/photo-1592078615290-033ee584e267?w=500"
+    },
+    {
+      reference: "TBL-003",
+      description: "Table de cuisine en marbre",
+      initialQuantity: 10,
+      availableQuantity: 10,
+      imageUrl: "https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=500"
+    },
+    {
+      reference: "CHR-003",
+      description: "Lot de 6 chaises en bois massif",
+      initialQuantity: 25,
+      availableQuantity: 25,
+      imageUrl: "https://images.unsplash.com/photo-1503602642458-232111445657?w=500"
+    }
+  ]);
 
   return (
     <div className="container mx-auto p-6">
