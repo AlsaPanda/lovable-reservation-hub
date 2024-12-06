@@ -44,13 +44,16 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="relative aspect-video w-full overflow-hidden rounded-md">
-          <img 
-            src={product.imageUrl || DEFAULT_IMAGE}
-            alt={product["name-fr_fr-cla"] || product.description}
-            onError={handleImageError}
-            className="object-cover w-full h-full transition-transform duration-200 group-hover:scale-105"
-          />
+        <div className="space-y-2">
+          <h3 className="font-medium">{product["name-fr_fr-cla"] || product.description}</h3>
+          <div className="relative aspect-video w-full overflow-hidden rounded-md">
+            <img 
+              src={product.imageUrl || DEFAULT_IMAGE}
+              alt={product["name-fr_fr-cla"] || product.description}
+              onError={handleImageError}
+              className="object-cover w-full h-full transition-transform duration-200 group-hover:scale-105"
+            />
+          </div>
         </div>
         <div className="space-y-2">
           <p className="text-sm text-muted-foreground">Référence: {product.reference}</p>
