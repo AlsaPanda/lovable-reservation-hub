@@ -21,8 +21,10 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
   return (
     <Card className="group hover:shadow-lg transition-shadow duration-200">
       <CardHeader>
-        <CardTitle className="flex justify-between items-start text-xl">
-          <span className="line-clamp-2">{product["name-fr_fr-cla"] || product.description}</span>
+        <div className="flex justify-between items-start">
+          <CardTitle className="text-xl">
+            <span className="line-clamp-2">{product["name-fr_fr-cla"] || product.description}</span>
+          </CardTitle>
           <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
               variant="ghost"
@@ -41,7 +43,7 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>
-        </CardTitle>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
