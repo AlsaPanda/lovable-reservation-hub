@@ -101,7 +101,7 @@ const Products = () => {
                 />
                 <p>Référence: {product.reference}</p>
                 <div className="flex items-center gap-2 mt-2">
-                  <p>Quantité disponible:</p>
+                  <p>Quantité souhaitée:</p>
                   <Input
                     type="number"
                     value={product.availableQuantity}
