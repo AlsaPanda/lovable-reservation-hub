@@ -22,7 +22,7 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
     <Card className="group hover:shadow-lg transition-shadow duration-200">
       <CardHeader>
         <CardTitle className="flex justify-between items-start text-xl">
-          <span className="line-clamp-2">{product.description}</span>
+          <span className="line-clamp-2">{product["name-fr_fr-cla"] || product.description}</span>
           <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
               variant="ghost"
@@ -47,7 +47,7 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
         <div className="relative aspect-video w-full overflow-hidden rounded-md">
           <img 
             src={product.imageUrl || DEFAULT_IMAGE}
-            alt={product.description}
+            alt={product["name-fr_fr-cla"] || product.description}
             onError={handleImageError}
             className="object-cover w-full h-full transition-transform duration-200 group-hover:scale-105"
           />
