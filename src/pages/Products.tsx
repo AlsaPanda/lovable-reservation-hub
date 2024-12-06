@@ -147,6 +147,8 @@ const Products = () => {
         <ProductForm 
           onSubmit={editingProduct ? handleUpdateProduct : handleAddProduct}
           editingProduct={editingProduct}
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
         />
       </div>
     </>
