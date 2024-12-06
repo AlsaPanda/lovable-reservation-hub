@@ -69,7 +69,7 @@ const BulkActionsMenu = ({ onProductsImported, products }: BulkActionsMenuProps)
       <input
         id="import-file"
         type="file"
-        accept=".json"
+        accept=".json,.xlsx"
         className="hidden"
         onChange={handleImport}
       />
