@@ -6,6 +6,16 @@ import ProductForm from "@/components/products/ProductForm";
 import ProductCard from "@/components/products/ProductCard";
 import ProductsHeader from "@/components/products/ProductsHeader";
 import { Button } from "@/components/ui/button";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+
+const ITEMS_PER_PAGE = 6;
 
 const Products = () => {
   const { toast } = useToast();
@@ -54,8 +64,15 @@ const Products = () => {
     }
   ]);
 
+  const [currentPage, setCurrentPage] = useState(1);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // Calcul de la pagination
+  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentProducts = products.slice(startIndex, endIndex);
 
   const handleQuantityChange = (reference: string, newQuantity: string) => {
     const quantity = parseInt(newQuantity);
@@ -106,8 +123,11 @@ const Products = () => {
   };
 
   const handleProductsImported = (importedProducts: Product[]) => {
-    // Remplacer complètement les produits existants par les nouveaux
     setProducts(importedProducts);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   return (
@@ -124,8 +144,8 @@ const Products = () => {
           products={products}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {products.map((product) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 min-h-[600px]">
+          {currentProducts.map((product) => (
             <ProductCard
               key={product.reference}
               product={product}
@@ -138,6 +158,39 @@ const Products = () => {
             />
           ))}
         </div>
+
+        {totalPages > 1 && (
+          <div className="mt-6 flex justify-center">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      onClick={() => handlePageChange(page)}
+                      isActive={currentPage === page}
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
 
         <div className="mt-6 flex justify-end">
           <Button onClick={handleSave} className="px-6">
