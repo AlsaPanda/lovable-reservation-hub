@@ -3,6 +3,7 @@ import { Product } from "@/utils/types";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
 
 const Products = () => {
   const { toast } = useToast();
@@ -51,6 +52,9 @@ const Products = () => {
     }
   ]);
 
+  // Simulons un nom de magasin (à remplacer par la vraie donnée utilisateur)
+  const storeName = "Mon Magasin"; 
+
   const handleQuantityChange = (reference: string, newQuantity: string) => {
     const quantity = parseInt(newQuantity);
     if (isNaN(quantity) || quantity < 0) return;
@@ -64,16 +68,24 @@ const Products = () => {
       }
       return product;
     }));
+  };
 
+  const handleSave = () => {
+    // Ici nous simulerons la sauvegarde
     toast({
-      title: "Quantité mise à jour",
-      description: `La quantité du produit ${reference} a été mise à jour à ${quantity}`,
+      title: "Quantités sauvegardées",
+      description: "Les quantités ont été sauvegardées avec succès.",
     });
   };
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Gestion des Produits</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Gestion des Produits</h1>
+        <div className="text-lg font-medium text-muted-foreground">
+          Magasin : {storeName}
+        </div>
+      </div>
       
       {products.length === 0 ? (
         <Card>
@@ -87,33 +99,40 @@ const Products = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {products.map((product) => (
-            <Card key={product.reference}>
-              <CardHeader>
-                <CardTitle>{product.description}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <img 
-                  src={product.imageUrl || "/placeholder.svg"} 
-                  alt={product.description}
-                  className="w-full h-48 object-cover mb-4 rounded-md"
-                />
-                <p>Référence: {product.reference}</p>
-                <div className="flex items-center gap-2 mt-2">
-                  <p>Quantité souhaitée:</p>
-                  <Input
-                    type="number"
-                    value={product.availableQuantity}
-                    onChange={(e) => handleQuantityChange(product.reference, e.target.value)}
-                    min="0"
-                    className="w-24"
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {products.map((product) => (
+              <Card key={product.reference}>
+                <CardHeader>
+                  <CardTitle>{product.description}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <img 
+                    src={product.imageUrl || "/placeholder.svg"} 
+                    alt={product.description}
+                    className="w-full h-48 object-cover mb-4 rounded-md"
                   />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  <p>Référence: {product.reference}</p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <p>Quantité souhaitée:</p>
+                    <Input
+                      type="number"
+                      value={product.availableQuantity}
+                      onChange={(e) => handleQuantityChange(product.reference, e.target.value)}
+                      min="0"
+                      className="w-24"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <div className="mt-6 flex justify-end">
+            <Button onClick={handleSave} className="px-6">
+              Sauvegarder les quantités
+            </Button>
+          </div>
+        </>
       )}
     </div>
   );
