@@ -106,7 +106,8 @@ const Products = () => {
   };
 
   const handleProductsImported = (importedProducts: Product[]) => {
-    setProducts(prevProducts => [...prevProducts, ...importedProducts]);
+    // Remplacer complètement les produits existants par les nouveaux
+    setProducts(importedProducts);
   };
 
   return (
@@ -147,7 +148,7 @@ const Products = () => {
         <ProductForm 
           onSubmit={editingProduct ? handleUpdateProduct : handleAddProduct}
           editingProduct={editingProduct}
-          open={isDialogOpen}
+          isOpen={isDialogOpen}
           onOpenChange={setIsDialogOpen}
         />
       </div>

@@ -45,7 +45,7 @@ export const importProducts = (file: File): Promise<Product[]> => {
           
           const jsonData = XLSX.utils.sheet_to_json(worksheet);
           
-          // Convertir les données Excel selon la structure spécifiée
+          // Convertir les données Excel selon la nouvelle structure spécifiée
           const products = jsonData.map((row: any) => ({
             reference: row['sku']?.toString() || '',
             description: row['description-fr_FR']?.toString() || '',
