@@ -8,11 +8,11 @@ import { DialogContent, DialogHeader, DialogTitle, Dialog } from "@/components/u
 interface ProductFormProps {
   onSubmit: (data: Product) => void;
   editingProduct: Product | null;
-  open: boolean;
+  isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-const ProductForm = ({ onSubmit, editingProduct, open, onOpenChange }: ProductFormProps) => {
+const ProductForm = ({ onSubmit, editingProduct, isOpen, onOpenChange }: ProductFormProps) => {
   const form = useForm<Product>({
     defaultValues: editingProduct || {
       reference: "",
@@ -24,7 +24,7 @@ const ProductForm = ({ onSubmit, editingProduct, open, onOpenChange }: ProductFo
   });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
