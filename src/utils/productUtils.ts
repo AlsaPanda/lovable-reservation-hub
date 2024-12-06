@@ -47,6 +47,7 @@ export const importProducts = (file: File): Promise<Product[]> => {
           
           const products = jsonData.map((row: any) => ({
             reference: row['sku']?.toString() || '',
+            name: row['name-fr_FR']?.toString() || row['sku']?.toString() || '',
             description: row['description']?.toString() || '',
             initialQuantity: 0,
             availableQuantity: 0,
