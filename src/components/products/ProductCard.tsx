@@ -13,15 +13,16 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCardProps) => {
   return (
-    <Card>
+    <Card className="group hover:shadow-lg transition-shadow duration-200">
       <CardHeader>
-        <CardTitle className="flex justify-between items-start">
-          <span>{product.description}</span>
-          <div className="flex gap-2">
+        <CardTitle className="flex justify-between items-start text-xl">
+          <span className="line-clamp-2">{product.description}</span>
+          <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => onEdit(product)}
+              className="hover:bg-secondary"
             >
               <Pencil className="h-4 w-4" />
             </Button>
@@ -29,28 +30,33 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
               variant="ghost"
               size="icon"
               onClick={() => onDelete(product.reference)}
+              className="hover:bg-destructive hover:text-destructive-foreground"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <img 
-          src={product.imageUrl || "/placeholder.svg"} 
-          alt={product.description}
-          className="w-full h-48 object-cover mb-4 rounded-md"
-        />
-        <p>Référence: {product.reference}</p>
-        <div className="flex items-center gap-2 mt-2">
-          <p>Quantité souhaitée:</p>
-          <Input
-            type="number"
-            value={product.availableQuantity}
-            onChange={(e) => onQuantityChange(product.reference, e.target.value)}
-            min="0"
-            className="w-24"
+      <CardContent className="space-y-4">
+        <div className="relative aspect-video w-full overflow-hidden rounded-md">
+          <img 
+            src={product.imageUrl || "/placeholder.svg"} 
+            alt={product.description}
+            className="object-cover w-full h-full transition-transform duration-200 group-hover:scale-105"
           />
+        </div>
+        <div className="space-y-2">
+          <p className="text-sm text-muted-foreground">Référence: {product.reference}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-sm text-muted-foreground">Quantité souhaitée:</p>
+            <Input
+              type="number"
+              value={product.availableQuantity}
+              onChange={(e) => onQuantityChange(product.reference, e.target.value)}
+              min="0"
+              className="w-24"
+            />
+          </div>
         </div>
       </CardContent>
     </Card>

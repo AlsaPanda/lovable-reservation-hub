@@ -3,17 +3,10 @@ import { useToast } from "@/components/ui/use-toast";
 import NavBar from "@/components/NavBar";
 import { Product } from "@/utils/types";
 import ProductForm from "@/components/products/ProductForm";
-import ProductCard from "@/components/products/ProductCard";
+import ProductGrid from "@/components/products/ProductGrid";
 import ProductsHeader from "@/components/products/ProductsHeader";
+import ProductPagination from "@/components/products/ProductPagination";
 import { Button } from "@/components/ui/button";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -66,9 +59,8 @@ const Products = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
-  // Calcul de la pagination
   const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
@@ -95,7 +87,7 @@ const Products = () => {
 
   const handleAddProduct = (data: Product) => {
     setProducts([...products, data]);
-    setIsDialogOpen(false);
+    setOpen(false);
     toast({
       title: "Produit ajouté",
       description: "Le produit a été ajouté avec succès.",
@@ -106,7 +98,7 @@ const Products = () => {
     setProducts(products.map(p => 
       p.reference === editingProduct?.reference ? data : p
     ));
-    setIsDialogOpen(false);
+    setOpen(false);
     setEditingProduct(null);
     toast({
       title: "Produit mis à jour",
@@ -122,77 +114,35 @@ const Products = () => {
     });
   };
 
-  const handleProductsImported = (importedProducts: Product[]) => {
-    setProducts(importedProducts);
-  };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
   return (
     <>
       <NavBar />
-      <div className="container mx-auto p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Gestion des Produits</h1>
-        </div>
+      <div className="container mx-auto p-6 space-y-6">
+        <h1 className="text-3xl font-bold">Gestion des Produits</h1>
 
         <ProductsHeader
-          onOpenDialog={() => setIsDialogOpen(true)}
-          onProductsImported={handleProductsImported}
+          onOpenDialog={() => setOpen(true)}
+          onProductsImported={setProducts}
           products={products}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 min-h-[600px]">
-          {currentProducts.map((product) => (
-            <ProductCard
-              key={product.reference}
-              product={product}
-              onQuantityChange={handleQuantityChange}
-              onEdit={(product) => {
-                setEditingProduct(product);
-                setIsDialogOpen(true);
-              }}
-              onDelete={handleDeleteProduct}
-            />
-          ))}
-        </div>
+        <ProductGrid
+          products={currentProducts}
+          onQuantityChange={handleQuantityChange}
+          onEdit={(product) => {
+            setEditingProduct(product);
+            setOpen(true);
+          }}
+          onDelete={handleDeleteProduct}
+        />
 
-        {totalPages > 1 && (
-          <div className="mt-6 flex justify-center">
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious 
-                    onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-                  />
-                </PaginationItem>
-                
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <PaginationItem key={page}>
-                    <PaginationLink
-                      onClick={() => handlePageChange(page)}
-                      isActive={currentPage === page}
-                    >
-                      {page}
-                    </PaginationLink>
-                  </PaginationItem>
-                ))}
-                
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          </div>
-        )}
+        <ProductPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
 
-        <div className="mt-6 flex justify-end">
+        <div className="flex justify-end">
           <Button onClick={handleSave} className="px-6">
             Sauvegarder les quantités
           </Button>
@@ -201,8 +151,8 @@ const Products = () => {
         <ProductForm 
           onSubmit={editingProduct ? handleUpdateProduct : handleAddProduct}
           editingProduct={editingProduct}
-          isOpen={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
+          open={open}
+          onOpenChange={setOpen}
         />
       </div>
     </>
