@@ -45,13 +45,13 @@ export const importProducts = (file: File): Promise<Product[]> => {
           
           const jsonData = XLSX.utils.sheet_to_json(worksheet);
           
-          // Convertir les données Excel en format Product
+          // Convertir les données Excel selon la structure spécifiée
           const products = jsonData.map((row: any) => ({
-            reference: row.reference?.toString() || '',
-            description: row.description?.toString() || '',
-            initialQuantity: parseInt(row.initialQuantity) || 0,
-            availableQuantity: parseInt(row.availableQuantity) || 0,
-            imageUrl: row.imageUrl?.toString() || 'https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=500'
+            reference: row['sku']?.toString() || '',
+            description: row['description-fr_FR']?.toString() || '',
+            initialQuantity: 0,
+            availableQuantity: 0,
+            imageUrl: row['image-file_path']?.toString() || 'https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=500'
           }));
           
           resolve(products);
