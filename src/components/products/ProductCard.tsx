@@ -6,9 +6,9 @@ import { Product } from "@/utils/types";
 
 interface ProductCardProps {
   product: Product;
-  onQuantityChange: (id: string, quantity: number) => void;
+  onQuantityChange: (reference: string, quantity: string) => void;
   onEdit: (product: Product) => void;
-  onDelete: (id: string) => void;
+  onDelete: (reference: string) => void;
 }
 
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b";
@@ -25,7 +25,7 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
       <CardHeader>
         <div className="flex justify-between items-start">
           <CardTitle className="text-xl">
-            <span className="line-clamp-2">{product.name}</span>
+            <span className="line-clamp-2">{product.reference}</span>
           </CardTitle>
           <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
@@ -38,7 +38,7 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => onDelete(product.id)}
+              onClick={() => onDelete(product.reference)}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -50,7 +50,7 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
           <div className="relative aspect-video w-full overflow-hidden rounded-md">
             <img 
               src={product.imageUrl || DEFAULT_IMAGE}
-              alt={product.name}
+              alt={product.reference}
               onError={handleImageError}
               className="object-cover w-full h-full transition-transform duration-200 group-hover:scale-105"
             />
