@@ -30,6 +30,16 @@ const NavBar = () => {
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link to="/reservations">
+                <NavigationMenuLink 
+                  className={navigationMenuTriggerStyle()}
+                  active={location.pathname === '/reservations'}
+                >
+                  Réservations
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
       </div>

@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
+import Reservations from "./pages/Reservations";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,14 @@ const App = () => (
             element={
               <PrivateRoute>
                 <Products />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/reservations"
+            element={
+              <PrivateRoute>
+                <Reservations />
               </PrivateRoute>
             }
           />
