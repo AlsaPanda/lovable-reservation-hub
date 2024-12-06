@@ -26,6 +26,7 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
         <div className="flex justify-between items-start">
           <CardTitle className="text-xl">
             <span className="line-clamp-2">{product.reference}</span>
+            <span className="text-sm text-muted-foreground block mt-1">{product.name}</span>
           </CardTitle>
           <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button

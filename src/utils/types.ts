@@ -1,5 +1,6 @@
 export interface Product {
   reference: string;
+  name: string;
   description: string;
   initialQuantity: number;
   imageUrl: string;
