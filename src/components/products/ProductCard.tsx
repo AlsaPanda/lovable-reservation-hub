@@ -14,6 +14,10 @@ interface ProductCardProps {
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b";
 
 const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCardProps) => {
+  console.log("Product data:", product);
+  console.log("Product name:", product["name-fr_fr-cla"]);
+  console.log("Product description:", product.description);
+
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.src = DEFAULT_IMAGE;
   };
@@ -23,7 +27,7 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
       <CardHeader>
         <div className="flex justify-between items-start">
           <CardTitle className="text-xl">
-            <span className="line-clamp-2">{product["name-fr_fr-cla"] || product.description}</span>
+            <span className="line-clamp-2">{product.description}</span>
           </CardTitle>
           <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
@@ -50,7 +54,7 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
           <div className="relative aspect-video w-full overflow-hidden rounded-md">
             <img 
               src={product.imageUrl || DEFAULT_IMAGE}
-              alt={product["name-fr_fr-cla"] || product.description}
+              alt={product.description}
               onError={handleImageError}
               className="object-cover w-full h-full transition-transform duration-200 group-hover:scale-105"
             />
