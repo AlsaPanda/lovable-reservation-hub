@@ -11,7 +11,13 @@ interface ProductCardProps {
   onDelete: (reference: string) => void;
 }
 
+const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b";
+
 const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCardProps) => {
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.src = DEFAULT_IMAGE;
+  };
+
   return (
     <Card className="group hover:shadow-lg transition-shadow duration-200">
       <CardHeader>
@@ -40,8 +46,9 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
       <CardContent className="space-y-4">
         <div className="relative aspect-video w-full overflow-hidden rounded-md">
           <img 
-            src={product.imageUrl || "/placeholder.svg"} 
+            src={product.imageUrl || DEFAULT_IMAGE}
             alt={product.description}
+            onError={handleImageError}
             className="object-cover w-full h-full transition-transform duration-200 group-hover:scale-105"
           />
         </div>
