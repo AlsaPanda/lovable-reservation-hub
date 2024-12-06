@@ -55,9 +55,15 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
               className="object-cover w-full h-full transition-transform duration-200 group-hover:scale-105"
             />
           </div>
-          <p className="text-sm text-muted-foreground line-clamp-3">
-            {product.description}
-          </p>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground line-clamp-3">
+              {product.description}
+            </p>
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium">Quantité initiale: {product.initialQuantity}</span>
+              <span className="text-sm font-medium">Disponible: {product.availableQuantity}</span>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>
