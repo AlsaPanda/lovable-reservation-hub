@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import NavBar from "@/components/NavBar";
 import { Product } from "@/utils/types";
@@ -9,57 +9,27 @@ import ProductPagination from "@/components/products/ProductPagination";
 import { Button } from "@/components/ui/button";
 
 const ITEMS_PER_PAGE = 6;
+const STORAGE_KEY = 'products_data';
 
 const Products = () => {
   const { toast } = useToast();
-  const [products, setProducts] = useState<Product[]>([
-    {
-      reference: "TBL-001",
-      description: "Table à manger extensible en chêne",
-      initialQuantity: 20,
-      availableQuantity: 0,
-      imageUrl: "https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=500"
-    },
-    {
-      reference: "TBL-002",
-      description: "Table basse design scandinave",
-      initialQuantity: 15,
-      availableQuantity: 0,
-      imageUrl: "https://images.unsplash.com/photo-1533090368676-1fd25485db88?w=500"
-    },
-    {
-      reference: "CHR-001",
-      description: "Chaise en velours bleu",
-      initialQuantity: 40,
-      availableQuantity: 0,
-      imageUrl: "https://images.unsplash.com/photo-1503602642458-232111445657?w=500"
-    },
-    {
-      reference: "CHR-002",
-      description: "Chaise de salle à manger moderne",
-      initialQuantity: 30,
-      availableQuantity: 0,
-      imageUrl: "https://images.unsplash.com/photo-1592078615290-033ee584e267?w=500"
-    },
-    {
-      reference: "TBL-003",
-      description: "Table de cuisine en marbre",
-      initialQuantity: 10,
-      availableQuantity: 0,
-      imageUrl: "https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=500"
-    },
-    {
-      reference: "CHR-003",
-      description: "Lot de 6 chaises en bois massif",
-      initialQuantity: 25,
-      availableQuantity: 0,
-      imageUrl: "https://images.unsplash.com/photo-1503602642458-232111445657?w=500"
-    }
-  ]);
-
+  const [products, setProducts] = useState<Product[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [open, setOpen] = useState(false);
+
+  // Load products from localStorage on component mount
+  useEffect(() => {
+    const savedProducts = localStorage.getItem(STORAGE_KEY);
+    if (savedProducts) {
+      setProducts(JSON.parse(savedProducts));
+    }
+  }, []);
+
+  // Save products to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+  }, [products]);
 
   const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -79,6 +49,7 @@ const Products = () => {
   };
 
   const handleSave = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
     toast({
       title: "Quantités sauvegardées",
       description: "Les quantités ont été sauvegardées avec succès.",
