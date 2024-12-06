@@ -1,14 +1,13 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Product } from "@/utils/types";
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { Plus, Download, Upload } from "lucide-react";
 import NavBar from "@/components/NavBar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Product } from "@/utils/types";
+import ProductForm from "@/components/products/ProductForm";
+import ProductCard from "@/components/products/ProductCard";
+import { exportProducts, importProducts } from "@/utils/productUtils";
 
 const Products = () => {
   const { toast } = useToast();
@@ -60,26 +59,13 @@ const Products = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const form = useForm<Product>({
-    defaultValues: {
-      reference: "",
-      description: "",
-      initialQuantity: 0,
-      availableQuantity: 0,
-      imageUrl: ""
-    }
-  });
-
   const handleQuantityChange = (reference: string, newQuantity: string) => {
     const quantity = parseInt(newQuantity);
     if (isNaN(quantity) || quantity < 0) return;
 
     setProducts(products.map(product => {
       if (product.reference === reference) {
-        return {
-          ...product,
-          availableQuantity: quantity
-        };
+        return { ...product, availableQuantity: quantity };
       }
       return product;
     }));
@@ -95,17 +81,10 @@ const Products = () => {
   const handleAddProduct = (data: Product) => {
     setProducts([...products, data]);
     setIsDialogOpen(false);
-    form.reset();
     toast({
       title: "Produit ajouté",
       description: "Le produit a été ajouté avec succès.",
     });
-  };
-
-  const handleEditProduct = (product: Product) => {
-    setEditingProduct(product);
-    form.reset(product);
-    setIsDialogOpen(true);
   };
 
   const handleUpdateProduct = (data: Product) => {
@@ -114,7 +93,6 @@ const Products = () => {
     ));
     setIsDialogOpen(false);
     setEditingProduct(null);
-    form.reset();
     toast({
       title: "Produit mis à jour",
       description: "Le produit a été mis à jour avec succès.",
@@ -127,6 +105,37 @@ const Products = () => {
       title: "Produit supprimé",
       description: "Le produit a été supprimé avec succès.",
     });
+  };
+
+  const handleExport = () => {
+    exportProducts(products);
+    toast({
+      title: "Export réussi",
+      description: "Les produits ont été exportés avec succès.",
+    });
+  };
+
+  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const importedProducts = await importProducts(file);
+      setProducts(prevProducts => [...prevProducts, ...importedProducts]);
+      toast({
+        title: "Import réussi",
+        description: `${importedProducts.length} produits ont été importés avec succès.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur d'import",
+        description: error instanceof Error ? error.message : "Une erreur est survenue lors de l'import",
+        variant: "destructive",
+      });
+    }
+    
+    // Reset the input
+    event.target.value = '';
   };
 
   const storeName = "Mon Magasin";
@@ -142,7 +151,7 @@ const Products = () => {
           </div>
         </div>
 
-        <div className="mb-6">
+        <div className="flex gap-4 mb-6">
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button className="gap-2">
@@ -150,114 +159,42 @@ const Products = () => {
                 Ajouter un produit
               </Button>
             </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>
-                  {editingProduct ? "Modifier le produit" : "Ajouter un produit"}
-                </DialogTitle>
-              </DialogHeader>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(editingProduct ? handleUpdateProduct : handleAddProduct)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="reference"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Référence</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Description</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="initialQuantity"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Quantité initiale</FormLabel>
-                        <FormControl>
-                          <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="imageUrl"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>URL de l'image</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <Button type="submit" className="w-full">
-                    {editingProduct ? "Mettre à jour" : "Ajouter"}
-                  </Button>
-                </form>
-              </Form>
-            </DialogContent>
+            <ProductForm 
+              onSubmit={editingProduct ? handleUpdateProduct : handleAddProduct}
+              editingProduct={editingProduct}
+            />
           </Dialog>
+
+          <Button variant="outline" className="gap-2" onClick={handleExport}>
+            <Download className="h-4 w-4" />
+            Exporter
+          </Button>
+
+          <Button variant="outline" className="gap-2" onClick={() => document.getElementById('import-file')?.click()}>
+            <Upload className="h-4 w-4" />
+            Importer
+          </Button>
+          <input
+            id="import-file"
+            type="file"
+            accept=".json"
+            className="hidden"
+            onChange={handleImport}
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {products.map((product) => (
-            <Card key={product.reference}>
-              <CardHeader>
-                <CardTitle className="flex justify-between items-start">
-                  <span>{product.description}</span>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleEditProduct(product)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteProduct(product.reference)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <img 
-                  src={product.imageUrl || "/placeholder.svg"} 
-                  alt={product.description}
-                  className="w-full h-48 object-cover mb-4 rounded-md"
-                />
-                <p>Référence: {product.reference}</p>
-                <div className="flex items-center gap-2 mt-2">
-                  <p>Quantité souhaitée:</p>
-                  <Input
-                    type="number"
-                    value={product.availableQuantity}
-                    onChange={(e) => handleQuantityChange(product.reference, e.target.value)}
-                    min="0"
-                    className="w-24"
-                  />
-                </div>
-              </CardContent>
-            </Card>
+            <ProductCard
+              key={product.reference}
+              product={product}
+              onQuantityChange={handleQuantityChange}
+              onEdit={(product) => {
+                setEditingProduct(product);
+                setIsDialogOpen(true);
+              }}
+              onDelete={handleDeleteProduct}
+            />
           ))}
         </div>
 
