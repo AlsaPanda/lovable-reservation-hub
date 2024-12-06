@@ -45,7 +45,6 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <h3 className="font-medium">{product["name-fr_fr-cla"] || product.description}</h3>
           <div className="relative aspect-video w-full overflow-hidden rounded-md">
             <img 
               src={product.imageUrl || DEFAULT_IMAGE}
