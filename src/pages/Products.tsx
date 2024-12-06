@@ -5,6 +5,7 @@ import { Product } from "@/utils/types";
 import ProductForm from "@/components/products/ProductForm";
 import ProductCard from "@/components/products/ProductCard";
 import ProductsHeader from "@/components/products/ProductsHeader";
+import { Button } from "@/components/ui/button";
 
 const Products = () => {
   const { toast } = useToast();
@@ -146,8 +147,6 @@ const Products = () => {
         <ProductForm 
           onSubmit={editingProduct ? handleUpdateProduct : handleAddProduct}
           editingProduct={editingProduct}
-          open={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
         />
       </div>
     </>
