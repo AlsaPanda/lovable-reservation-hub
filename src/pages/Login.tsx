@@ -57,12 +57,25 @@ const Login = () => {
               },
             }}
             providers={[]}
-            onError={(error) => {
-              toast({
-                title: "Erreur d'authentification",
-                description: error.message,
-                variant: "destructive",
-              });
+            localization={{
+              variables: {
+                sign_in: {
+                  email_label: 'Email',
+                  password_label: 'Mot de passe',
+                  email_input_placeholder: 'Votre email',
+                  password_input_placeholder: 'Votre mot de passe',
+                  button_label: 'Se connecter',
+                  loading_button_label: 'Connexion en cours ...',
+                },
+                sign_up: {
+                  email_label: 'Email',
+                  password_label: 'Mot de passe',
+                  email_input_placeholder: 'Votre email',
+                  password_input_placeholder: 'Votre mot de passe',
+                  button_label: "S'inscrire",
+                  loading_button_label: 'Inscription en cours ...',
+                },
+              },
             }}
           />
         </CardContent>
