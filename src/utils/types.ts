@@ -1,18 +1,24 @@
 export interface Product {
+  id: string;
   reference: string;
   name: string;
-  description: string;
-  initialQuantity: number;
-  imageUrl: string;
-  availableQuantity: number;
+  description: string | null;
+  initial_quantity: number;
+  image_url: string | null;
+  created_at: string;
+  updated_at: string;
+  availableQuantity?: number;
 }
 
 export interface Reservation {
-  reference: string;
-  description: string;
+  id: string;
+  product_id: string;
+  store_name: string;
   quantity: number;
-  storeName: string;
-  date: string;
+  reservation_date: string;
+  created_at: string;
+  updated_at: string;
+  product?: Product;
 }
 
 export interface User {
