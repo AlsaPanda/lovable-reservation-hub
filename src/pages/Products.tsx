@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import NavBar from "@/components/NavBar";
 import { Product } from "@/utils/types";
@@ -7,29 +7,102 @@ import ProductGrid from "@/components/products/ProductGrid";
 import ProductsHeader from "@/components/products/ProductsHeader";
 import ProductPagination from "@/components/products/ProductPagination";
 import { Button } from "@/components/ui/button";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const ITEMS_PER_PAGE = 6;
-const STORAGE_KEY = 'products_data';
 
 const Products = () => {
   const { toast } = useToast();
-  const [products, setProducts] = useState<Product[]>([]);
+  const queryClient = useQueryClient();
   const [currentPage, setCurrentPage] = useState(1);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [open, setOpen] = useState(false);
 
-  // Load products from localStorage on component mount
-  useEffect(() => {
-    const savedProducts = localStorage.getItem(STORAGE_KEY);
-    if (savedProducts) {
-      setProducts(JSON.parse(savedProducts));
-    }
-  }, []);
+  // Fetch products
+  const { data: products = [] } = useQuery({
+    queryKey: ['products'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-  // Save products to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-  }, [products]);
+      if (error) throw error;
+      return data.map(product => ({
+        ...product,
+        availableQuantity: product.initial_quantity
+      }));
+    }
+  });
+
+  // Add product mutation
+  const addProductMutation = useMutation({
+    mutationFn: async (product: Product) => {
+      const { error } = await supabase
+        .from('products')
+        .insert({
+          reference: product.reference,
+          name: product.name,
+          description: product.description,
+          initial_quantity: product.initialQuantity,
+          image_url: product.imageUrl
+        });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast({
+        title: "Produit ajouté",
+        description: "Le produit a été ajouté avec succès.",
+      });
+      setOpen(false);
+    }
+  });
+
+  // Update product mutation
+  const updateProductMutation = useMutation({
+    mutationFn: async (product: Product) => {
+      const { error } = await supabase
+        .from('products')
+        .update({
+          reference: product.reference,
+          name: product.name,
+          description: product.description,
+          initial_quantity: product.initialQuantity,
+          image_url: product.imageUrl
+        })
+        .eq('reference', product.reference);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast({
+        title: "Produit mis à jour",
+        description: "Le produit a été mis à jour avec succès.",
+      });
+      setOpen(false);
+      setEditingProduct(null);
+    }
+  });
+
+  // Delete product mutation
+  const deleteProductMutation = useMutation({
+    mutationFn: async (reference: string) => {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('reference', reference);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast({
+        title: "Produit supprimé",
+        description: "Le produit a été supprimé avec succès.",
+      });
+    }
+  });
 
   const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -40,49 +113,26 @@ const Products = () => {
     const quantity = parseInt(newQuantity);
     if (isNaN(quantity) || quantity < 0) return;
 
-    setProducts(products.map(product => {
-      if (product.reference === reference) {
-        return { ...product, availableQuantity: quantity };
-      }
-      return product;
-    }));
-  };
+    const product = products.find(p => p.reference === reference);
+    if (!product) return;
 
-  const handleSave = () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-    toast({
-      title: "Quantités sauvegardées",
-      description: "Les quantités ont été sauvegardées avec succès.",
+    updateProductMutation.mutate({
+      ...product,
+      initialQuantity: quantity,
+      availableQuantity: quantity
     });
   };
 
   const handleAddProduct = (data: Product) => {
-    setProducts([...products, data]);
-    setOpen(false);
-    toast({
-      title: "Produit ajouté",
-      description: "Le produit a été ajouté avec succès.",
-    });
+    addProductMutation.mutate(data);
   };
 
   const handleUpdateProduct = (data: Product) => {
-    setProducts(products.map(p => 
-      p.reference === editingProduct?.reference ? data : p
-    ));
-    setOpen(false);
-    setEditingProduct(null);
-    toast({
-      title: "Produit mis à jour",
-      description: "Le produit a été mis à jour avec succès.",
-    });
+    updateProductMutation.mutate(data);
   };
 
   const handleDeleteProduct = (reference: string) => {
-    setProducts(products.filter(p => p.reference !== reference));
-    toast({
-      title: "Produit supprimé",
-      description: "Le produit a été supprimé avec succès.",
-    });
+    deleteProductMutation.mutate(reference);
   };
 
   return (
@@ -93,7 +143,12 @@ const Products = () => {
 
         <ProductsHeader
           onOpenDialog={() => setOpen(true)}
-          onProductsImported={setProducts}
+          onProductsImported={(products) => {
+            // Handle bulk import through individual inserts
+            products.forEach(product => {
+              addProductMutation.mutate(product);
+            });
+          }}
           products={products}
         />
 
@@ -114,8 +169,8 @@ const Products = () => {
         />
 
         <div className="flex justify-end">
-          <Button onClick={handleSave} className="px-6">
-            Sauvegarder les quantités
+          <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['products'] })} className="px-6">
+            Rafraîchir les données
           </Button>
         </div>
 
