@@ -45,8 +45,8 @@ const Products = () => {
           reference: product.reference,
           name: product.name,
           description: product.description,
-          initial_quantity: product.initialQuantity,
-          image_url: product.imageUrl
+          initial_quantity: product.initial_quantity,
+          image_url: product.image_url
         });
       if (error) throw error;
     },
@@ -69,8 +69,8 @@ const Products = () => {
           reference: product.reference,
           name: product.name,
           description: product.description,
-          initial_quantity: product.initialQuantity,
-          image_url: product.imageUrl
+          initial_quantity: product.initial_quantity,
+          image_url: product.image_url
         })
         .eq('reference', product.reference);
       if (error) throw error;
@@ -118,7 +118,7 @@ const Products = () => {
 
     updateProductMutation.mutate({
       ...product,
-      initialQuantity: quantity,
+      initial_quantity: quantity,
       availableQuantity: quantity
     });
   };
@@ -144,7 +144,6 @@ const Products = () => {
         <ProductsHeader
           onOpenDialog={() => setOpen(true)}
           onProductsImported={(products) => {
-            // Handle bulk import through individual inserts
             products.forEach(product => {
               addProductMutation.mutate(product);
             });

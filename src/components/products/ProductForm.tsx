@@ -15,11 +15,15 @@ interface ProductFormProps {
 const ProductForm = ({ onSubmit, editingProduct, open, onOpenChange }: ProductFormProps) => {
   const form = useForm<Product>({
     defaultValues: editingProduct || {
+      id: '',
       reference: "",
+      name: "",
       description: "",
-      initialQuantity: 0,
-      availableQuantity: 0,
-      imageUrl: ""
+      initial_quantity: 0,
+      image_url: "",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      availableQuantity: 0
     }
   });
 
@@ -47,6 +51,18 @@ const ProductForm = ({ onSubmit, editingProduct, open, onOpenChange }: ProductFo
             />
             <FormField
               control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nom</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="description"
               render={({ field }) => (
                 <FormItem>
@@ -59,7 +75,7 @@ const ProductForm = ({ onSubmit, editingProduct, open, onOpenChange }: ProductFo
             />
             <FormField
               control={form.control}
-              name="initialQuantity"
+              name="initial_quantity"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Quantité initiale</FormLabel>
@@ -71,7 +87,7 @@ const ProductForm = ({ onSubmit, editingProduct, open, onOpenChange }: ProductFo
             />
             <FormField
               control={form.control}
-              name="imageUrl"
+              name="image_url"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>URL de l'image</FormLabel>

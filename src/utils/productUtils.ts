@@ -45,13 +45,16 @@ export const importProducts = (file: File): Promise<Product[]> => {
           
           const jsonData = XLSX.utils.sheet_to_json(worksheet);
           
-          const products = jsonData.map((row: any) => ({
+          const products: Product[] = jsonData.map((row: any) => ({
+            id: '',
             reference: row['sku']?.toString() || '',
             name: row['name-fr_FR']?.toString() || row['sku']?.toString() || '',
             description: row['description']?.toString() || '',
-            initialQuantity: 0,
-            availableQuantity: 0,
-            imageUrl: row['image-file_path']?.toString() || 'https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=500'
+            initial_quantity: 0,
+            image_url: row['image-file_path']?.toString() || 'https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=500',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            availableQuantity: 0
           }));
           
           resolve(products);

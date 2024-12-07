@@ -48,7 +48,7 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
         <div className="space-y-4">
           <div className="relative aspect-video w-full overflow-hidden rounded-md">
             <img 
-              src={product.imageUrl || DEFAULT_IMAGE}
+              src={product.image_url || DEFAULT_IMAGE}
               alt={product.reference}
               onError={handleImageError}
               className="object-cover w-full h-full transition-transform duration-200 group-hover:scale-105"
@@ -64,7 +64,7 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
                 <span className="text-sm font-medium">Quantité souhaitée:</span>
                 <Input
                   type="number"
-                  value={product.initialQuantity}
+                  value={product.initial_quantity}
                   onChange={(e) => onQuantityChange(product.reference, e.target.value)}
                   className="w-24 h-8"
                   min="0"
