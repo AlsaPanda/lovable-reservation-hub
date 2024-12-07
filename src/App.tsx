@@ -11,8 +11,8 @@ import Reservations from "./pages/Reservations";
 const queryClient = new QueryClient();
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-  const token = localStorage.getItem("auth_token");
-  return token ? <>{children}</> : <Navigate to="/login" />;
+  const isAuthenticated = !!localStorage.getItem("sb-jgcncsqbwxrjhveeptej-auth-token");
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
 };
 
 const App = () => (

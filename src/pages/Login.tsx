@@ -1,54 +1,51 @@
-import { useState } from "react";
+import { Auth } from "@supabase/auth-ui-react";
+import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "sonner";
 
 const Login = () => {
-  const [token, setToken] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Simulate token validation
-    if (token.length > 0) {
-      localStorage.setItem("auth_token", token);
-      toast.success("Connexion réussie");
-      navigate("/dashboard");
-    } else {
-      toast.error("Token invalide");
-    }
-  };
+  useEffect(() => {
+    // Check if user is already logged in
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        navigate("/dashboard");
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-secondary">
-      <Card className="w-[400px]">
+    <div className="min-h-screen flex items-center justify-center bg-secondary p-4">
+      <Card className="w-full max-w-[400px]">
         <CardHeader>
           <CardTitle className="text-2xl text-center text-primary">
             Schmidt & Cuisinella
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="token" className="text-sm font-medium text-gray-700">
-                Token d'authentification
-              </label>
-              <Input
-                id="token"
-                type="password"
-                value={token}
-                onChange={(e) => setToken(e.target.value)}
-                placeholder="Entrez votre token"
-                className="w-full"
-              />
-            </div>
-            <Button type="submit" className="w-full bg-primary hover:bg-primary/90">
-              Se connecter
-            </Button>
-          </form>
+          <Auth
+            supabaseClient={supabase}
+            appearance={{
+              theme: 'light',
+              style: {
+                button: {
+                  background: 'rgb(var(--primary))',
+                  color: 'white',
+                  borderRadius: '0.375rem',
+                },
+                anchor: {
+                  color: 'rgb(var(--primary))',
+                },
+              },
+            }}
+            providers={[]}
+          />
         </CardContent>
       </Card>
     </div>
