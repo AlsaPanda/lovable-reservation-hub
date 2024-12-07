@@ -4,15 +4,23 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     // Check if user is already logged in
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
+      if (event === 'SIGNED_IN' && session) {
         navigate("/dashboard");
+      }
+      if (event === 'SIGNED_OUT') {
+        navigate("/");
+      }
+      if (event === 'USER_UPDATED') {
+        console.log('User updated:', session);
       }
     });
 
@@ -43,9 +51,19 @@ const Login = () => {
                 anchor: {
                   color: 'rgb(var(--primary))',
                 },
+                message: {
+                  color: 'rgb(var(--destructive))',
+                },
               },
             }}
             providers={[]}
+            onError={(error) => {
+              toast({
+                title: "Erreur d'authentification",
+                description: error.message,
+                variant: "destructive",
+              });
+            }}
           />
         </CardContent>
       </Card>

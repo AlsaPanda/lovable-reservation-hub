@@ -48,9 +48,19 @@ const Reservations = () => {
   // Add reservation mutation
   const addReservation = useMutation({
     mutationFn: async (newReservation: Partial<Reservation>) => {
+      // Ensure required fields are present
+      if (!newReservation.product_id || !newReservation.store_name || typeof newReservation.quantity !== 'number') {
+        throw new Error('Missing required fields');
+      }
+
       const { data, error } = await supabase
         .from('reservations')
-        .insert([newReservation])
+        .insert([{
+          product_id: newReservation.product_id,
+          store_name: newReservation.store_name,
+          quantity: newReservation.quantity,
+          reservation_date: newReservation.reservation_date || new Date().toISOString()
+        }])
         .select()
         .single();
       
@@ -77,10 +87,19 @@ const Reservations = () => {
   // Update reservation mutation
   const updateReservation = useMutation({
     mutationFn: async (updatedReservation: Partial<Reservation>) => {
+      if (!editingReservation?.id || !updatedReservation.product_id || !updatedReservation.store_name || typeof updatedReservation.quantity !== 'number') {
+        throw new Error('Missing required fields');
+      }
+
       const { data, error } = await supabase
         .from('reservations')
-        .update(updatedReservation)
-        .eq('id', editingReservation?.id)
+        .update({
+          product_id: updatedReservation.product_id,
+          store_name: updatedReservation.store_name,
+          quantity: updatedReservation.quantity,
+          reservation_date: updatedReservation.reservation_date
+        })
+        .eq('id', editingReservation.id)
         .select()
         .single();
       
