@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Product } from "@/utils/types";
 import { importProducts } from "@/utils/productUtils";
-import { UploadCloud } from "lucide-react";
+import { Calendar, UploadCloud } from "lucide-react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
@@ -12,11 +12,19 @@ interface ProductsHeaderProps {
   onProductsImported: (products: Product[]) => void;
   onSearch: (query: string) => void;
   products: Product[];
+  onReserve: () => void;
 }
 
-const ProductsHeader = ({ onOpenDialog, onProductsImported, onSearch, products }: ProductsHeaderProps) => {
+const ProductsHeader = ({ 
+  onOpenDialog, 
+  onProductsImported, 
+  onSearch, 
+  products,
+  onReserve 
+}: ProductsHeaderProps) => {
   const session = useSession();
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [totalQuantity, setTotalQuantity] = useState(0);
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -36,6 +44,16 @@ const ProductsHeader = ({ onOpenDialog, onProductsImported, onSearch, products }
     fetchUserRole();
   }, [session]);
 
+  useEffect(() => {
+    // Calcul du total des quantités à chaque changement des produits
+    const total = products.reduce((acc, product) => {
+      const quantity = parseInt(product.initial_quantity?.toString() || '0');
+      if (isNaN(quantity) || quantity <= 0) return acc;
+      return acc + quantity;
+    }, 0);
+    setTotalQuantity(total);
+  }, [products]);
+
   const isAdmin = userRole === 'admin' || userRole === 'superadmin';
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,13 +70,22 @@ const ProductsHeader = ({ onOpenDialog, onProductsImported, onSearch, products }
 
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <div className="w-full md:w-96">
+      <div className="flex flex-1 gap-4 items-center">
         <Input
           type="text"
           placeholder="Rechercher par titre ou référence..."
           onChange={(e) => onSearch(e.target.value)}
-          className="w-full"
+          className="w-full md:w-96"
         />
+        <Button
+          size="default"
+          onClick={onReserve}
+          disabled={totalQuantity === 0}
+          className="whitespace-nowrap"
+        >
+          <Calendar className="mr-2 h-4 w-4" />
+          Je réserve ({totalQuantity} produits)
+        </Button>
       </div>
       {isAdmin && (
         <div className="flex gap-2">

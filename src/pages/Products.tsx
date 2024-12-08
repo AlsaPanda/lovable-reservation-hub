@@ -6,7 +6,6 @@ import ProductGrid from "@/components/products/ProductGrid";
 import ProductsHeader from "@/components/products/ProductsHeader";
 import ProductActions from "@/components/products/ProductActions";
 import PageHeader from "@/components/products/PageHeader";
-import ReservationButton from "@/components/products/ReservationButton";
 import { useProducts } from "@/hooks/useProducts";
 import { useProductMutations } from "@/hooks/useProductMutations";
 import { useReservationMutation } from "@/hooks/useReservationMutation";
@@ -84,6 +83,7 @@ const Products = () => {
           }}
           onSearch={handleSearch}
           products={products}
+          onReserve={handleReserveAll}
         />
 
         <ProductGrid
@@ -103,12 +103,6 @@ const Products = () => {
           editingProduct={editingProduct}
           open={open}
           onOpenChange={setOpen}
-        />
-
-        <ReservationButton
-          products={products}
-          onReserve={handleReserveAll}
-          disabled={addReservationMutation.isPending}
         />
       </div>
     </>
