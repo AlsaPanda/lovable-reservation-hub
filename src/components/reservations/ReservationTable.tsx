@@ -14,7 +14,6 @@ export function ReservationTable({ reservations, onEdit, onDelete }: Reservation
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Magasin</TableHead>
           <TableHead>Date</TableHead>
           <TableHead>Produits réservés</TableHead>
           <TableHead>Actions</TableHead>
@@ -23,7 +22,6 @@ export function ReservationTable({ reservations, onEdit, onDelete }: Reservation
       <TableBody>
         {reservations.map((reservation) => (
           <TableRow key={reservation.id}>
-            <TableCell>{reservation.store_name}</TableCell>
             <TableCell>{new Date(reservation.reservation_date).toLocaleDateString()}</TableCell>
             <TableCell>
               <div className="space-y-1">
