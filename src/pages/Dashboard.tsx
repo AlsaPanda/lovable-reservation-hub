@@ -23,15 +23,37 @@ const Dashboard = () => {
           return;
         }
 
+        console.log("Current user email:", user.email);
         console.log("Fetching profile for user:", user.id);
+        
         const { data: profileData, error } = await supabase
           .from('profiles')
-          .select()
-          .filter('id', 'eq', user.id)
-          .maybeSingle();
+          .select('*')
+          .eq('id', user.id)
+          .single();
 
-        if (!profileData && error?.code === 'PGRST116') {
-          console.log("No profile found, creating new profile");
+        if (error) {
+          console.error("Error fetching profile:", error);
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Impossible de charger votre profil"
+          });
+          return;
+        }
+
+        if (profileData) {
+          console.log("Profile loaded:", profileData);
+          console.log("User role:", profileData.role);
+          setProfile(profileData);
+          
+          if (profileData.role === 'magasin') {
+            console.log("Redirecting magasin user to products");
+            navigate("/products");
+          }
+        } else {
+          console.log("No profile found for user");
+          // Create new profile logic remains the same
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
             .insert([
@@ -58,19 +80,6 @@ const Dashboard = () => {
             if (newProfile.role === 'magasin') {
               navigate("/products");
             }
-          }
-        } else if (error) {
-          console.error("Error fetching profile:", error);
-          toast({
-            variant: "destructive",
-            title: "Erreur",
-            description: "Impossible de charger votre profil"
-          });
-        } else if (profileData) {
-          console.log("Profile loaded:", profileData);
-          setProfile(profileData);
-          if (profileData.role === 'magasin') {
-            navigate("/products");
           }
         }
       } catch (error) {
