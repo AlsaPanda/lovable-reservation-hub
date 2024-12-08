@@ -1,8 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Reservation } from "@/utils/types";
 import { useToast } from "@/components/ui/use-toast";
 import { useSession } from "@supabase/auth-helpers-react";
+import { 
+  fetchReservations, 
+  updateReservationInDb, 
+  deleteReservationFromDb 
+} from "@/services/reservationService";
 
 export const useReservations = () => {
   const { toast } = useToast();
@@ -13,45 +17,15 @@ export const useReservations = () => {
     queryKey: ['reservations'],
     queryFn: async () => {
       if (!session?.user?.id) return [];
-      
-      const { data, error } = await supabase
-        .from('reservations')
-        .select(`
-          *,
-          product:products(*)
-        `)
-        .eq('store_name', session.user.id)
-        .order('reservation_date', { ascending: true })
-        .order('created_at', { ascending: true });
-      
-      if (error) throw error;
-      return data as Reservation[];
+      return fetchReservations(session.user.id);
     },
     enabled: !!session?.user?.id
   });
 
   const updateReservation = useMutation({
     mutationFn: async (updatedReservation: Partial<Reservation>) => {
-      console.log("Updating reservation with data:", updatedReservation);
-      if (!updatedReservation.id) throw new Error('Missing reservation ID');
-
-      const { data, error } = await supabase
-        .from('reservations')
-        .update({
-          quantity: updatedReservation.quantity,
-          reservation_date: updatedReservation.reservation_date
-        })
-        .eq('id', updatedReservation.id)
-        .eq('store_name', session?.user?.id)
-        .select()
-        .single();
-      
-      if (error) {
-        console.error("Error updating reservation:", error);
-        throw error;
-      }
-      console.log("Reservation updated successfully:", data);
-      return data;
+      if (!session?.user?.id) throw new Error('User not authenticated');
+      return updateReservationInDb(updatedReservation, session.user.id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reservations'] });
@@ -72,13 +46,8 @@ export const useReservations = () => {
 
   const deleteReservation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('reservations')
-        .delete()
-        .eq('id', id)
-        .eq('store_name', session?.user?.id);
-      
-      if (error) throw error;
+      if (!session?.user?.id) throw new Error('User not authenticated');
+      return deleteReservationFromDb(id, session.user.id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reservations'] });
