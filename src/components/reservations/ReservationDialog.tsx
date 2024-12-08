@@ -26,6 +26,7 @@ export function ReservationDialog({
   useEffect(() => {
     if (editingReservation) {
       form.reset({
+        id: editingReservation.id, // Ajout de l'ID
         product_id: editingReservation.product_id,
         quantity: editingReservation.quantity,
         reservation_date: editingReservation.reservation_date ? 
@@ -34,6 +35,16 @@ export function ReservationDialog({
       });
     }
   }, [editingReservation, form]);
+
+  const handleSubmit = (data: Partial<Reservation>) => {
+    // S'assurer que l'ID est inclus dans les données soumises
+    if (editingReservation) {
+      onSubmit({
+        ...data,
+        id: editingReservation.id
+      });
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -44,7 +55,7 @@ export function ReservationDialog({
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="product_id"
