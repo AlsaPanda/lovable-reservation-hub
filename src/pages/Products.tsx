@@ -82,7 +82,7 @@ const Products = () => {
     <>
       <NavBar />
       <div className="container mx-auto p-6 space-y-6">
-        <h1 className="text-3xl font-bold">Gestion des Produits</h1>
+        <h1 className="text-3xl font-bold">Réservation des produits</h1>
 
         <ProductsHeader
           onOpenDialog={() => setOpen(true)}

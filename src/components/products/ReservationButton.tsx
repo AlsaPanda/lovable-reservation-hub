@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
 import { Product } from "@/utils/types";
+import { useEffect, useState } from "react";
 
 interface ReservationButtonProps {
   products: Product[];
@@ -9,13 +10,16 @@ interface ReservationButtonProps {
 }
 
 const ReservationButton = ({ products, onReserve, disabled }: ReservationButtonProps) => {
-  // Regrouper les produits par référence pour éviter les doublons
-  const totalQuantity = products.reduce((acc, product) => {
-    if (!product.initial_quantity || product.initial_quantity <= 0) return acc;
-    return acc + product.initial_quantity;
-  }, 0);
+  const [totalQuantity, setTotalQuantity] = useState(0);
 
-  console.log("Total quantity after deduplication:", totalQuantity);
+  useEffect(() => {
+    // Calcul du total des quantités à chaque changement des produits
+    const total = products.reduce((acc, product) => {
+      if (!product.initial_quantity || product.initial_quantity <= 0) return acc;
+      return acc + product.initial_quantity;
+    }, 0);
+    setTotalQuantity(total);
+  }, [products]);
 
   return (
     <div className="fixed bottom-6 right-6 z-50">

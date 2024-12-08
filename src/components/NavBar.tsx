@@ -12,6 +12,7 @@ const NavBar = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [storeName, setStoreName] = useState<string>("");
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -19,12 +20,13 @@ const NavBar = () => {
       if (user) {
         const { data, error } = await supabase
           .from('profiles')
-          .select('role')
+          .select('role, store_name')
           .eq('id', user.id)
           .single();
         
         if (!error && data) {
           setUserRole(data.role);
+          setStoreName(data.store_name);
         }
       }
     };
@@ -93,14 +95,17 @@ const NavBar = () => {
           </NavigationMenuList>
         </NavigationMenu>
         
-        <Button 
-          variant="outline" 
-          onClick={handleLogout}
-          className="gap-2"
-        >
-          <LogOut className="h-4 w-4" />
-          Déconnexion
-        </Button>
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-medium">{storeName}</span>
+          <Button 
+            variant="outline" 
+            onClick={handleLogout}
+            className="gap-2"
+          >
+            <LogOut className="h-4 w-4" />
+            Déconnexion
+          </Button>
+        </div>
       </div>
     </div>
   );
