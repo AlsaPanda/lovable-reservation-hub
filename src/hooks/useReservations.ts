@@ -21,7 +21,8 @@ export const useReservations = () => {
           product:products(*)
         `)
         .eq('store_name', session.user.id)
-        .order('created_at', { ascending: true }); // Ajout du tri par date de création
+        .order('reservation_date', { ascending: true })
+        .order('created_at', { ascending: true });
       
       if (error) throw error;
       return data as Reservation[];
