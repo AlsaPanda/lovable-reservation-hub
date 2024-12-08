@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useSession } from "@supabase/auth-helpers-react";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
@@ -11,8 +12,16 @@ import Reservations from "./pages/Reservations";
 const queryClient = new QueryClient();
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAuthenticated = !!localStorage.getItem("sb-jgcncsqbwxrjhveeptej-auth-token");
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+  const session = useSession();
+  console.log("Session state:", session); // Debug log
+  
+  if (!session) {
+    console.log("No session, redirecting to login"); // Debug log
+    return <Navigate to="/login" />;
+  }
+  
+  console.log("Session found, rendering protected content"); // Debug log
+  return <>{children}</>;
 };
 
 const App = () => (
