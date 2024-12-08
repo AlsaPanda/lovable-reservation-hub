@@ -80,9 +80,6 @@ const Login = () => {
                   password_input_placeholder: 'Votre mot de passe',
                   button_label: 'Se connecter',
                   loading_button_label: 'Connexion en cours ...',
-                  email_input_error: "L'email est invalide",
-                  password_input_error: 'Le mot de passe est invalide',
-                  invalid_credentials_error: 'Email ou mot de passe incorrect',
                 },
                 sign_up: {
                   email_label: 'Email',
@@ -91,8 +88,6 @@ const Login = () => {
                   password_input_placeholder: 'Votre mot de passe',
                   button_label: "S'inscrire",
                   loading_button_label: 'Inscription en cours ...',
-                  email_input_error: "L'email est invalide",
-                  password_input_error: 'Le mot de passe est invalide',
                 },
               },
             }}
