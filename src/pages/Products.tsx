@@ -4,21 +4,16 @@ import { Product } from "@/utils/types";
 import ProductForm from "@/components/products/ProductForm";
 import ProductGrid from "@/components/products/ProductGrid";
 import ProductsHeader from "@/components/products/ProductsHeader";
-import ProductPagination from "@/components/products/ProductPagination";
-import { Button } from "@/components/ui/button";
-import { useQueryClient } from "@tanstack/react-query";
+import ProductActions from "@/components/products/ProductActions";
+import PageHeader from "@/components/products/PageHeader";
 import ReservationButton from "@/components/products/ReservationButton";
 import { useProducts } from "@/hooks/useProducts";
 import { useProductMutations } from "@/hooks/useProductMutations";
 import { useReservationMutation } from "@/hooks/useReservationMutation";
 import { useToast } from "@/components/ui/use-toast";
 
-const ITEMS_PER_PAGE = 12;
-
 const Products = () => {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [currentPage, setCurrentPage] = useState(1);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -51,7 +46,6 @@ const Products = () => {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    setCurrentPage(1);
   };
 
   const handleReserveAll = () => {
@@ -67,22 +61,17 @@ const Products = () => {
     addReservationMutation.mutate(productsToReserve);
   };
 
-  // Filter and paginate products
+  // Filter products
   const filteredProducts = products.filter(product => 
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.reference.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentProducts = filteredProducts.slice(startIndex, endIndex);
-
   return (
     <>
       <NavBar />
       <div className="container mx-auto p-6 space-y-6">
-        <h1 className="text-3xl font-bold">Réservation des produits</h1>
+        <PageHeader title="Réservation des produits" />
 
         <ProductsHeader
           onOpenDialog={() => setOpen(true)}
@@ -96,7 +85,7 @@ const Products = () => {
         />
 
         <ProductGrid
-          products={currentProducts}
+          products={filteredProducts}
           onQuantityChange={handleQuantityChange}
           onEdit={(product) => {
             setEditingProduct(product);
@@ -105,17 +94,7 @@ const Products = () => {
           onDelete={(reference) => deleteProductMutation.mutate(reference)}
         />
 
-        <ProductPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
-
-        <div className="flex justify-end">
-          <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['products'] })} className="px-6">
-            Rafraîchir les données
-          </Button>
-        </div>
+        <ProductActions />
 
         <ProductForm 
           onSubmit={editingProduct ? handleUpdateProduct : handleAddProduct}
