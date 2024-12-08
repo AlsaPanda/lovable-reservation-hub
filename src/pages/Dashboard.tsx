@@ -24,7 +24,6 @@ const Dashboard = () => {
         }
 
         console.log("Fetching profile for user:", user.id);
-        // Changed the query to use a simpler approach
         const { data: profileData, error } = await supabase
           .from('profiles')
           .select()
@@ -39,7 +38,7 @@ const Dashboard = () => {
               { 
                 id: user.id,
                 store_name: `Store ${user.id.substring(0, 6)}`,
-                role: 'user'
+                role: 'magasin'
               }
             ])
             .select()
@@ -56,6 +55,9 @@ const Dashboard = () => {
           } else {
             console.log("Created new profile:", newProfile);
             setProfile(newProfile);
+            if (newProfile.role === 'magasin') {
+              navigate("/products");
+            }
           }
         } else if (error) {
           console.error("Error fetching profile:", error);
@@ -67,6 +69,9 @@ const Dashboard = () => {
         } else if (profileData) {
           console.log("Profile loaded:", profileData);
           setProfile(profileData);
+          if (profileData.role === 'magasin') {
+            navigate("/products");
+          }
         }
       } catch (error) {
         console.error("Error in fetchProfile:", error);
@@ -81,6 +86,8 @@ const Dashboard = () => {
     fetchProfile();
   }, [toast, navigate]);
 
+  // Si l'utilisateur a le rôle 'magasin', il sera redirigé vers /products
+  // Cette page ne sera visible que pour les autres rôles
   return (
     <>
       <NavBar />
