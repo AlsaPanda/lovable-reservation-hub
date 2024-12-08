@@ -18,6 +18,7 @@ const Products = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch products
   const { data: products = [] } = useQuery({
@@ -104,10 +105,16 @@ const Products = () => {
     }
   });
 
-  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
+  // Filter products based on search query
+  const filteredProducts = products.filter(product => 
+    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.reference.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentProducts = products.slice(startIndex, endIndex);
+  const currentProducts = filteredProducts.slice(startIndex, endIndex);
 
   const handleQuantityChange = (reference: string, newQuantity: string) => {
     const quantity = parseInt(newQuantity);
@@ -135,6 +142,11 @@ const Products = () => {
     deleteProductMutation.mutate(reference);
   };
 
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
   return (
     <>
       <NavBar />
@@ -148,6 +160,7 @@ const Products = () => {
               addProductMutation.mutate(product);
             });
           }}
+          onSearch={handleSearch}
           products={products}
         />
 
