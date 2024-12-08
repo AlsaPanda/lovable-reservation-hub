@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Product, Reservation } from "@/utils/types";
 import { useForm } from "react-hook-form";
+import { useEffect } from "react";
 
 interface ReservationDialogProps {
   products: Product[];
@@ -19,13 +20,20 @@ export function ReservationDialog({
   onSubmit, 
   editingReservation 
 }: ReservationDialogProps) {
-  const form = useForm<Partial<Reservation>>({
-    defaultValues: {
-      product_id: editingReservation?.product_id || "",
-      quantity: editingReservation?.quantity || 0,
-      reservation_date: editingReservation?.reservation_date ? new Date(editingReservation.reservation_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+  const form = useForm<Partial<Reservation>>();
+
+  // Reset form when editingReservation changes
+  useEffect(() => {
+    if (editingReservation) {
+      form.reset({
+        product_id: editingReservation.product_id,
+        quantity: editingReservation.quantity,
+        reservation_date: editingReservation.reservation_date ? 
+          new Date(editingReservation.reservation_date).toISOString().split('T')[0] : 
+          new Date().toISOString().split('T')[0]
+      });
     }
-  });
+  }, [editingReservation, form]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
