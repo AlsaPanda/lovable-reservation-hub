@@ -20,9 +20,9 @@ const Login = () => {
             console.log('User signed in successfully:', session.user);
             toast({
               title: "Connexion réussie",
-              description: "Vous allez être redirigé vers le tableau de bord",
+              description: "Vous allez être redirigé vers la page des produits",
             });
-            navigate("/dashboard");
+            navigate("/products");
           }
           break;
         
@@ -63,7 +63,7 @@ const Login = () => {
       }
 
       if (session) {
-        navigate("/dashboard");
+        navigate("/products");
       }
     };
     
