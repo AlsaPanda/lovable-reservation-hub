@@ -13,16 +13,30 @@ const Login = () => {
   useEffect(() => {
     // Check if user is already logged in
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session); // Debug log
       if (event === 'SIGNED_IN' && session) {
+        console.log('User signed in, navigating to dashboard'); // Debug log
         navigate("/dashboard");
       }
       if (event === 'SIGNED_OUT') {
+        console.log('User signed out, navigating to home'); // Debug log
         navigate("/");
       }
       if (event === 'USER_UPDATED') {
         console.log('User updated:', session);
       }
     });
+
+    // Check current session on mount
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Current session:', session); // Debug log
+      if (session) {
+        navigate("/dashboard");
+      }
+    };
+    
+    checkSession();
 
     return () => {
       subscription.unsubscribe();
@@ -76,6 +90,14 @@ const Login = () => {
                   loading_button_label: 'Inscription en cours ...',
                 },
               },
+            }}
+            onError={(error) => {
+              console.error('Auth error:', error); // Debug log
+              toast({
+                title: "Erreur d'authentification",
+                description: "Une erreur s'est produite lors de la connexion. Veuillez réessayer.",
+                variant: "destructive",
+              });
             }}
           />
         </CardContent>
