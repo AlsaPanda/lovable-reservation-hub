@@ -9,7 +9,13 @@ interface ReservationTableProps {
   onDelete: (id: string) => void;
 }
 
+const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b";
+
 export function ReservationTable({ reservations, onEdit, onDelete }: ReservationTableProps) {
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.src = DEFAULT_IMAGE;
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -26,9 +32,19 @@ export function ReservationTable({ reservations, onEdit, onDelete }: Reservation
             <TableCell>
               <div className="space-y-1">
                 {reservation.product && (
-                  <div className="text-sm">
-                    <span className="font-medium">{reservation.product.name}</span>
-                    <span className="text-muted-foreground"> - {reservation.quantity} unités</span>
+                  <div className="flex items-center gap-4">
+                    <div className="relative h-16 w-16 overflow-hidden rounded-md">
+                      <img 
+                        src={reservation.product.image_url || DEFAULT_IMAGE}
+                        alt={reservation.product.name}
+                        onError={handleImageError}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div>
+                      <span className="font-medium">{reservation.product.name}</span>
+                      <span className="text-muted-foreground"> - {reservation.quantity} unités</span>
+                    </div>
                   </div>
                 )}
               </div>
