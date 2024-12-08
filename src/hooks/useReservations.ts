@@ -30,12 +30,12 @@ export const useReservations = () => {
 
   const updateReservation = useMutation({
     mutationFn: async (updatedReservation: Partial<Reservation>) => {
+      console.log("Updating reservation with data:", updatedReservation);
       if (!updatedReservation.id) throw new Error('Missing reservation ID');
 
       const { data, error } = await supabase
         .from('reservations')
         .update({
-          product_id: updatedReservation.product_id,
           quantity: updatedReservation.quantity,
           reservation_date: updatedReservation.reservation_date
         })
@@ -44,7 +44,11 @@ export const useReservations = () => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error updating reservation:", error);
+        throw error;
+      }
+      console.log("Reservation updated successfully:", data);
       return data;
     },
     onSuccess: () => {
@@ -55,6 +59,7 @@ export const useReservations = () => {
       });
     },
     onError: (error) => {
+      console.error("Mutation error:", error);
       toast({
         title: "Erreur",
         description: error.message,

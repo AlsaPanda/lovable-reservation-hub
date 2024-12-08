@@ -22,11 +22,11 @@ export function ReservationDialog({
 }: ReservationDialogProps) {
   const form = useForm<Partial<Reservation>>();
 
-  // Reset form when editingReservation changes
   useEffect(() => {
     if (editingReservation) {
+      console.log("Resetting form with data:", editingReservation);
       form.reset({
-        id: editingReservation.id, // Ajout de l'ID
+        id: editingReservation.id,
         product_id: editingReservation.product_id,
         quantity: editingReservation.quantity,
         reservation_date: editingReservation.reservation_date ? 
@@ -36,13 +36,17 @@ export function ReservationDialog({
     }
   }, [editingReservation, form]);
 
-  const handleSubmit = (data: Partial<Reservation>) => {
-    // S'assurer que l'ID est inclus dans les données soumises
+  const handleSubmit = async (data: Partial<Reservation>) => {
+    console.log("Form submitted with data:", data);
     if (editingReservation) {
-      onSubmit({
+      const updatedReservation = {
         ...data,
-        id: editingReservation.id
-      });
+        id: editingReservation.id,
+        product_id: editingReservation.product_id,
+        store_name: editingReservation.store_name
+      };
+      console.log("Sending updated reservation:", updatedReservation);
+      await onSubmit(updatedReservation);
     }
   };
 
