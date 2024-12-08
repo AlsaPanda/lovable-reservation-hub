@@ -48,7 +48,7 @@ export const importProducts = (file: File): Promise<Product[]> => {
           const products: Product[] = jsonData.map((row: any) => ({
             id: '',
             reference: row['sku']?.toString() || '',
-            name: row['name-fr_FR']?.toString() || row['sku']?.toString() || '',
+            name: row['name-fr_FR-cla']?.toString() || row['sku']?.toString() || '',
             description: row['description']?.toString() || '',
             initial_quantity: 0,
             image_url: row['image-file_path']?.toString() || 'https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=500',
