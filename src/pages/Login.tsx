@@ -11,37 +11,47 @@ const Login = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user is already logged in
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session); // Debug log
-      if (event === 'SIGNED_IN' && session) {
-        console.log('User signed in successfully:', session.user); // Debug log
-        toast({
-          title: "Connexion réussie",
-          description: "Vous allez être redirigé vers le tableau de bord",
-        });
-        navigate("/dashboard");
-      }
-      if (event === 'SIGNED_OUT') {
-        console.log('User signed out'); // Debug log
-        navigate("/");
-      }
-      if (event === 'USER_UPDATED') {
-        console.log('User updated:', session);
-      }
-      // Add error handling
-      if (event === 'USER_DELETED' || event === 'TOKEN_REFRESHED') {
-        console.log('Auth event:', event);
+      console.log('Auth state changed:', event, session);
+      
+      switch(event) {
+        case 'SIGNED_IN':
+          if (session) {
+            console.log('User signed in successfully:', session.user);
+            toast({
+              title: "Connexion réussie",
+              description: "Vous allez être redirigé vers le tableau de bord",
+            });
+            navigate("/dashboard");
+          }
+          break;
+        
+        case 'SIGNED_OUT':
+          console.log('User signed out');
+          navigate("/");
+          break;
+        
+        case 'USER_UPDATED':
+          console.log('User profile updated:', session);
+          break;
+        
+        case 'PASSWORD_RECOVERY':
+          toast({
+            title: "Réinitialisation du mot de passe",
+            description: "Veuillez vérifier votre email",
+          });
+          break;
+        
+        default:
+          console.log('Auth event:', event);
       }
     });
 
     // Check current session on mount
     const checkSession = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
-      console.log('Current session:', session, 'Error:', error); // Debug log
-      if (session) {
-        navigate("/dashboard");
-      }
+      console.log('Current session:', session, 'Error:', error);
+      
       if (error) {
         console.error('Session check error:', error);
         toast({
@@ -49,6 +59,11 @@ const Login = () => {
           description: error.message,
           variant: "destructive",
         });
+        return;
+      }
+
+      if (session) {
+        navigate("/dashboard");
       }
     };
     
