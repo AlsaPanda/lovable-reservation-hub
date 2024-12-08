@@ -1,7 +1,6 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Product, Reservation } from "@/utils/types";
 import { useForm } from "react-hook-form";
@@ -15,7 +14,6 @@ interface ReservationDialogProps {
 }
 
 export function ReservationDialog({ 
-  products, 
   isOpen, 
   onOpenChange, 
   onSubmit, 
@@ -24,7 +22,6 @@ export function ReservationDialog({
   const form = useForm<Partial<Reservation>>({
     defaultValues: editingReservation || {
       product_id: "",
-      store_name: "",
       quantity: 0,
       reservation_date: new Date().toISOString().split('T')[0]
     }
@@ -35,7 +32,7 @@ export function ReservationDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {editingReservation ? "Modifier la réservation" : "Nouvelle réservation"}
+            Modifier la réservation
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
@@ -43,26 +40,15 @@ export function ReservationDialog({
             <FormField
               control={form.control}
               name="product_id"
-              render={({ field }) => (
+              render={() => (
                 <FormItem>
                   <FormLabel>Produit</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionnez un produit" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {products.map((product) => (
-                        <SelectItem key={product.id} value={product.id}>
-                          {product.description} (Stock: {product.availableQuantity})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <Input 
+                      value={editingReservation?.product?.name || ''} 
+                      disabled 
+                    />
+                  </FormControl>
                 </FormItem>
               )}
             />
@@ -73,19 +59,11 @@ export function ReservationDialog({
                 <FormItem>
                   <FormLabel>Quantité</FormLabel>
                   <FormControl>
-                    <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="store_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Magasin</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
+                    <Input 
+                      type="number" 
+                      {...field} 
+                      onChange={e => field.onChange(parseInt(e.target.value))} 
+                    />
                   </FormControl>
                 </FormItem>
               )}
@@ -103,7 +81,7 @@ export function ReservationDialog({
               )}
             />
             <Button type="submit" className="w-full">
-              {editingReservation ? "Mettre à jour" : "Ajouter"}
+              Mettre à jour
             </Button>
           </form>
         </Form>
