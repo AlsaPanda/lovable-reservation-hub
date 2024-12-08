@@ -17,6 +17,7 @@ export type Product = {
   image_url: string | null;
   created_at: string;
   updated_at: string;
+  availableQuantity?: number;
 };
 
 export type Reservation = {
@@ -27,4 +28,5 @@ export type Reservation = {
   reservation_date: string;
   created_at: string;
   updated_at: string;
+  product?: Product;
 };

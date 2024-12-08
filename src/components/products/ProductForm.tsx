@@ -13,18 +13,19 @@ interface ProductFormProps {
 }
 
 const ProductForm = ({ onSubmit, editingProduct, open, onOpenChange }: ProductFormProps) => {
+  const defaultValues = editingProduct || {
+    id: '',
+    reference: "",
+    name: "",
+    description: "",
+    initial_quantity: 0,
+    image_url: "",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+
   const form = useForm<Product>({
-    defaultValues: editingProduct || {
-      id: '',
-      reference: "",
-      name: "",
-      description: "",
-      initial_quantity: 0,
-      image_url: "",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      availableQuantity: 0
-    }
+    defaultValues
   });
 
   return (

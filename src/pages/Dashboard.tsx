@@ -13,24 +13,34 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user) {
-        const { data: profileData, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          const { data: profileData, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
 
-        if (error) {
-          toast({
-            variant: "destructive",
-            title: "Erreur",
-            description: "Impossible de charger votre profil"
-          });
-        } else {
-          setProfile(profileData);
+          if (error) {
+            console.error("Error fetching profile:", error);
+            toast({
+              variant: "destructive",
+              title: "Erreur",
+              description: "Impossible de charger votre profil"
+            });
+          } else if (profileData) {
+            setProfile(profileData);
+          }
         }
+      } catch (error) {
+        console.error("Error in fetchProfile:", error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Une erreur est survenue lors du chargement du profil"
+        });
       }
     };
 
