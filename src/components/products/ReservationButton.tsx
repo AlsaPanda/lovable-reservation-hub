@@ -9,16 +9,13 @@ interface ReservationButtonProps {
 }
 
 const ReservationButton = ({ products, onReserve, disabled }: ReservationButtonProps) => {
-  // Calculer la quantité totale en s'assurant de ne pas compter en double
-  const totalQuantity = products
-    .filter(product => product.initial_quantity && product.initial_quantity > 0)
-    .reduce((sum, product) => sum + product.initial_quantity, 0);
+  // Regrouper les produits par référence pour éviter les doublons
+  const totalQuantity = products.reduce((acc, product) => {
+    if (!product.initial_quantity || product.initial_quantity <= 0) return acc;
+    return acc + product.initial_quantity;
+  }, 0);
 
-  console.log("Products with quantities:", products.filter(p => p.initial_quantity > 0).map(p => ({
-    reference: p.reference,
-    quantity: p.initial_quantity
-  })));
-  console.log("Total quantity:", totalQuantity);
+  console.log("Total quantity after deduplication:", totalQuantity);
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
