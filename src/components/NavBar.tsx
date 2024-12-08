@@ -5,11 +5,32 @@ import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { useEffect, useState } from "react";
 
 const NavBar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        
+        if (!error && data) {
+          setUserRole(data.role);
+        }
+      }
+    };
+
+    fetchUserRole();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -37,16 +58,18 @@ const NavBar = () => {
       <div className="container mx-auto py-4 flex justify-between items-center">
         <NavigationMenu>
           <NavigationMenuList>
-            <NavigationMenuItem>
-              <Link to="/dashboard">
-                <NavigationMenuLink 
-                  className={navigationMenuTriggerStyle()}
-                  active={location.pathname === '/dashboard'}
-                >
-                  Tableau de bord
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
+            {(userRole === 'admin' || userRole === 'superadmin') && (
+              <NavigationMenuItem>
+                <Link to="/dashboard">
+                  <NavigationMenuLink 
+                    className={navigationMenuTriggerStyle()}
+                    active={location.pathname === '/dashboard'}
+                  >
+                    Tableau de bord
+                  </NavigationMenuLink>
+                </Link>
+              </NavigationMenuItem>
+            )}
             <NavigationMenuItem>
               <Link to="/products">
                 <NavigationMenuLink 
