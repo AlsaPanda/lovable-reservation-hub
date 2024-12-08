@@ -26,14 +26,14 @@ const Dashboard = () => {
         console.log("Current user email:", user.email);
         console.log("Fetching profile for user:", user.id);
         
-        const { data: profileData, error } = await supabase
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', user.id)
           .maybeSingle();
 
-        if (error) {
-          console.error("Error fetching profile:", error);
+        if (profileError) {
+          console.error("Error fetching profile:", profileError);
           toast({
             variant: "destructive",
             title: "Erreur",
@@ -52,8 +52,7 @@ const Dashboard = () => {
             navigate("/products");
           }
         } else {
-          console.log("No profile found for user");
-          // Create new profile logic remains the same
+          console.log("No profile found, creating new profile for user:", user.id);
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
             .insert([
@@ -95,8 +94,6 @@ const Dashboard = () => {
     fetchProfile();
   }, [toast, navigate]);
 
-  // Si l'utilisateur a le rôle 'magasin', il sera redirigé vers /products
-  // Cette page ne sera visible que pour les autres rôles
   return (
     <>
       <NavBar />
