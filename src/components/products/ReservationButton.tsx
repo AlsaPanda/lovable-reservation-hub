@@ -9,7 +9,10 @@ interface ReservationButtonProps {
 }
 
 const ReservationButton = ({ products, onReserve, disabled }: ReservationButtonProps) => {
-  const totalQuantity = products.reduce((sum, product) => sum + product.initial_quantity, 0);
+  // Ne compter que les produits qui ont une quantité > 0
+  const totalQuantity = products
+    .filter(product => product.initial_quantity > 0)
+    .reduce((sum, product) => sum + Number(product.initial_quantity), 0);
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
