@@ -1,21 +1,20 @@
 import React from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Pencil, Trash2, Calendar } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { Product } from "@/utils/types";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface ProductCardProps {
   product: Product;
   onQuantityChange: (reference: string, quantity: string) => void;
   onEdit: (product: Product) => void;
   onDelete: (reference: string) => void;
-  onReserve: (product: Product) => void;
 }
 
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b";
 
-const ProductCard = ({ product, onQuantityChange, onEdit, onDelete, onReserve }: ProductCardProps) => {
+const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCardProps) => {
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.src = DEFAULT_IMAGE;
   };
@@ -71,14 +70,6 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete, onReserve }:
                   min="0"
                 />
               </div>
-              <Button 
-                className="w-full mt-4"
-                onClick={() => onReserve(product)}
-                variant="secondary"
-              >
-                <Calendar className="h-4 w-4 mr-2" />
-                Réserver
-              </Button>
             </div>
           </div>
         </div>

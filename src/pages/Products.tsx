@@ -9,8 +9,8 @@ import ProductPagination from "@/components/products/ProductPagination";
 import { Button } from "@/components/ui/button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ReservationDialog } from "@/components/reservations/ReservationDialog";
 import { useSession } from "@supabase/auth-helpers-react";
+import ReservationButton from "@/components/products/ReservationButton";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -22,8 +22,6 @@ const Products = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isReservationDialogOpen, setIsReservationDialogOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   // Fetch products
   const { data: products = [] } = useQuery({
@@ -37,6 +35,7 @@ const Products = () => {
       if (error) throw error;
       return data.map(product => ({
         ...product,
+        initial_quantity: 0, // Initialize all quantities to 0
         availableQuantity: product.initial_quantity
       }));
     }
@@ -44,26 +43,29 @@ const Products = () => {
 
   // Add reservation mutation
   const addReservationMutation = useMutation({
-    mutationFn: async (data: { product_id: string, quantity: number, reservation_date: string }) => {
+    mutationFn: async (productsToReserve: Product[]) => {
+      const reservations = productsToReserve
+        .filter(product => product.initial_quantity > 0)
+        .map(product => ({
+          product_id: product.id,
+          quantity: product.initial_quantity,
+          store_name: session?.user?.id,
+          reservation_date: new Date().toISOString()
+        }));
+
       const { error } = await supabase
         .from('reservations')
-        .insert({
-          product_id: data.product_id,
-          quantity: data.quantity,
-          reservation_date: data.reservation_date,
-          store_name: session?.user?.id
-        });
+        .insert(reservations);
+      
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['reservations'] });
       toast({
-        title: "Réservation ajoutée",
-        description: "La réservation a été ajoutée avec succès.",
+        title: "Réservations ajoutées",
+        description: "Vos réservations ont été ajoutées avec succès.",
       });
-      setIsReservationDialogOpen(false);
-      setSelectedProduct(null);
     },
     onError: (error) => {
       toast({
@@ -146,14 +148,11 @@ const Products = () => {
     const quantity = parseInt(newQuantity);
     if (isNaN(quantity) || quantity < 0) return;
 
-    const product = products.find(p => p.reference === reference);
-    if (!product) return;
-
-    updateProductMutation.mutate({
-      ...product,
-      initial_quantity: quantity,
-      availableQuantity: quantity
-    });
+    const updatedProducts = products.map(p => 
+      p.reference === reference ? { ...p, initial_quantity: quantity } : p
+    );
+    
+    queryClient.setQueryData(['products'], updatedProducts);
   };
 
   const handleAddProduct = (data: Product) => {
@@ -170,22 +169,20 @@ const Products = () => {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    setCurrentPage(1); // Reset to first page when searching
+    setCurrentPage(1);
   };
 
-  const handleReserve = (product: Product) => {
-    setSelectedProduct(product);
-    setIsReservationDialogOpen(true);
-  };
-
-  const handleReservationSubmit = (data: any) => {
-    if (!selectedProduct) return;
-    
-    addReservationMutation.mutate({
-      product_id: selectedProduct.id,
-      quantity: data.quantity,
-      reservation_date: data.reservation_date
-    });
+  const handleReserveAll = () => {
+    const productsToReserve = products.filter(p => p.initial_quantity > 0);
+    if (productsToReserve.length === 0) {
+      toast({
+        title: "Aucun produit sélectionné",
+        description: "Veuillez sélectionner au moins un produit à réserver.",
+        variant: "destructive"
+      });
+      return;
+    }
+    addReservationMutation.mutate(productsToReserve);
   };
 
   // Filter products based on search query
@@ -224,7 +221,6 @@ const Products = () => {
             setOpen(true);
           }}
           onDelete={handleDeleteProduct}
-          onReserve={handleReserve}
         />
 
         <ProductPagination
@@ -246,12 +242,10 @@ const Products = () => {
           onOpenChange={setOpen}
         />
 
-        <ReservationDialog
-          products={[selectedProduct].filter(Boolean) as Product[]}
-          isOpen={isReservationDialogOpen}
-          onOpenChange={setIsReservationDialogOpen}
-          onSubmit={handleReservationSubmit}
-          editingReservation={null}
+        <ReservationButton
+          products={products}
+          onReserve={handleReserveAll}
+          disabled={addReservationMutation.isPending}
         />
       </div>
     </>
