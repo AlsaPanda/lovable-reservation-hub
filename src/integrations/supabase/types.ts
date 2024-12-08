@@ -42,6 +42,27 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          store_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          store_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          store_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       reservations: {
         Row: {
           created_at: string

@@ -1,160 +1,26 @@
 import NavBar from "@/components/NavBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Reservation, Product } from "@/utils/types";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 import { Plus } from "lucide-react";
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { ReservationDialog } from "@/components/reservations/ReservationDialog";
 import { ReservationTable } from "@/components/reservations/ReservationTable";
+import { useReservations } from "@/hooks/useReservations";
+import { useProducts } from "@/hooks/useProducts";
+import { Reservation } from "@/utils/types";
 
 const Reservations = () => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
-
-  // Fetch products
-  const { data: products = [] } = useQuery({
-    queryKey: ['products'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*');
-      
-      if (error) throw error;
-      return data as Product[];
-    }
-  });
-
-  // Fetch reservations with products
-  const { data: reservations = [] } = useQuery({
-    queryKey: ['reservations'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('reservations')
-        .select(`
-          *,
-          product:products(*)
-        `);
-      
-      if (error) throw error;
-      return data as Reservation[];
-    }
-  });
-
-  // Add reservation mutation
-  const addReservation = useMutation({
-    mutationFn: async (newReservation: Partial<Reservation>) => {
-      // Ensure required fields are present
-      if (!newReservation.product_id || !newReservation.store_name || typeof newReservation.quantity !== 'number') {
-        throw new Error('Missing required fields');
-      }
-
-      const { data, error } = await supabase
-        .from('reservations')
-        .insert([{
-          product_id: newReservation.product_id,
-          store_name: newReservation.store_name,
-          quantity: newReservation.quantity,
-          reservation_date: newReservation.reservation_date || new Date().toISOString()
-        }])
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['reservations'] });
-      setIsDialogOpen(false);
-      toast({
-        title: "Réservation ajoutée",
-        description: "La réservation a été ajoutée avec succès.",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Erreur",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  });
-
-  // Update reservation mutation
-  const updateReservation = useMutation({
-    mutationFn: async (updatedReservation: Partial<Reservation>) => {
-      if (!editingReservation?.id || !updatedReservation.product_id || !updatedReservation.store_name || typeof updatedReservation.quantity !== 'number') {
-        throw new Error('Missing required fields');
-      }
-
-      const { data, error } = await supabase
-        .from('reservations')
-        .update({
-          product_id: updatedReservation.product_id,
-          store_name: updatedReservation.store_name,
-          quantity: updatedReservation.quantity,
-          reservation_date: updatedReservation.reservation_date
-        })
-        .eq('id', editingReservation.id)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['reservations'] });
-      setIsDialogOpen(false);
-      setEditingReservation(null);
-      toast({
-        title: "Réservation mise à jour",
-        description: "La réservation a été mise à jour avec succès.",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Erreur",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  });
-
-  // Delete reservation mutation
-  const deleteReservation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('reservations')
-        .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['reservations'] });
-      toast({
-        title: "Réservation supprimée",
-        description: "La réservation a été supprimée avec succès.",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Erreur",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  });
+  
+  const { reservations, updateReservation, deleteReservation } = useReservations();
+  const { data: products = [] } = useProducts();
 
   const handleSubmit = (data: Partial<Reservation>) => {
     if (editingReservation) {
       updateReservation.mutate(data);
-    } else {
-      addReservation.mutate(data);
+      setIsDialogOpen(false);
+      setEditingReservation(null);
     }
   };
 
