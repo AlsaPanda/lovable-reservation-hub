@@ -46,18 +46,21 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          role: Database["public"]["Enums"]["user_role"]
           store_name: string
           updated_at: string
         }
         Insert: {
           created_at?: string
           id: string
+          role?: Database["public"]["Enums"]["user_role"]
           store_name: string
           updated_at?: string
         }
         Update: {
           created_at?: string
           id?: string
+          role?: Database["public"]["Enums"]["user_role"]
           store_name?: string
           updated_at?: string
         }
@@ -109,7 +112,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      user_role: "user" | "superadmin"
     }
     CompositeTypes: {
       [_ in never]: never
