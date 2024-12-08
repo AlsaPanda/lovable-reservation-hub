@@ -9,16 +9,21 @@ import ProductPagination from "@/components/products/ProductPagination";
 import { Button } from "@/components/ui/button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { ReservationDialog } from "@/components/reservations/ReservationDialog";
+import { useSession } from "@supabase/auth-helpers-react";
 
 const ITEMS_PER_PAGE = 12;
 
 const Products = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const session = useSession();
   const [currentPage, setCurrentPage] = useState(1);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isReservationDialogOpen, setIsReservationDialogOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   // Fetch products
   const { data: products = [] } = useQuery({
@@ -34,6 +39,38 @@ const Products = () => {
         ...product,
         availableQuantity: product.initial_quantity
       }));
+    }
+  });
+
+  // Add reservation mutation
+  const addReservationMutation = useMutation({
+    mutationFn: async (data: { product_id: string, quantity: number, reservation_date: string }) => {
+      const { error } = await supabase
+        .from('reservations')
+        .insert({
+          product_id: data.product_id,
+          quantity: data.quantity,
+          reservation_date: data.reservation_date,
+          store_name: session?.user?.id
+        });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['reservations'] });
+      toast({
+        title: "Réservation ajoutée",
+        description: "La réservation a été ajoutée avec succès.",
+      });
+      setIsReservationDialogOpen(false);
+      setSelectedProduct(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive"
+      });
     }
   });
 
@@ -105,17 +142,6 @@ const Products = () => {
     }
   });
 
-  // Filter products based on search query
-  const filteredProducts = products.filter(product => 
-    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.reference.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentProducts = filteredProducts.slice(startIndex, endIndex);
-
   const handleQuantityChange = (reference: string, newQuantity: string) => {
     const quantity = parseInt(newQuantity);
     if (isNaN(quantity) || quantity < 0) return;
@@ -147,6 +173,32 @@ const Products = () => {
     setCurrentPage(1); // Reset to first page when searching
   };
 
+  const handleReserve = (product: Product) => {
+    setSelectedProduct(product);
+    setIsReservationDialogOpen(true);
+  };
+
+  const handleReservationSubmit = (data: any) => {
+    if (!selectedProduct) return;
+    
+    addReservationMutation.mutate({
+      product_id: selectedProduct.id,
+      quantity: data.quantity,
+      reservation_date: data.reservation_date
+    });
+  };
+
+  // Filter products based on search query
+  const filteredProducts = products.filter(product => 
+    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.reference.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentProducts = filteredProducts.slice(startIndex, endIndex);
+
   return (
     <>
       <NavBar />
@@ -172,6 +224,7 @@ const Products = () => {
             setOpen(true);
           }}
           onDelete={handleDeleteProduct}
+          onReserve={handleReserve}
         />
 
         <ProductPagination
@@ -191,6 +244,14 @@ const Products = () => {
           editingProduct={editingProduct}
           open={open}
           onOpenChange={setOpen}
+        />
+
+        <ReservationDialog
+          products={[selectedProduct].filter(Boolean) as Product[]}
+          isOpen={isReservationDialogOpen}
+          onOpenChange={setIsReservationDialogOpen}
+          onSubmit={handleReservationSubmit}
+          editingReservation={null}
         />
       </div>
     </>
