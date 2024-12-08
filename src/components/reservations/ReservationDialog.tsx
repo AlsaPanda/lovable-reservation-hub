@@ -20,10 +20,10 @@ export function ReservationDialog({
   editingReservation 
 }: ReservationDialogProps) {
   const form = useForm<Partial<Reservation>>({
-    defaultValues: editingReservation || {
-      product_id: "",
-      quantity: 0,
-      reservation_date: new Date().toISOString().split('T')[0]
+    defaultValues: {
+      product_id: editingReservation?.product_id || "",
+      quantity: editingReservation?.quantity || 0,
+      reservation_date: editingReservation?.reservation_date ? new Date(editingReservation.reservation_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
     }
   });
 
