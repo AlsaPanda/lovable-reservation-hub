@@ -3,6 +3,9 @@ import { Input } from "@/components/ui/input";
 import { Product } from "@/utils/types";
 import { importProducts } from "@/utils/productUtils";
 import { UploadCloud } from "lucide-react";
+import { useSession } from "@supabase/auth-helpers-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
 
 interface ProductsHeaderProps {
   onOpenDialog: () => void;
@@ -12,6 +15,29 @@ interface ProductsHeaderProps {
 }
 
 const ProductsHeader = ({ onOpenDialog, onProductsImported, onSearch, products }: ProductsHeaderProps) => {
+  const session = useSession();
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (session?.user?.id) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (!error && data) {
+          setUserRole(data.role);
+        }
+      }
+    };
+
+    fetchUserRole();
+  }, [session]);
+
+  const isAdmin = userRole === 'admin' || userRole === 'superadmin';
+
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -34,21 +60,23 @@ const ProductsHeader = ({ onOpenDialog, onProductsImported, onSearch, products }
           className="w-full"
         />
       </div>
-      <div className="flex gap-2">
-        <Button onClick={onOpenDialog}>Ajouter un produit</Button>
-        <div className="relative">
-          <input
-            type="file"
-            onChange={handleFileChange}
-            accept=".json,.xlsx"
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          />
-          <Button variant="outline">
-            <UploadCloud className="mr-2 h-4 w-4" />
-            Importer
-          </Button>
+      {isAdmin && (
+        <div className="flex gap-2">
+          <Button onClick={onOpenDialog}>Ajouter un produit</Button>
+          <div className="relative">
+            <input
+              type="file"
+              onChange={handleFileChange}
+              accept=".json,.xlsx"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
+            <Button variant="outline">
+              <UploadCloud className="mr-2 h-4 w-4" />
+              Importer
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
