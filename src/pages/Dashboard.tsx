@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import NavBar from "@/components/NavBar";
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/utils/types";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -24,47 +24,46 @@ const Dashboard = () => {
         }
 
         console.log("Fetching profile for user:", user.id);
+        // Changed the query to use a simpler approach
         const { data: profileData, error } = await supabase
           .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
+          .select()
+          .filter('id', 'eq', user.id)
+          .maybeSingle();
 
-        if (error) {
-          console.error("Error fetching profile:", error);
-          if (error.code === 'PGRST116') {
-            // Profile doesn't exist, try to create it
-            const { data: newProfile, error: createError } = await supabase
-              .from('profiles')
-              .insert([
-                { 
-                  id: user.id,
-                  store_name: `Store ${user.id.substring(0, 6)}`,
-                  role: 'user'
-                }
-              ])
-              .select()
-              .single();
+        if (!profileData && error?.code === 'PGRST116') {
+          console.log("No profile found, creating new profile");
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert([
+              { 
+                id: user.id,
+                store_name: `Store ${user.id.substring(0, 6)}`,
+                role: 'user'
+              }
+            ])
+            .select()
+            .single();
 
-            if (createError) {
-              console.error("Error creating profile:", createError);
-              toast({
-                variant: "destructive",
-                title: "Erreur",
-                description: "Impossible de créer votre profil"
-              });
-              navigate("/login");
-            } else {
-              console.log("Created new profile:", newProfile);
-              setProfile(newProfile);
-            }
-          } else {
+          if (createError) {
+            console.error("Error creating profile:", createError);
             toast({
               variant: "destructive",
               title: "Erreur",
-              description: "Impossible de charger votre profil"
+              description: "Impossible de créer votre profil"
             });
+            navigate("/login");
+          } else {
+            console.log("Created new profile:", newProfile);
+            setProfile(newProfile);
           }
+        } else if (error) {
+          console.error("Error fetching profile:", error);
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Impossible de charger votre profil"
+          });
         } else if (profileData) {
           console.log("Profile loaded:", profileData);
           setProfile(profileData);
