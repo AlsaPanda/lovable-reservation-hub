@@ -1,13 +1,14 @@
 import NavBar from "@/components/NavBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import { useState } from "react";
 import { ReservationDialog } from "@/components/reservations/ReservationDialog";
 import { ReservationTable } from "@/components/reservations/ReservationTable";
 import { useReservations } from "@/hooks/useReservations";
 import { useProducts } from "@/hooks/useProducts";
 import { Reservation } from "@/utils/types";
+import { useSession } from "@supabase/auth-helpers-react";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 const Reservations = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -15,6 +16,14 @@ const Reservations = () => {
   
   const { reservations, updateReservation, deleteReservation } = useReservations();
   const { data: products = [] } = useProducts();
+  const session = useSession();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!session) {
+      navigate("/login");
+    }
+  }, [session, navigate]);
 
   const handleSubmit = (data: Partial<Reservation>) => {
     if (editingReservation) {
@@ -29,22 +38,14 @@ const Reservations = () => {
     setIsDialogOpen(true);
   };
 
+  if (!session) return null;
+
   return (
     <>
       <NavBar />
       <div className="container mx-auto py-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-primary">Réservations</h1>
-          <Button 
-            className="gap-2" 
-            onClick={() => {
-              setEditingReservation(null);
-              setIsDialogOpen(true);
-            }}
-          >
-            <Plus className="h-4 w-4" />
-            Nouvelle réservation
-          </Button>
+          <h1 className="text-3xl font-bold text-primary">Mes Réservations</h1>
         </div>
         
         <Card>

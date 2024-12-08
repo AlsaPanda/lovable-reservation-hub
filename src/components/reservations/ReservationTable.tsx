@@ -14,22 +14,27 @@ export function ReservationTable({ reservations, onEdit, onDelete }: Reservation
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Référence</TableHead>
-          <TableHead>Description</TableHead>
-          <TableHead>Quantité</TableHead>
           <TableHead>Magasin</TableHead>
           <TableHead>Date</TableHead>
+          <TableHead>Produits réservés</TableHead>
           <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {reservations.map((reservation) => (
           <TableRow key={reservation.id}>
-            <TableCell>{reservation.product?.reference}</TableCell>
-            <TableCell>{reservation.product?.description}</TableCell>
-            <TableCell>{reservation.quantity}</TableCell>
             <TableCell>{reservation.store_name}</TableCell>
             <TableCell>{new Date(reservation.reservation_date).toLocaleDateString()}</TableCell>
+            <TableCell>
+              <div className="space-y-1">
+                {reservation.product && (
+                  <div className="text-sm">
+                    <span className="font-medium">{reservation.product.name}</span>
+                    <span className="text-muted-foreground"> - {reservation.quantity} unités</span>
+                  </div>
+                )}
+              </div>
+            </TableCell>
             <TableCell>
               <div className="flex gap-2">
                 <Button
