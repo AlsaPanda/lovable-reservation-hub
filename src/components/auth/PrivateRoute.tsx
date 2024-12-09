@@ -6,9 +6,10 @@ import { supabase } from "@/integrations/supabase/client";
 interface PrivateRouteProps {
   children: React.ReactNode;
   allowedRoles?: string[];
+  excludedRoles?: string[];
 }
 
-const PrivateRoute = ({ children, allowedRoles }: PrivateRouteProps) => {
+const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRouteProps) => {
   const session = useSession();
   const [userRole, setUserRole] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -51,7 +52,6 @@ const PrivateRoute = ({ children, allowedRoles }: PrivateRouteProps) => {
     const handleSessionError = async () => {
       if (hasError) {
         try {
-          // Nettoyage complet des données de session
           localStorage.clear();
           sessionStorage.clear();
           await supabase.auth.signOut();
@@ -75,6 +75,10 @@ const PrivateRoute = ({ children, allowedRoles }: PrivateRouteProps) => {
   }
   
   if (allowedRoles && !allowedRoles.includes(userRole || '')) {
+    return <Navigate to="/products" />;
+  }
+
+  if (excludedRoles && excludedRoles.includes(userRole || '')) {
     return <Navigate to="/products" />;
   }
   
