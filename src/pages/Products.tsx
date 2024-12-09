@@ -49,21 +49,20 @@ const Products = () => {
     setSearchQuery(query);
   };
 
-  // Filter products based on search query
   const filteredProducts = products.filter(product => {
-    if (!searchQuery.trim()) return true;
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return true;
     
-    const searchTerm = searchQuery.toLowerCase().trim();
-    const name = (product.name || '').toLowerCase();
-    const reference = (product.reference || '').toLowerCase();
+    const name = String(product.name || '').toLowerCase();
+    const reference = String(product.reference || '').toLowerCase();
     
-    return name.includes(searchTerm) || reference.includes(searchTerm);
+    return name.includes(query) || reference.includes(query);
   });
 
   const handleReserveAll = () => {
-    const productsToReserve = filteredProducts.filter(p => {
-      return typeof p.initial_quantity === 'number' && p.initial_quantity > 0;
-    });
+    const productsToReserve = filteredProducts.filter(product => 
+      Number(product.initial_quantity) > 0
+    );
     
     if (productsToReserve.length === 0) {
       toast({
