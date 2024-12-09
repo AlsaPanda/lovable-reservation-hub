@@ -10,9 +10,7 @@ const ProductActions = () => {
 
   const handleResetQuantities = async () => {
     try {
-      const { error } = await supabase
-        .from('products')
-        .update({ initial_quantity: 0 });
+      const { error } = await supabase.rpc('reset_all_quantities');
 
       if (error) throw error;
 
@@ -23,6 +21,7 @@ const ProductActions = () => {
         description: "Toutes les quantités ont été remises à zéro.",
       });
     } catch (error) {
+      console.error('Error resetting quantities:', error);
       toast({
         variant: "destructive",
         title: "Erreur",
