@@ -51,7 +51,7 @@ const App = () => (
             <Route
               path="/reservations"
               element={
-                <PrivateRoute>
+                <PrivateRoute excludedRoles={['superadmin']}>
                   <Reservations />
                 </PrivateRoute>
               }
