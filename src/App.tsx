@@ -16,39 +16,54 @@ const queryClient = new QueryClient();
 
 const PrivateRoute = ({ children, allowedRoles }: { children: React.ReactNode, allowedRoles?: string[] }) => {
   const session = useSession();
-  console.log("Session state:", session);
-  
-  const checkUserRole = async () => {
-    if (!session?.user?.id) return null;
-    
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', session.user.id)
-      .single();
-    
-    if (error) {
-      console.error("Error fetching user role:", error);
-      return null;
-    }
-    
-    return data?.role;
-  };
-  
   const [userRole, setUserRole] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   
   React.useEffect(() => {
-    if (session?.user?.id) {
-      checkUserRole().then(role => {
-        setUserRole(role);
+    const checkUserRole = async () => {
+      if (!session?.user?.id) {
         setIsLoading(false);
-      });
-    } else {
-      setIsLoading(false);
-    }
+        return;
+      }
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (error) {
+          console.error("Error fetching user role:", error);
+          setIsLoading(false);
+          return;
+        }
+        
+        setUserRole(data?.role);
+      } catch (error) {
+        console.error("Error in checkUserRole:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkUserRole();
   }, [session]);
   
+  React.useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
+      console.log("Auth state changed:", event, currentSession);
+      if (event === 'SIGNED_OUT') {
+        // Clear any stored session data
+        supabase.auth.signOut();
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
   if (isLoading) {
     return <div>Chargement...</div>;
   }
@@ -63,7 +78,6 @@ const PrivateRoute = ({ children, allowedRoles }: { children: React.ReactNode, a
     return <Navigate to="/products" />;
   }
   
-  console.log("Session found, rendering protected content");
   return <>{children}</>;
 };
 
