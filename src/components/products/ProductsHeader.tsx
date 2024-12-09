@@ -45,7 +45,6 @@ const ProductsHeader = ({
   }, [session]);
 
   useEffect(() => {
-    // Calcul du total des quantités à chaque changement des produits
     const total = products.reduce((acc, product) => {
       const quantity = parseInt(product.initial_quantity?.toString() || '0');
       if (isNaN(quantity) || quantity <= 0) return acc;
@@ -68,13 +67,17 @@ const ProductsHeader = ({
     }
   };
 
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onSearch(e.target.value);
+  };
+
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       <div className="flex flex-1 gap-4 items-center">
         <Input
           type="text"
           placeholder="Rechercher par titre ou référence..."
-          onChange={(e) => onSearch(e.target.value)}
+          onChange={handleSearch}
           className="w-full md:w-96"
         />
         <Button

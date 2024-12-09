@@ -62,7 +62,7 @@ const Products = () => {
     addReservationMutation.mutate(productsToReserve);
   };
 
-  // Filter products
+  // Filter products based on search query
   const filteredProducts = products.filter(product => 
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.reference.toLowerCase().includes(searchQuery.toLowerCase())
