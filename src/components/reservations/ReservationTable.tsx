@@ -2,6 +2,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import { Reservation } from "@/utils/types";
+import { useUserProfile } from "@/hooks/useUserProfile";
 
 interface ReservationTableProps {
   reservations: Reservation[];
@@ -12,6 +13,9 @@ interface ReservationTableProps {
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b";
 
 export function ReservationTable({ reservations, onEdit, onDelete }: ReservationTableProps) {
+  const { userRole } = useUserProfile();
+  const isSuperAdmin = userRole === 'superadmin';
+
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.src = DEFAULT_IMAGE;
   };
@@ -21,6 +25,7 @@ export function ReservationTable({ reservations, onEdit, onDelete }: Reservation
       <TableHeader>
         <TableRow>
           <TableHead>Date</TableHead>
+          {isSuperAdmin && <TableHead>Magasin</TableHead>}
           <TableHead>Produits réservés</TableHead>
           <TableHead>Actions</TableHead>
         </TableRow>
@@ -29,6 +34,11 @@ export function ReservationTable({ reservations, onEdit, onDelete }: Reservation
         {reservations.map((reservation) => (
           <TableRow key={reservation.id}>
             <TableCell>{new Date(reservation.reservation_date).toLocaleDateString()}</TableCell>
+            {isSuperAdmin && (
+              <TableCell>
+                {reservation.store?.store_name}
+              </TableCell>
+            )}
             <TableCell>
               <div className="space-y-1">
                 {reservation.product && (

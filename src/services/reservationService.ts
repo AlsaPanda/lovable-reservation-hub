@@ -1,16 +1,21 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Reservation } from "@/utils/types";
 
-export const fetchReservations = async (userId: string) => {
-  const { data, error } = await supabase
+export const fetchReservations = async (userId: string, isSuperAdmin: boolean) => {
+  let query = supabase
     .from('reservations')
     .select(`
       *,
-      product:products(*)
+      product:products(*),
+      store:profiles!inner(store_name)
     `)
-    .eq('store_name', userId)
-    .order('reservation_date', { ascending: true })
-    .order('created_at', { ascending: true });
+    .order('reservation_date', { ascending: true });
+
+  if (!isSuperAdmin) {
+    query = query.eq('store_name', userId);
+  }
+
+  const { data, error } = await query;
   
   if (error) throw error;
   return data as Reservation[];

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Reservation } from "@/utils/types";
 import { useToast } from "@/components/ui/use-toast";
 import { useSession } from "@supabase/auth-helpers-react";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { 
   fetchReservations, 
   updateReservationInDb, 
@@ -12,12 +13,14 @@ export const useReservations = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const session = useSession();
+  const { userRole } = useUserProfile();
 
   const { data: reservations = [], isLoading } = useQuery({
-    queryKey: ['reservations'],
+    queryKey: ['reservations', userRole],
     queryFn: async () => {
       if (!session?.user?.id) return [];
-      return fetchReservations(session.user.id);
+      const isSuperAdmin = userRole === 'superadmin';
+      return fetchReservations(session.user.id, isSuperAdmin);
     },
     enabled: !!session?.user?.id
   });
