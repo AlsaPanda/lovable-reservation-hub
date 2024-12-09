@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pencil, Trash2 } from "lucide-react";
 import { Product } from "@/utils/types";
@@ -11,6 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 
 interface ProductCardProps {
   product: Product;
+  quantity: number;
   onQuantityChange: (reference: string, quantity: string) => void;
   onEdit: (product: Product) => void;
   onDelete: (reference: string) => void;
@@ -18,12 +19,12 @@ interface ProductCardProps {
 
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b";
 
-const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCardProps) => {
+const ProductCard = ({ product, quantity = 0, onQuantityChange, onEdit, onDelete }: ProductCardProps) => {
   const session = useSession();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  const [quantity, setQuantity] = useState(product.initial_quantity?.toString() || "0");
+  const [inputValue, setInputValue] = useState(quantity.toString());
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -59,11 +60,10 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
     fetchUserRole();
   }, [session, toast]);
 
-  // Update local quantity when product.initial_quantity changes
+  // Update input value when quantity prop changes
   useEffect(() => {
-    console.log(`[ProductCard] Product ${product.reference} initial_quantity changed to:`, product.initial_quantity);
-    setQuantity(product.initial_quantity?.toString() || "0");
-  }, [product.initial_quantity]);
+    setInputValue(quantity.toString());
+  }, [quantity]);
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.src = DEFAULT_IMAGE;
@@ -71,12 +71,7 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    console.log(`[ProductCard] Quantity input changed for ${product.reference} to:`, newValue);
-    
-    // Update local state
-    setQuantity(newValue);
-    
-    // Notify parent
+    setInputValue(newValue);
     onQuantityChange(product.reference, newValue);
   };
 
@@ -134,7 +129,7 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
                   <span className="text-sm font-medium">Quantité souhaitée:</span>
                   <Input
                     type="number"
-                    value={quantity}
+                    value={inputValue}
                     onChange={handleQuantityChange}
                     className="w-24 h-8"
                     min="0"
@@ -149,4 +144,5 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
   );
 };
 
-export default ProductCard;
+// Memoize the component to prevent unnecessary re-renders
+export default memo(ProductCard);

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import NavBar from "@/components/NavBar";
 import { Product } from "@/utils/types";
 import ProductForm from "@/components/products/ProductForm";
@@ -17,30 +17,26 @@ const Products = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
 
   const { data: products = [] } = useProducts();
   const { addProductMutation, updateProductMutation, deleteProductMutation } = useProductMutations();
   const { addReservationMutation } = useReservationMutation();
 
-  const handleQuantityChange = (reference: string, newQuantity: string) => {
-    console.log(`[Products] handleQuantityChange called with reference: ${reference}, newQuantity: ${newQuantity}`);
+  const handleQuantityChange = useCallback((reference: string, newQuantity: string) => {
+    console.log(`[Products] handleQuantityChange called for ${reference} with value:`, newQuantity);
     
-    // Convert to number and ensure it's not negative
-    const quantity = Math.max(0, parseInt(newQuantity) || 0);
-    console.log(`[Products] Parsed quantity: ${quantity}`);
+    // Parse and clean input value
+    const cleanValue = newQuantity.replace(/^0+/, '') || "0";
+    const quantity = Math.max(0, parseInt(cleanValue));
     
-    // Update products directly
-    const updatedProducts = products.map(p => {
-      if (p.reference === reference) {
-        console.log(`[Products] Updating product ${reference} from ${p.initial_quantity} to ${quantity}`);
-        return { ...p, initial_quantity: quantity };
-      }
-      return p;
-    });
-
-    // Update cache
-    queryClient.setQueryData(['products'], updatedProducts);
-  };
+    console.log(`[Products] Parsed and cleaned quantity:`, quantity);
+    
+    setQuantities(prev => ({
+      ...prev,
+      [reference]: quantity
+    }));
+  }, []);
 
   const handleAddProduct = (data: Product) => {
     addProductMutation.mutate(data);
@@ -66,19 +62,19 @@ const Products = () => {
   }, [products, searchQuery]);
 
   const totalQuantity = useMemo(() => {
-    const total = filteredProducts.reduce((acc, product) => {
-      const quantity = product.initial_quantity || 0;
-      return acc + quantity;
-    }, 0);
+    const total = Object.values(quantities).reduce((acc, quantity) => acc + quantity, 0);
     console.log('[Products] Calculated total quantity:', total);
     return total;
-  }, [filteredProducts]);
+  }, [quantities]);
 
   const handleReserveAll = () => {
     console.log('[Products] Starting reservation process');
-    const productsToReserve = filteredProducts.filter(product => 
-      (product.initial_quantity || 0) > 0
-    );
+    const productsToReserve = filteredProducts
+      .filter(product => quantities[product.reference] > 0)
+      .map(product => ({
+        ...product,
+        initial_quantity: quantities[product.reference]
+      }));
     
     console.log('[Products] Products to reserve:', productsToReserve);
     
@@ -114,6 +110,7 @@ const Products = () => {
 
         <ProductGrid
           products={filteredProducts}
+          quantities={quantities}
           onQuantityChange={handleQuantityChange}
           onEdit={(product) => {
             setEditingProduct(product);
