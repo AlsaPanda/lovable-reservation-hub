@@ -7,7 +7,7 @@ export const fetchReservations = async (userId: string, isSuperAdmin: boolean) =
     .select(`
       *,
       product:products(*),
-      store:profiles!inner(*)
+      store:profiles!inner(id, store_name, role, created_at, updated_at)
     `)
     .order('reservation_date', { ascending: true });
 
@@ -18,7 +18,14 @@ export const fetchReservations = async (userId: string, isSuperAdmin: boolean) =
   const { data, error } = await query;
   
   if (error) throw error;
-  return data as Reservation[];
+
+  // Transform the data to match our Reservation type
+  const transformedData = data.map(item => ({
+    ...item,
+    store: Array.isArray(item.store) ? item.store[0] : item.store
+  }));
+
+  return transformedData as Reservation[];
 };
 
 export const updateReservationInDb = async (
