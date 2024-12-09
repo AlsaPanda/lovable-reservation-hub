@@ -17,23 +17,21 @@ const Products = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [productQuantities, setProductQuantities] = useState<{ [key: string]: number }>({});
 
   const { data: products = [] } = useProducts();
   const { addProductMutation, updateProductMutation, deleteProductMutation } = useProductMutations();
   const { addReservationMutation } = useReservationMutation();
 
   const handleQuantityChange = (reference: string, newQuantity: string) => {
-    console.log(`Updating quantity for ${reference} to ${newQuantity}`);
+    console.log(`Handling quantity change for ${reference} to ${newQuantity}`);
     const quantity = parseInt(newQuantity) || 0;
     
-    setProductQuantities(prev => ({
-      ...prev,
-      [reference]: quantity
-    }));
-
+    // Mettre à jour directement les produits sans état local supplémentaire
     const updatedProducts = products.map(p => 
       p.reference === reference ? { ...p, initial_quantity: quantity } : p
+    );
+    console.log(`Updated product quantity, new total:`, 
+      updatedProducts.reduce((acc, p) => acc + (p.initial_quantity || 0), 0)
     );
     queryClient.setQueryData(['products'], updatedProducts);
   };
@@ -63,8 +61,8 @@ const Products = () => {
 
   const totalQuantity = useMemo(() => {
     const total = filteredProducts.reduce((acc, product) => {
-      const quantity = parseInt(product.initial_quantity?.toString() || '0');
-      return acc + (isNaN(quantity) || quantity < 0 ? 0 : quantity);
+      const quantity = product.initial_quantity || 0;
+      return acc + quantity;
     }, 0);
     console.log('Calculated total quantity:', total);
     return total;
@@ -73,7 +71,7 @@ const Products = () => {
   const handleReserveAll = () => {
     console.log('Starting reservation process');
     const productsToReserve = filteredProducts.filter(product => 
-      Number(product.initial_quantity) > 0
+      (product.initial_quantity || 0) > 0
     );
     
     console.log('Products to reserve:', productsToReserve);

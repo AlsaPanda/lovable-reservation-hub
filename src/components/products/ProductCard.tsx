@@ -23,7 +23,7 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  const [localQuantity, setLocalQuantity] = useState(product.initial_quantity?.toString() || "0");
+  const [inputValue, setInputValue] = useState(product.initial_quantity?.toString() || "0");
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -60,7 +60,7 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
   }, [session, toast]);
 
   useEffect(() => {
-    setLocalQuantity(product.initial_quantity?.toString() || "0");
+    setInputValue(product.initial_quantity?.toString() || "0");
   }, [product.initial_quantity]);
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
@@ -69,8 +69,8 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    console.log(`Changing quantity for ${product.reference} to ${newValue}`);
-    setLocalQuantity(newValue);
+    console.log(`Input value changed to: ${newValue}`);
+    setInputValue(newValue);
     onQuantityChange(product.reference, newValue);
   };
 
@@ -128,7 +128,7 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
                   <span className="text-sm font-medium">Quantité souhaitée:</span>
                   <Input
                     type="number"
-                    value={localQuantity}
+                    value={inputValue}
                     onChange={handleQuantityChange}
                     className="w-24 h-8"
                     min="0"
