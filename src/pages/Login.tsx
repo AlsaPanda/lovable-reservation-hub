@@ -14,27 +14,44 @@ const Login = () => {
   useEffect(() => {
     const checkInitialSession = async () => {
       console.log("Checking initial session...");
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error("Error checking session:", error);
-        return;
-      }
-      if (session) {
-        console.log("Initial session found:", session);
-        navigate("/products");
-      } else {
-        console.log("No initial session found");
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Error checking session:", error);
+          toast({
+            title: "Erreur de session",
+            description: "Impossible de vérifier votre session",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        if (session) {
+          console.log("Initial session found:", session);
+          navigate("/products");
+        } else {
+          console.log("No initial session found");
+        }
+      } catch (error) {
+        console.error("Unexpected error during session check:", error);
+        toast({
+          title: "Erreur inattendue",
+          description: "Une erreur est survenue lors de la vérification de votre session",
+          variant: "destructive",
+        });
       }
     };
 
     checkInitialSession();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   // Gestion des changements d'état d'authentification
   useEffect(() => {
     console.log("Setting up auth state change listener");
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event, session);
+      
       if (event === 'SIGNED_IN' && session) {
         console.log("User signed in successfully:", session);
         toast({
@@ -42,6 +59,9 @@ const Login = () => {
           description: "Vous allez être redirigé vers la page des produits",
         });
         navigate("/products");
+      } else if (event === 'SIGNED_OUT') {
+        console.log("User signed out");
+        navigate("/login");
       }
     });
 
