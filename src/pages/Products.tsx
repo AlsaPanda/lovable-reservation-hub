@@ -46,42 +46,24 @@ const Products = () => {
   };
 
   const handleSearch = (query: string) => {
-    console.log("Search query:", query);
     setSearchQuery(query);
   };
 
   // Filter products based on search query
   const filteredProducts = products.filter(product => {
-    if (!searchQuery) return true;
+    if (!searchQuery.trim()) return true;
     
-    const searchTerm = searchQuery.toLowerCase();
-    const productName = (product.name || "").toLowerCase();
-    const productRef = (product.reference || "").toLowerCase();
+    const searchTerm = searchQuery.toLowerCase().trim();
+    const name = (product.name || '').toLowerCase();
+    const reference = (product.reference || '').toLowerCase();
     
-    console.log("Filtering product:", {
-      name: productName,
-      reference: productRef,
-      searchTerm,
-      matches: productName.includes(searchTerm) || productRef.includes(searchTerm)
-    });
-
-    return productName.includes(searchTerm) || productRef.includes(searchTerm);
+    return name.includes(searchTerm) || reference.includes(searchTerm);
   });
-
-  console.log("Filtered products count:", filteredProducts.length);
 
   const handleReserveAll = () => {
     const productsToReserve = filteredProducts.filter(p => {
-      const hasQuantity = p.initial_quantity && p.initial_quantity > 0;
-      console.log("Checking product for reservation:", {
-        reference: p.reference,
-        quantity: p.initial_quantity,
-        willReserve: hasQuantity
-      });
-      return hasQuantity;
+      return typeof p.initial_quantity === 'number' && p.initial_quantity > 0;
     });
-    
-    console.log("Products to reserve:", productsToReserve.length);
     
     if (productsToReserve.length === 0) {
       toast({
