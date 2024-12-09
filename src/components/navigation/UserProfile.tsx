@@ -12,36 +12,30 @@ const UserProfile = ({ storeName }: UserProfileProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleLogout = async () => {
-    try {
-      console.log("Début de la déconnexion...");
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        console.error("Erreur lors de la déconnexion:", error);
+  const handleLogout = () => {
+    // Version simplifiée et plus sûre de la déconnexion
+    supabase.auth.signOut()
+      .then(({ error }) => {
+        if (error) {
+          console.error("Erreur de déconnexion:", error);
+          toast({
+            variant: "destructive",
+            title: "Erreur de déconnexion",
+            description: "Veuillez réessayer dans quelques instants.",
+          });
+        } else {
+          // Redirection simple vers la page de login
+          window.location.href = '/login';
+        }
+      })
+      .catch((error) => {
+        console.error("Exception lors de la déconnexion:", error);
         toast({
           variant: "destructive",
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la déconnexion.",
+          title: "Erreur inattendue",
+          description: "Un problème est survenu lors de la déconnexion.",
         });
-        return;
-      }
-
-      console.log("Déconnexion réussie, redirection...");
-      // Attendre un court instant avant la redirection pour laisser le temps à Supabase de nettoyer la session
-      setTimeout(() => {
-        console.log("Redirection vers /login");
-        navigate('/login');
-      }, 100);
-
-    } catch (error) {
-      console.error("Exception lors de la déconnexion:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la déconnexion.",
       });
-    }
   };
 
   return (
