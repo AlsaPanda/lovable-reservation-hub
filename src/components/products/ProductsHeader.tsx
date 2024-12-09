@@ -13,6 +13,7 @@ interface ProductsHeaderProps {
   onSearch: (query: string) => void;
   products: Product[];
   onReserve: () => void;
+  totalQuantity: number;
 }
 
 const ProductsHeader = ({ 
@@ -20,11 +21,11 @@ const ProductsHeader = ({
   onProductsImported, 
   onSearch, 
   products,
-  onReserve 
+  onReserve,
+  totalQuantity 
 }: ProductsHeaderProps) => {
   const session = useSession();
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [totalQuantity, setTotalQuantity] = useState(0);
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -43,14 +44,6 @@ const ProductsHeader = ({
 
     fetchUserRole();
   }, [session]);
-
-  useEffect(() => {
-    const total = products.reduce((acc, product) => {
-      const quantity = parseInt(product.initial_quantity?.toString() || '0');
-      return acc + (isNaN(quantity) || quantity < 0 ? 0 : quantity);
-    }, 0);
-    setTotalQuantity(total);
-  }, [products]);
 
   const isAdmin = userRole === 'admin' || userRole === 'superadmin';
 

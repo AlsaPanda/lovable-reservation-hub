@@ -1,25 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
 import { Product } from "@/utils/types";
-import { useEffect, useState } from "react";
 
 interface ReservationButtonProps {
-  products: Product[];
   onReserve: () => void;
   disabled: boolean;
+  totalQuantity: number;
 }
 
-const ReservationButton = ({ products, onReserve, disabled }: ReservationButtonProps) => {
-  const [totalQuantity, setTotalQuantity] = useState(0);
-
-  useEffect(() => {
-    const total = products.reduce((acc, product) => {
-      const quantity = parseInt(product.initial_quantity?.toString() || '0');
-      return acc + (isNaN(quantity) || quantity < 0 ? 0 : quantity);
-    }, 0);
-    setTotalQuantity(total);
-  }, [products]);
-
+const ReservationButton = ({ onReserve, disabled, totalQuantity }: ReservationButtonProps) => {
   return (
     <div className="fixed bottom-6 right-6 z-50">
       <Button
