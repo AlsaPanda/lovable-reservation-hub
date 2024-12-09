@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { AuthError, AuthResponse, AuthTokenResponse } from "@supabase/supabase-js";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -51,19 +52,6 @@ const Login = () => {
           toast({
             title: "Réinitialisation du mot de passe",
             description: "Veuillez vérifier votre email",
-          });
-          break;
-
-        case 'USER_DELETED':
-          console.log('User account deleted');
-          break;
-
-        case 'AUTH_ERROR':
-          console.error('Authentication error occurred');
-          toast({
-            variant: "destructive",
-            title: "Erreur d'authentification",
-            description: "Veuillez vérifier vos identifiants",
           });
           break;
         
