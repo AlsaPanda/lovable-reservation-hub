@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { AuthError, AuthResponse, AuthTokenResponse } from "@supabase/supabase-js";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -42,6 +41,8 @@ const Login = () => {
         
         case 'SIGNED_OUT':
           console.log('User signed out');
+          // On s'assure que la session est bien nettoyée
+          localStorage.removeItem('supabase.auth.token');
           break;
         
         case 'USER_UPDATED':
