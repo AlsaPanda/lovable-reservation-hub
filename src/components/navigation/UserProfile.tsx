@@ -1,15 +1,25 @@
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 type UserProfileProps = {
   storeName: string;
 };
 
 const UserProfile = ({ storeName }: UserProfileProps) => {
-  const handleLogout = () => {
-    // Redirection simple vers la page de login
-    // Cela forcera un rechargement complet et une réinitialisation de l'état
-    window.location.href = '/login';
+  const handleLogout = async () => {
+    console.log("Déconnexion initiée");
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Erreur lors de la déconnexion:", error);
+      }
+      // On attend que la déconnexion soit effectuée avant de rediriger
+      window.location.href = '/login';
+    } catch (error) {
+      console.error("Erreur critique lors de la déconnexion:", error);
+      window.location.href = '/login';
+    }
   };
 
   return (

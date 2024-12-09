@@ -48,6 +48,7 @@ const PrivateRoute = ({ children, allowedRoles }: PrivateRouteProps) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
       console.log("Auth state changed:", event, currentSession);
       if (event === 'SIGNED_OUT') {
+        // On s'assure que la session est bien supprimée
         supabase.auth.signOut();
       }
     });
