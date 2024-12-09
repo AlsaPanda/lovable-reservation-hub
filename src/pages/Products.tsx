@@ -17,6 +17,7 @@ const Products = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [productQuantities, setProductQuantities] = useState<{ [key: string]: number }>({});
 
   const { data: products = [] } = useProducts();
   const { addProductMutation, updateProductMutation, deleteProductMutation } = useProductMutations();
@@ -24,13 +25,16 @@ const Products = () => {
 
   const handleQuantityChange = (reference: string, newQuantity: string) => {
     console.log(`Updating quantity for ${reference} to ${newQuantity}`);
-    const quantity = parseInt(newQuantity);
-    if (isNaN(quantity) || quantity < 0) return;
+    const quantity = parseInt(newQuantity) || 0;
+    
+    setProductQuantities(prev => ({
+      ...prev,
+      [reference]: quantity
+    }));
 
     const updatedProducts = products.map(p => 
       p.reference === reference ? { ...p, initial_quantity: quantity } : p
     );
-    
     queryClient.setQueryData(['products'], updatedProducts);
   };
 
