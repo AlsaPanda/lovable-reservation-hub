@@ -72,7 +72,7 @@ const ProductsHeader = ({
   };
 
   const isAdmin = userRole === 'admin' || userRole === 'superadmin';
-  const canResetQuantities = isAdmin || userRole === 'magasin';
+  const canResetQuantities = !isAdmin && (userRole === 'magasin');
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -100,27 +100,29 @@ const ProductsHeader = ({
             onChange={handleSearch}
             className="w-full md:w-96"
           />
-          <div className="flex gap-2">
-            <Button
-              size="default"
-              onClick={onReserve}
-              disabled={totalQuantity === 0}
-              className="whitespace-nowrap"
-            >
-              <Calendar className="mr-2 h-4 w-4" />
-              Je réserve ({totalQuantity} produits)
-            </Button>
-            {canResetQuantities && (
+          {!isAdmin && (
+            <div className="flex gap-2">
               <Button
-                variant="outline"
-                onClick={handleResetQuantities}
+                size="default"
+                onClick={onReserve}
+                disabled={totalQuantity === 0}
                 className="whitespace-nowrap"
               >
-                <RotateCcw className="mr-2 h-4 w-4" />
-                Réinitialiser
+                <Calendar className="mr-2 h-4 w-4" />
+                Je réserve ({totalQuantity} produits)
               </Button>
-            )}
-          </div>
+              {canResetQuantities && (
+                <Button
+                  variant="outline"
+                  onClick={handleResetQuantities}
+                  className="whitespace-nowrap"
+                >
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  Réinitialiser
+                </Button>
+              )}
+            </div>
+          )}
         </div>
         {isAdmin && (
           <div className="flex gap-2">
