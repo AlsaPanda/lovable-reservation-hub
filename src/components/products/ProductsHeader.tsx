@@ -72,6 +72,7 @@ const ProductsHeader = ({
   };
 
   const isAdmin = userRole === 'admin' || userRole === 'superadmin';
+  const canResetQuantities = isAdmin || userRole === 'magasin';
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -108,7 +109,7 @@ const ProductsHeader = ({
             <Calendar className="mr-2 h-4 w-4" />
             Je réserve ({totalQuantity} produits)
           </Button>
-          {isAdmin && (
+          {canResetQuantities && (
             <Button
               variant="outline"
               onClick={handleResetQuantities}
