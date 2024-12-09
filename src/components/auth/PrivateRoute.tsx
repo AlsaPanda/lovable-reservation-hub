@@ -47,16 +47,19 @@ const PrivateRoute = ({ children, allowedRoles }: PrivateRouteProps) => {
     checkUserRole();
   }, [session]);
 
+  React.useEffect(() => {
+    if (hasError) {
+      // Nettoyage explicite du localStorage
+      localStorage.removeItem('supabase.auth.token');
+      window.location.href = '/login';
+    }
+  }, [hasError]);
+
   if (isLoading) {
     return <div>Chargement...</div>;
   }
   
-  // Si une erreur survient ou si la session n'existe pas, rediriger vers la page de connexion
-  if (hasError || !session) {
-    // Déconnexion explicite en cas d'erreur de session
-    if (hasError) {
-      supabase.auth.signOut();
-    }
+  if (!session) {
     return <Navigate to="/login" />;
   }
   

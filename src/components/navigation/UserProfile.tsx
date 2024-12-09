@@ -8,8 +8,16 @@ type UserProfileProps = {
 
 const UserProfile = ({ storeName }: UserProfileProps) => {
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.href = '/login?action=logout';
+    try {
+      // Nettoyage explicite du localStorage avant la déconnexion
+      localStorage.removeItem('supabase.auth.token');
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      // Redirection forcée même en cas d'erreur
+      window.location.href = '/login?action=logout';
+    }
   };
 
   return (
