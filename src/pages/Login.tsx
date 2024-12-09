@@ -1,7 +1,7 @@
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -9,9 +9,16 @@ import { useToast } from "@/hooks/use-toast";
 const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     console.log("Login component mounted");
+    
+    // Si on vient d'une déconnexion, on ne vérifie pas la session
+    if (searchParams.get('action') === 'logout') {
+      console.log("Logout action detected, skipping session check");
+      return;
+    }
     
     // Check if user is already logged in
     const checkCurrentSession = async () => {
@@ -42,7 +49,12 @@ const Login = () => {
         case 'SIGNED_OUT':
           console.log('User signed out');
           // On s'assure que la session est bien nettoyée
-          localStorage.removeItem('supabase.auth.token');
+          for (const key of Object.keys(localStorage)) {
+            if (key.startsWith('sb-')) {
+              localStorage.removeItem(key);
+            }
+          }
+          sessionStorage.clear();
           break;
         
         case 'USER_UPDATED':
@@ -65,7 +77,7 @@ const Login = () => {
       console.log("Cleaning up auth subscription");
       subscription.unsubscribe();
     };
-  }, [navigate, toast]);
+  }, [navigate, toast, searchParams]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-secondary p-4">

@@ -10,20 +10,26 @@ const UserProfile = ({ storeName }: UserProfileProps) => {
   const handleLogout = async () => {
     console.log("Déconnexion initiée");
     try {
-      // On supprime d'abord le token du localStorage
-      localStorage.removeItem('supabase.auth.token');
-      
-      // Puis on appelle la déconnexion Supabase
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error("Erreur lors de la déconnexion:", error);
+      // 1. Supprimer tous les tokens de localStorage
+      for (const key of Object.keys(localStorage)) {
+        if (key.startsWith('sb-')) {
+          localStorage.removeItem(key);
+        }
       }
       
-      // On force un rechargement complet de la page pour réinitialiser tout l'état
-      window.location.replace('/login');
+      // 2. Forcer la déconnexion Supabase
+      await supabase.auth.signOut();
+      
+      // 3. Vider le sessionStorage aussi
+      sessionStorage.clear();
+      
+      // 4. Rediriger vers login avec un paramètre pour éviter la reconnexion
+      window.location.href = '/login?action=logout';
+      
     } catch (error) {
       console.error("Erreur critique lors de la déconnexion:", error);
-      window.location.replace('/login');
+      // En cas d'erreur, on force quand même la redirection
+      window.location.href = '/login?action=logout';
     }
   };
 
