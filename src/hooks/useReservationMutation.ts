@@ -13,12 +13,17 @@ export const useReservationMutation = () => {
     mutationFn: async (productsToReserve: Product[]) => {
       console.log('Starting reservation mutation with products:', productsToReserve);
       
+      if (!session?.user?.id) {
+        console.error('No user session found');
+        throw new Error('Vous devez être connecté pour effectuer une réservation');
+      }
+
       const reservations = productsToReserve
         .filter(product => product.initial_quantity > 0)
         .map(product => ({
           product_id: product.id,
           quantity: product.initial_quantity,
-          store_name: session?.user?.id,
+          store_name: session.user.id,
           reservation_date: new Date().toISOString()
         }));
 
@@ -29,21 +34,30 @@ export const useReservationMutation = () => {
         throw new Error('Aucun produit à réserver');
       }
 
-      const { error } = await supabase
-        .from('reservations')
-        .insert(reservations);
-      
-      if (error) {
-        console.error('Error inserting reservations:', error);
-        throw error;
-      }
+      try {
+        console.log('Attempting to insert reservations...');
+        const { error: insertError } = await supabase
+          .from('reservations')
+          .insert(reservations);
+        
+        if (insertError) {
+          console.error('Error inserting reservations:', insertError);
+          throw insertError;
+        }
+        console.log('Reservations inserted successfully');
 
-      // Reset quantities after successful reservation
-      const { error: resetError } = await supabase.rpc('reset_all_quantities');
-      
-      if (resetError) {
-        console.error('Error resetting quantities:', resetError);
-        throw resetError;
+        console.log('Attempting to reset quantities...');
+        const { error: resetError } = await supabase.rpc('reset_all_quantities');
+        
+        if (resetError) {
+          console.error('Error resetting quantities:', resetError);
+          throw resetError;
+        }
+        console.log('Quantities reset successfully');
+
+      } catch (error) {
+        console.error('Error in reservation process:', error);
+        throw error;
       }
     },
     onSuccess: () => {
@@ -55,7 +69,7 @@ export const useReservationMutation = () => {
         description: "Vos réservations ont été ajoutées avec succès.",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Reservation mutation failed:', error);
       toast({
         title: "Erreur",
