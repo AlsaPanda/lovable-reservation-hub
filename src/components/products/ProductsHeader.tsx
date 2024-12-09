@@ -2,10 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Product } from "@/utils/types";
 import { importProducts } from "@/utils/productUtils";
-import { Calendar, UploadCloud } from "lucide-react";
+import { Calendar, RotateCcw, UploadCloud } from "lucide-react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ProductsHeaderProps {
   onOpenDialog: () => void;
@@ -26,6 +28,8 @@ const ProductsHeader = ({
 }: ProductsHeaderProps) => {
   const session = useSession();
   const [userRole, setUserRole] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -44,6 +48,28 @@ const ProductsHeader = ({
 
     fetchUserRole();
   }, [session]);
+
+  const handleResetQuantities = async () => {
+    try {
+      const { error } = await supabase.rpc('reset_all_quantities');
+
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ['products'] });
+      
+      toast({
+        title: "Quantités réinitialisées",
+        description: "Toutes les quantités ont été remises à zéro.",
+      });
+    } catch (error) {
+      console.error('Error resetting quantities:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de réinitialiser les quantités.",
+      });
+    }
+  };
 
   const isAdmin = userRole === 'admin' || userRole === 'superadmin';
 
@@ -72,15 +98,27 @@ const ProductsHeader = ({
           onChange={handleSearch}
           className="w-full md:w-96"
         />
-        <Button
-          size="default"
-          onClick={onReserve}
-          disabled={totalQuantity === 0}
-          className="whitespace-nowrap"
-        >
-          <Calendar className="mr-2 h-4 w-4" />
-          Je réserve ({totalQuantity} produits)
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            size="default"
+            onClick={onReserve}
+            disabled={totalQuantity === 0}
+            className="whitespace-nowrap"
+          >
+            <Calendar className="mr-2 h-4 w-4" />
+            Je réserve ({totalQuantity} produits)
+          </Button>
+          {isAdmin && (
+            <Button
+              variant="outline"
+              onClick={handleResetQuantities}
+              className="whitespace-nowrap"
+            >
+              <RotateCcw className="mr-2 h-4 w-4" />
+              Réinitialiser
+            </Button>
+          )}
+        </div>
       </div>
       {isAdmin && (
         <div className="flex gap-2">

@@ -4,7 +4,6 @@ import { Product } from "@/utils/types";
 import ProductForm from "@/components/products/ProductForm";
 import ProductGrid from "@/components/products/ProductGrid";
 import ProductsHeader from "@/components/products/ProductsHeader";
-import ProductActions from "@/components/products/ProductActions";
 import PageHeader from "@/components/products/PageHeader";
 import { useProducts } from "@/hooks/useProducts";
 import { useProductMutations } from "@/hooks/useProductMutations";
@@ -108,8 +107,6 @@ const Products = () => {
           }}
           onDelete={(reference) => deleteProductMutation.mutate(reference)}
         />
-
-        <ProductActions />
 
         <ProductForm 
           onSubmit={editingProduct ? handleUpdateProduct : handleAddProduct}
