@@ -4,6 +4,9 @@ import { Pencil, Trash2 } from "lucide-react";
 import { Product } from "@/utils/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useSession } from "@supabase/auth-helpers-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
 
 interface ProductCardProps {
   product: Product;
@@ -15,9 +18,32 @@ interface ProductCardProps {
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b";
 
 const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCardProps) => {
+  const session = useSession();
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (session?.user?.id) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (!error && data) {
+          setUserRole(data.role);
+        }
+      }
+    };
+
+    fetchUserRole();
+  }, [session]);
+
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.src = DEFAULT_IMAGE;
   };
+
+  const isAdmin = userRole === 'admin' || userRole === 'superadmin';
 
   return (
     <Card className="group relative overflow-hidden">
@@ -60,16 +86,18 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
             </p>
             <div className="space-y-2">
               <p className="text-sm font-medium">SKU: {product.reference}</p>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">Quantité souhaitée:</span>
-                <Input
-                  type="number"
-                  value={product.initial_quantity}
-                  onChange={(e) => onQuantityChange(product.reference, e.target.value)}
-                  className="w-24 h-8"
-                  min="0"
-                />
-              </div>
+              {!isAdmin && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">Quantité souhaitée:</span>
+                  <Input
+                    type="number"
+                    value={product.initial_quantity}
+                    onChange={(e) => onQuantityChange(product.reference, e.target.value)}
+                    className="w-24 h-8"
+                    min="0"
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
