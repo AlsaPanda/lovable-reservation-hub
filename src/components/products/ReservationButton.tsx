@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
-import { Product } from "@/utils/types";
 
 interface ReservationButtonProps {
   onReserve: () => void;
