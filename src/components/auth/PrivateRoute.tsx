@@ -17,11 +17,13 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
   React.useEffect(() => {
     const checkUserRole = async () => {
       if (!session?.user?.id) {
+        console.log('No session or user ID available');
         setIsLoading(false);
         return;
       }
       
       try {
+        console.log('Fetching role for user:', session.user.id);
         const { data, error } = await supabase
           .from('profiles')
           .select('role')
@@ -34,7 +36,10 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
           return;
         }
         
-        setUserRole(data?.role);
+        if (data) {
+          console.log('Role fetched successfully:', data.role);
+          setUserRole(data.role);
+        }
       } catch (error) {
         console.error("Error in checkUserRole:", error);
       } finally {
@@ -50,14 +55,17 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
   }
   
   if (!session) {
+    console.log('No session, redirecting to login');
     return <Navigate to="/login" />;
   }
   
   if (allowedRoles && !allowedRoles.includes(userRole || '')) {
+    console.log('User role not allowed:', userRole);
     return <Navigate to="/products" />;
   }
 
   if (excludedRoles && excludedRoles.includes(userRole || '')) {
+    console.log('User role excluded:', userRole);
     return <Navigate to="/products" />;
   }
   
