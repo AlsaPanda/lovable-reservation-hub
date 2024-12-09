@@ -30,15 +30,6 @@ const BulkActionsMenu = ({ onProductsImported, products }: BulkActionsMenuProps)
   const { toast } = useToast();
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
-  
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    
-    setPendingFile(file);
-    setShowImportDialog(true);
-    event.target.value = '';
-  };
 
   const handleImport = async () => {
     if (!pendingFile) return;
@@ -68,6 +59,15 @@ const BulkActionsMenu = ({ onProductsImported, products }: BulkActionsMenuProps)
       title: "Export réussi",
       description: "Les produits ont été exportés avec succès.",
     });
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    setPendingFile(file);
+    setShowImportDialog(true);
+    event.target.value = '';
   };
 
   return (

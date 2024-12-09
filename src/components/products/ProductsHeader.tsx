@@ -1,13 +1,14 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Product } from "@/utils/types";
-import { importProducts } from "@/utils/productUtils";
-import { Calendar, RotateCcw, UploadCloud } from "lucide-react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
+import SearchBar from "./SearchBar";
+import ReservationActions from "./ReservationActions";
+import ImportExportActions from "./ImportExportActions";
+import { importProducts } from "@/utils/productUtils";
 
 interface ProductsHeaderProps {
   onOpenDialog: () => void;
@@ -22,7 +23,6 @@ const ProductsHeader = ({
   onOpenDialog, 
   onProductsImported, 
   onSearch, 
-  products,
   onReserve,
   totalQuantity 
 }: ProductsHeaderProps) => {
@@ -71,9 +71,6 @@ const ProductsHeader = ({
     }
   };
 
-  const isAdmin = userRole === 'admin' || userRole === 'superadmin';
-  const canResetQuantities = !isAdmin && (userRole === 'magasin');
-
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -86,59 +83,27 @@ const ProductsHeader = ({
     }
   };
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onSearch(e.target.value);
-  };
+  const isAdmin = userRole === 'admin' || userRole === 'superadmin';
+  const canResetQuantities = !isAdmin && (userRole === 'magasin');
 
   return (
     <div className="sticky top-0 bg-background z-10 py-4 border-b">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-1 gap-4 items-center">
-          <Input
-            type="text"
-            placeholder="Rechercher par titre ou référence..."
-            onChange={handleSearch}
-            className="w-full md:w-96"
-          />
+          <SearchBar onSearch={onSearch} />
           {!isAdmin && (
-            <div className="flex gap-2">
-              <Button
-                size="default"
-                onClick={onReserve}
-                disabled={totalQuantity === 0}
-                className="whitespace-nowrap"
-              >
-                <Calendar className="mr-2 h-4 w-4" />
-                Je réserve ({totalQuantity} produits)
-              </Button>
-              {canResetQuantities && (
-                <Button
-                  variant="outline"
-                  onClick={handleResetQuantities}
-                  className="whitespace-nowrap"
-                >
-                  <RotateCcw className="mr-2 h-4 w-4" />
-                  Réinitialiser
-                </Button>
-              )}
-            </div>
+            <ReservationActions
+              onReserve={onReserve}
+              onReset={handleResetQuantities}
+              totalQuantity={totalQuantity}
+              canResetQuantities={canResetQuantities}
+            />
           )}
         </div>
         {isAdmin && (
           <div className="flex gap-2">
             <Button onClick={onOpenDialog}>Ajouter un produit</Button>
-            <div className="relative">
-              <input
-                type="file"
-                onChange={handleFileChange}
-                accept=".json,.xlsx"
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              />
-              <Button variant="outline" className="cursor-pointer">
-                <UploadCloud className="mr-2 h-4 w-4" />
-                Importer
-              </Button>
-            </div>
+            <ImportExportActions onFileChange={handleFileChange} />
           </div>
         )}
       </div>
