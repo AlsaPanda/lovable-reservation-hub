@@ -13,11 +13,9 @@ const ReservationButton = ({ products, onReserve, disabled }: ReservationButtonP
   const [totalQuantity, setTotalQuantity] = useState(0);
 
   useEffect(() => {
-    // Calcul du total des quantités à chaque changement des produits
     const total = products.reduce((acc, product) => {
       const quantity = parseInt(product.initial_quantity?.toString() || '0');
-      if (isNaN(quantity) || quantity <= 0) return acc;
-      return acc + quantity;
+      return acc + (isNaN(quantity) || quantity < 0 ? 0 : quantity);
     }, 0);
     setTotalQuantity(total);
   }, [products]);
