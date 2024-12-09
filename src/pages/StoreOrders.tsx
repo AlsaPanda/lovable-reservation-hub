@@ -2,24 +2,12 @@ import { useEffect, useState } from "react";
 import NavBar from "@/components/NavBar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileDown, Eye } from "lucide-react";
+import { FileDown } from "lucide-react";
 import * as XLSX from 'xlsx';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { StoreOrdersTable } from "@/components/store-orders/StoreOrdersTable";
+import { StoreOrderDetails } from "@/components/store-orders/StoreOrderDetails";
 
 interface StoreOrder {
   store_name: string;
@@ -123,7 +111,6 @@ const StoreOrders = () => {
 
   const exportToExcel = async () => {
     try {
-      // Fetch all reservations with product details
       const { data, error } = await supabase
         .from('reservations')
         .select(`
@@ -139,7 +126,6 @@ const StoreOrders = () => {
 
       if (error) throw error;
 
-      // Format data for export
       const exportData = data.map(item => ({
         'Magasin': item.store_name,
         'Produit': item.products.name,
@@ -148,12 +134,9 @@ const StoreOrders = () => {
         'Date de réservation': new Date(item.reservation_date).toLocaleDateString('fr-FR'),
       }));
 
-      // Create worksheet
       const ws = XLSX.utils.json_to_sheet(exportData);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Commandes");
-
-      // Generate and download file
       XLSX.writeFile(wb, "commandes_magasins.xlsx");
 
       toast({
@@ -183,70 +166,19 @@ const StoreOrders = () => {
             </Button>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Magasin</TableHead>
-                  <TableHead>Nombre de réservations</TableHead>
-                  <TableHead>Total produits réservés</TableHead>
-                  <TableHead>Dernière réservation</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {storeOrders.map((order) => (
-                  <TableRow key={order.store_name}>
-                    <TableCell>{order.store_name}</TableCell>
-                    <TableCell>{order.total_reservations}</TableCell>
-                    <TableCell>{order.total_products}</TableCell>
-                    <TableCell>
-                      {new Date(order.last_reservation).toLocaleDateString('fr-FR')}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => fetchStoreDetails(order.store_name)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <StoreOrdersTable 
+              storeOrders={storeOrders} 
+              onViewDetails={fetchStoreDetails} 
+            />
           </CardContent>
         </Card>
 
-        <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-          <DialogContent className="max-w-3xl">
-            <DialogHeader>
-              <DialogTitle>
-                Détail des commandes - {selectedStore}
-              </DialogTitle>
-            </DialogHeader>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Produit</TableHead>
-                  <TableHead>Quantité</TableHead>
-                  <TableHead>Date de réservation</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {storeDetails.map((detail) => (
-                  <TableRow key={detail.id}>
-                    <TableCell>{detail.product_name}</TableCell>
-                    <TableCell>{detail.quantity}</TableCell>
-                    <TableCell>
-                      {new Date(detail.reservation_date).toLocaleDateString('fr-FR')}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </DialogContent>
-        </Dialog>
+        <StoreOrderDetails 
+          isOpen={isDetailOpen}
+          onOpenChange={setIsDetailOpen}
+          selectedStore={selectedStore}
+          storeDetails={storeDetails}
+        />
       </div>
     </>
   );
