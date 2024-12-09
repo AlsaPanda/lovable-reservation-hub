@@ -134,7 +134,7 @@ const ProductsHeader = ({
                 accept=".json,.xlsx"
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
-              <Button variant="outline">
+              <Button variant="outline" className="cursor-pointer">
                 <UploadCloud className="mr-2 h-4 w-4" />
                 Importer
               </Button>

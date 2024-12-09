@@ -80,11 +80,11 @@ const BulkActionsMenu = ({ onProductsImported, products }: BulkActionsMenuProps)
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem onClick={() => document.getElementById('import-file')?.click()}>
+          <DropdownMenuItem onClick={() => document.getElementById('import-file')?.click()} className="cursor-pointer">
             <Upload className="h-4 w-4 mr-2" />
             Importer des produits
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleExport}>
+          <DropdownMenuItem onClick={handleExport} className="cursor-pointer">
             <Download className="h-4 w-4 mr-2" />
             Exporter les produits
           </DropdownMenuItem>
@@ -111,7 +111,7 @@ const BulkActionsMenu = ({ onProductsImported, products }: BulkActionsMenuProps)
         id="import-file"
         type="file"
         accept=".json,.xlsx"
-        className="hidden"
+        className="hidden cursor-pointer"
         onChange={handleFileSelect}
       />
     </>
