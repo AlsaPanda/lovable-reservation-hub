@@ -29,4 +29,5 @@ export type Reservation = {
   created_at: string;
   updated_at: string;
   product?: Product;
+  store?: Profile;
 };
