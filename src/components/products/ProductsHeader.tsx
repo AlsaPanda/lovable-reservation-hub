@@ -91,53 +91,55 @@ const ProductsHeader = ({
   };
 
   return (
-    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <div className="flex flex-1 gap-4 items-center">
-        <Input
-          type="text"
-          placeholder="Rechercher par titre ou référence..."
-          onChange={handleSearch}
-          className="w-full md:w-96"
-        />
-        <div className="flex gap-2">
-          <Button
-            size="default"
-            onClick={onReserve}
-            disabled={totalQuantity === 0}
-            className="whitespace-nowrap"
-          >
-            <Calendar className="mr-2 h-4 w-4" />
-            Je réserve ({totalQuantity} produits)
-          </Button>
-          {canResetQuantities && (
+    <div className="sticky top-0 bg-background z-10 py-4 border-b">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-1 gap-4 items-center">
+          <Input
+            type="text"
+            placeholder="Rechercher par titre ou référence..."
+            onChange={handleSearch}
+            className="w-full md:w-96"
+          />
+          <div className="flex gap-2">
             <Button
-              variant="outline"
-              onClick={handleResetQuantities}
+              size="default"
+              onClick={onReserve}
+              disabled={totalQuantity === 0}
               className="whitespace-nowrap"
             >
-              <RotateCcw className="mr-2 h-4 w-4" />
-              Réinitialiser
+              <Calendar className="mr-2 h-4 w-4" />
+              Je réserve ({totalQuantity} produits)
             </Button>
-          )}
-        </div>
-      </div>
-      {isAdmin && (
-        <div className="flex gap-2">
-          <Button onClick={onOpenDialog}>Ajouter un produit</Button>
-          <div className="relative">
-            <input
-              type="file"
-              onChange={handleFileChange}
-              accept=".json,.xlsx"
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            />
-            <Button variant="outline">
-              <UploadCloud className="mr-2 h-4 w-4" />
-              Importer
-            </Button>
+            {canResetQuantities && (
+              <Button
+                variant="outline"
+                onClick={handleResetQuantities}
+                className="whitespace-nowrap"
+              >
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Réinitialiser
+              </Button>
+            )}
           </div>
         </div>
-      )}
+        {isAdmin && (
+          <div className="flex gap-2">
+            <Button onClick={onOpenDialog}>Ajouter un produit</Button>
+            <div className="relative">
+              <input
+                type="file"
+                onChange={handleFileChange}
+                accept=".json,.xlsx"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+              <Button variant="outline">
+                <UploadCloud className="mr-2 h-4 w-4" />
+                Importer
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
