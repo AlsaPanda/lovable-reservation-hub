@@ -48,11 +48,22 @@ const PrivateRoute = ({ children, allowedRoles }: PrivateRouteProps) => {
   }, [session]);
 
   React.useEffect(() => {
-    if (hasError) {
-      // Nettoyage explicite du localStorage
-      localStorage.removeItem('supabase.auth.token');
-      window.location.href = '/login';
-    }
+    const handleSessionError = async () => {
+      if (hasError) {
+        try {
+          // Nettoyage complet des données de session
+          localStorage.clear();
+          sessionStorage.clear();
+          await supabase.auth.signOut();
+        } catch (error) {
+          console.error("Error during cleanup:", error);
+        } finally {
+          window.location.href = '/login';
+        }
+      }
+    };
+
+    handleSessionError();
   }, [hasError]);
 
   if (isLoading) {
