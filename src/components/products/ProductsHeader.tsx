@@ -33,26 +33,53 @@ const ProductsHeader = ({
   useEffect(() => {
     const fetchUserRole = async () => {
       if (session?.user?.id) {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (!error && data) {
-          setUserRole(data.role);
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (error) {
+            console.error('Error fetching user role:', error);
+            toast({
+              variant: "destructive",
+              title: "Erreur",
+              description: "Impossible de récupérer le rôle de l'utilisateur.",
+            });
+            return;
+          }
+          
+          if (data) {
+            setUserRole(data.role);
+          }
+        } catch (error) {
+          console.error('Error in fetchUserRole:', error);
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Une erreur est survenue lors de la récupération du rôle.",
+          });
         }
       }
     };
 
     fetchUserRole();
-  }, [session]);
+  }, [session, toast]);
 
   const handleResetQuantities = async () => {
     try {
       const { error } = await supabase.rpc('reset_all_quantities');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error resetting quantities:', error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de réinitialiser les quantités.",
+        });
+        return;
+      }
 
       await queryClient.invalidateQueries({ queryKey: ['products'] });
       
@@ -61,11 +88,11 @@ const ProductsHeader = ({
         description: "Toutes les quantités ont été remises à zéro.",
       });
     } catch (error) {
-      console.error('Error resetting quantities:', error);
+      console.error('Error in handleResetQuantities:', error);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible de réinitialiser les quantités.",
+        description: "Une erreur est survenue lors de la réinitialisation.",
       });
     }
   };
@@ -79,6 +106,11 @@ const ProductsHeader = ({
       onProductsImported(importedProducts);
     } catch (error) {
       console.error("Error importing products:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible d'importer les produits.",
+      });
     }
   };
 
