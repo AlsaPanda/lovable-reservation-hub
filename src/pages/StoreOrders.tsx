@@ -30,7 +30,8 @@ const StoreOrders = () => {
           .from('reservations')
           .select(`
             store_name,
-            quantity
+            quantity,
+            reservation_date
           `)
           .order('reservation_date', { ascending: false });
 
