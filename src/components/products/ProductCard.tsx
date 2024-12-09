@@ -23,7 +23,7 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  const [inputValue, setInputValue] = useState(product.initial_quantity?.toString() || "0");
+  const [quantity, setQuantity] = useState(product.initial_quantity?.toString() || "0");
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -59,8 +59,10 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
     fetchUserRole();
   }, [session, toast]);
 
+  // Update local quantity when product.initial_quantity changes
   useEffect(() => {
-    setInputValue(product.initial_quantity?.toString() || "0");
+    console.log(`[ProductCard] Product ${product.reference} initial_quantity changed to:`, product.initial_quantity);
+    setQuantity(product.initial_quantity?.toString() || "0");
   }, [product.initial_quantity]);
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
@@ -69,8 +71,12 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    console.log(`Input value changed to: ${newValue}`);
-    setInputValue(newValue);
+    console.log(`[ProductCard] Quantity input changed for ${product.reference} to:`, newValue);
+    
+    // Update local state
+    setQuantity(newValue);
+    
+    // Notify parent
     onQuantityChange(product.reference, newValue);
   };
 
@@ -128,7 +134,7 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
                   <span className="text-sm font-medium">Quantité souhaitée:</span>
                   <Input
                     type="number"
-                    value={inputValue}
+                    value={quantity}
                     onChange={handleQuantityChange}
                     className="w-24 h-8"
                     min="0"

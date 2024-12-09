@@ -23,16 +23,22 @@ const Products = () => {
   const { addReservationMutation } = useReservationMutation();
 
   const handleQuantityChange = (reference: string, newQuantity: string) => {
-    console.log(`Handling quantity change for ${reference} to ${newQuantity}`);
-    const quantity = parseInt(newQuantity) || 0;
+    console.log(`[Products] handleQuantityChange called with reference: ${reference}, newQuantity: ${newQuantity}`);
     
-    // Mettre à jour directement les produits sans état local supplémentaire
-    const updatedProducts = products.map(p => 
-      p.reference === reference ? { ...p, initial_quantity: quantity } : p
-    );
-    console.log(`Updated product quantity, new total:`, 
-      updatedProducts.reduce((acc, p) => acc + (p.initial_quantity || 0), 0)
-    );
+    // Convert to number and ensure it's not negative
+    const quantity = Math.max(0, parseInt(newQuantity) || 0);
+    console.log(`[Products] Parsed quantity: ${quantity}`);
+    
+    // Update products directly
+    const updatedProducts = products.map(p => {
+      if (p.reference === reference) {
+        console.log(`[Products] Updating product ${reference} from ${p.initial_quantity} to ${quantity}`);
+        return { ...p, initial_quantity: quantity };
+      }
+      return p;
+    });
+
+    // Update cache
     queryClient.setQueryData(['products'], updatedProducts);
   };
 
@@ -64,17 +70,17 @@ const Products = () => {
       const quantity = product.initial_quantity || 0;
       return acc + quantity;
     }, 0);
-    console.log('Calculated total quantity:', total);
+    console.log('[Products] Calculated total quantity:', total);
     return total;
   }, [filteredProducts]);
 
   const handleReserveAll = () => {
-    console.log('Starting reservation process');
+    console.log('[Products] Starting reservation process');
     const productsToReserve = filteredProducts.filter(product => 
       (product.initial_quantity || 0) > 0
     );
     
-    console.log('Products to reserve:', productsToReserve);
+    console.log('[Products] Products to reserve:', productsToReserve);
     
     if (productsToReserve.length === 0) {
       toast({
