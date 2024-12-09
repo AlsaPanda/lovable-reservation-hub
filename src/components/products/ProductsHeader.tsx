@@ -14,7 +14,6 @@ interface ProductsHeaderProps {
   onOpenDialog: () => void;
   onProductsImported: (products: Product[]) => void;
   onSearch: (query: string) => void;
-  products: Product[];
   onReserve: () => void;
   totalQuantity: number;
 }
