@@ -24,6 +24,18 @@ const NavigationLinks = ({ userRole }: NavigationLinksProps) => {
             </Link>
           </NavigationMenuItem>
         )}
+        {userRole === 'superadmin' && (
+          <NavigationMenuItem>
+            <Link to="/store-orders">
+              <NavigationMenuLink 
+                className={navigationMenuTriggerStyle()}
+                active={location.pathname === '/store-orders'}
+              >
+                Commandes magasins
+              </NavigationMenuLink>
+            </Link>
+          </NavigationMenuItem>
+        )}
         <NavigationMenuItem>
           <Link to="/products">
             <NavigationMenuLink 

@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
 import Reservations from "./pages/Reservations";
+import StoreOrders from "./pages/StoreOrders";
 import { supabase } from "./integrations/supabase/client";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,14 @@ const App = () => (
               element={
                 <PrivateRoute allowedRoles={['superadmin', 'admin']}>
                   <Dashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/store-orders"
+              element={
+                <PrivateRoute allowedRoles={['superadmin']}>
+                  <StoreOrders />
                 </PrivateRoute>
               }
             />
