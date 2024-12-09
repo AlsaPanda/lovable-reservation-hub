@@ -46,11 +46,12 @@ const Products = () => {
   };
 
   const handleSearch = (query: string) => {
-    setSearchQuery(query.toLowerCase());
+    console.log("Search query:", query); // Debug log
+    setSearchQuery(query);
   };
 
   const handleReserveAll = () => {
-    const productsToReserve = products.filter(p => p.initial_quantity > 0);
+    const productsToReserve = filteredProducts.filter(p => p.initial_quantity > 0);
     if (productsToReserve.length === 0) {
       toast({
         title: "Aucun produit sélectionné",
@@ -64,12 +65,20 @@ const Products = () => {
 
   // Filter products based on search query
   const filteredProducts = products.filter(product => {
-    const searchLower = searchQuery.toLowerCase();
-    return (
-      product.name.toLowerCase().includes(searchLower) ||
-      product.reference.toLowerCase().includes(searchLower)
-    );
+    if (!searchQuery.trim()) return true;
+    
+    const search = searchQuery.toLowerCase().trim();
+    const nameMatch = product.name?.toLowerCase().includes(search);
+    const referenceMatch = product.reference?.toLowerCase().includes(search);
+    
+    return nameMatch || referenceMatch;
   });
+
+  // Calculate total quantity from filtered products
+  const totalQuantity = filteredProducts.reduce((acc, product) => {
+    const quantity = parseInt(product.initial_quantity?.toString() || '0');
+    return isNaN(quantity) || quantity <= 0 ? acc : acc + quantity;
+  }, 0);
 
   return (
     <>
