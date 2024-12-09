@@ -13,6 +13,17 @@ const Login = () => {
   useEffect(() => {
     console.log("Login component mounted");
     
+    // Check if user is already logged in
+    const checkCurrentSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        console.log("User already has an active session:", session);
+        navigate("/products");
+      }
+    };
+    
+    checkCurrentSession();
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state changed:', event, session);
       
@@ -40,6 +51,19 @@ const Login = () => {
           toast({
             title: "Réinitialisation du mot de passe",
             description: "Veuillez vérifier votre email",
+          });
+          break;
+
+        case 'USER_DELETED':
+          console.log('User account deleted');
+          break;
+
+        case 'AUTH_ERROR':
+          console.error('Authentication error occurred');
+          toast({
+            variant: "destructive",
+            title: "Erreur d'authentification",
+            description: "Veuillez vérifier vos identifiants",
           });
           break;
         
@@ -82,6 +106,7 @@ const Login = () => {
               },
             }}
             providers={[]}
+            redirectTo={window.location.origin + "/products"}
             localization={{
               variables: {
                 sign_in: {
