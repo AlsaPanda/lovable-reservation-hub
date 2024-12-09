@@ -1,7 +1,7 @@
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -9,27 +9,20 @@ import { useToast } from "@/hooks/use-toast";
 const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [searchParams] = useSearchParams();
-  const isLogout = searchParams.get('action') === 'logout';
 
+  // Vérifie une seule fois la session au montage
   useEffect(() => {
-    // Si on vient d'une déconnexion, on ne fait rien
-    if (isLogout) {
-      return;
-    }
-
-    // Sinon, on vérifie une seule fois la session au montage
-    const checkSession = async () => {
+    const checkInitialSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         navigate("/products");
       }
     };
 
-    checkSession();
-  }, [navigate, isLogout]);
+    checkInitialSession();
+  }, [navigate]);
 
-  // Un seul listener pour les changements d'état d'authentification
+  // Gestion des changements d'état d'authentification
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
@@ -41,9 +34,7 @@ const Login = () => {
       }
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, [navigate, toast]);
 
   return (
