@@ -44,7 +44,8 @@ const NavBar = () => {
         description: "Vous avez été déconnecté avec succès.",
       });
       
-      navigate("/login");
+      // Force navigation to login page
+      window.location.href = '/login';
     } catch (error) {
       console.error("Erreur lors de la déconnexion:", error);
       toast({
