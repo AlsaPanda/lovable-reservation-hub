@@ -8,7 +8,6 @@ export const useUserProfile = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      console.log("Current user:", user);
       
       if (user) {
         const { data, error } = await supabase
@@ -17,10 +16,8 @@ export const useUserProfile = () => {
           .eq('id', user.id)
           .single();
         
-        console.log("User profile data:", data);
-        console.log("User role:", data?.role);
-        
         if (!error && data) {
+          console.log("User role from database:", data.role);
           setUserRole(data.role);
           setStoreName(data.store_name);
         } else {
