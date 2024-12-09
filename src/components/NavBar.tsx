@@ -35,16 +35,23 @@ const NavBar = () => {
   }, []);
 
   const handleLogout = async () => {
+    console.log("Début de la déconnexion...");
     try {
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      console.log("Résultat de la déconnexion:", error ? "Erreur" : "Succès");
       
+      if (error) {
+        console.error("Erreur de déconnexion:", error);
+        throw error;
+      }
+
       toast({
         title: "Déconnexion réussie",
         description: "Vous avez été déconnecté avec succès.",
       });
       
-      // Navigate to login page
-      navigate('/login');
+      console.log("Redirection vers /login...");
+      window.location.href = '/login';
     } catch (error) {
       console.error("Erreur lors de la déconnexion:", error);
       toast({
