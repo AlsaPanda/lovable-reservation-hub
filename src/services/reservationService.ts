@@ -7,7 +7,7 @@ export const fetchReservations = async (userId: string, isSuperAdmin: boolean) =
     .select(`
       *,
       product:products(*),
-      store:profiles(*)
+      store:profiles!inner(*)
     `)
     .order('reservation_date', { ascending: true });
 
