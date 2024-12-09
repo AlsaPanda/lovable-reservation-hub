@@ -93,7 +93,6 @@ const Products = () => {
             });
           }}
           onSearch={setSearchQuery}
-          products={filteredProducts}
           onReserve={handleReserveAll}
           totalQuantity={totalQuantity}
         />
