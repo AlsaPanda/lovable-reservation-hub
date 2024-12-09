@@ -2,12 +2,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Reservation } from "@/utils/types";
 
 export const fetchReservations = async (userId: string, isSuperAdmin: boolean) => {
+  // First fetch reservations with products
   let query = supabase
     .from('reservations')
     .select(`
       *,
-      product:products(*),
-      store:profiles!inner(id, store_name, role, created_at, updated_at)
+      product:products(*)
     `)
     .order('reservation_date', { ascending: true });
 
@@ -16,14 +16,24 @@ export const fetchReservations = async (userId: string, isSuperAdmin: boolean) =
     query = query.eq('store_name', userId);
   }
 
-  const { data, error } = await query;
+  const { data: reservationsData, error: reservationsError } = await query;
   
-  if (error) throw error;
+  if (reservationsError) throw reservationsError;
 
-  // Transform the data to match our Reservation type
-  const transformedData = data.map(item => ({
-    ...item,
-    store: Array.isArray(item.store) ? item.store[0] : item.store
+  // Then fetch profiles separately
+  const { data: profilesData, error: profilesError } = await supabase
+    .from('profiles')
+    .select('*');
+
+  if (profilesError) throw profilesError;
+
+  // Create a map of profiles for easy lookup
+  const profilesMap = new Map(profilesData.map(profile => [profile.id, profile]));
+
+  // Combine the data
+  const transformedData = reservationsData.map(reservation => ({
+    ...reservation,
+    store: profilesMap.get(reservation.store_name)
   }));
 
   return transformedData as Reservation[];
