@@ -8,6 +8,7 @@ type NavigationLinksProps = {
 
 const NavigationLinks = ({ userRole }: NavigationLinksProps) => {
   const location = useLocation();
+  console.log('Current user role:', userRole); // Add logging to help debug
 
   return (
     <NavigationMenu>
