@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ProductCardProps {
   product: Product;
@@ -20,28 +21,56 @@ const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1488590528505-98d2b5aba
 const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCardProps) => {
   const session = useSession();
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchUserRole = async () => {
-      if (session?.user?.id) {
+      if (!session?.user?.id) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
         const { data, error } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', session.user.id)
           .single();
         
-        if (!error && data) {
+        if (error) {
+          console.error('Error fetching user role:', error);
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Impossible de récupérer le rôle de l'utilisateur.",
+          });
+        } else if (data) {
           setUserRole(data.role);
         }
+      } catch (error) {
+        console.error('Error in fetchUserRole:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchUserRole();
-  }, [session]);
+  }, [session, toast]);
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.src = DEFAULT_IMAGE;
   };
+
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    console.log(`Changing quantity for ${product.reference} to ${newValue}`);
+    onQuantityChange(product.reference, newValue);
+  };
+
+  if (isLoading) {
+    return <div>Chargement...</div>;
+  }
 
   const isAdmin = userRole === 'admin' || userRole === 'superadmin';
 
@@ -52,22 +81,24 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
           <CardTitle className="text-xl">
             <span className="line-clamp-2 font-semibold text-gray-900">{product.name}</span>
           </CardTitle>
-          <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onEdit(product)}
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onDelete(product.reference)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
+          {isAdmin && (
+            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onEdit(product)}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onDelete(product.reference)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </div>
       </CardHeader>
       <CardContent>
@@ -91,8 +122,8 @@ const ProductCard = ({ product, onQuantityChange, onEdit, onDelete }: ProductCar
                   <span className="text-sm font-medium">Quantité souhaitée:</span>
                   <Input
                     type="number"
-                    value={product.initial_quantity}
-                    onChange={(e) => onQuantityChange(product.reference, e.target.value)}
+                    value={product.initial_quantity || 0}
+                    onChange={handleQuantityChange}
                     className="w-24 h-8"
                     min="0"
                   />

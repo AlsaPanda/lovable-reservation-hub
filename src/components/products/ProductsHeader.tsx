@@ -27,40 +27,46 @@ const ProductsHeader = ({
 }: ProductsHeaderProps) => {
   const session = useSession();
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   useEffect(() => {
     const fetchUserRole = async () => {
-      if (session?.user?.id) {
-        try {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (error) {
-            console.error('Error fetching user role:', error);
-            toast({
-              variant: "destructive",
-              title: "Erreur",
-              description: "Impossible de récupérer le rôle de l'utilisateur.",
-            });
-            return;
-          }
-          
-          if (data) {
-            setUserRole(data.role);
-          }
-        } catch (error) {
-          console.error('Error in fetchUserRole:', error);
+      if (!session?.user?.id) {
+        console.log('No session or user ID available');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        console.log('Fetching user role for ID:', session.user.id);
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (error) {
+          console.error('Error fetching user role:', error);
           toast({
             variant: "destructive",
             title: "Erreur",
-            description: "Une erreur est survenue lors de la récupération du rôle.",
+            description: "Impossible de récupérer le rôle de l'utilisateur.",
           });
+        } else if (data) {
+          console.log('User role fetched successfully:', data.role);
+          setUserRole(data.role);
         }
+      } catch (error) {
+        console.error('Error in fetchUserRole:', error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la récupération du rôle.",
+        });
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -69,6 +75,7 @@ const ProductsHeader = ({
 
   const handleResetQuantities = async () => {
     try {
+      console.log('Attempting to reset quantities');
       const { error } = await supabase.rpc('reset_all_quantities');
 
       if (error) {
@@ -113,6 +120,10 @@ const ProductsHeader = ({
       });
     }
   };
+
+  if (isLoading) {
+    return <div>Chargement...</div>;
+  }
 
   const isAdmin = userRole === 'admin' || userRole === 'superadmin';
   const canResetQuantities = !isAdmin && (userRole === 'magasin');
