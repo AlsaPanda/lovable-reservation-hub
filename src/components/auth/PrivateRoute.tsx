@@ -13,7 +13,6 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
   const session = useSession();
   const [userRole, setUserRole] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
-  const [hasError, setHasError] = React.useState(false);
   
   React.useEffect(() => {
     const checkUserRole = async () => {
@@ -23,19 +22,14 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
       }
       
       try {
-        console.log("Fetching user role for ID:", session.user.id);
         const { data, error } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', session.user.id)
           .single();
         
-        console.log("Profile data response:", data);
-        console.log("Profile error response:", error);
-        
         if (error) {
           console.error("Error fetching user role:", error);
-          setHasError(true);
           setIsLoading(false);
           return;
         }
@@ -43,7 +37,6 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
         setUserRole(data?.role);
       } catch (error) {
         console.error("Error in checkUserRole:", error);
-        setHasError(true);
       } finally {
         setIsLoading(false);
       }
@@ -51,24 +44,6 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
 
     checkUserRole();
   }, [session]);
-
-  React.useEffect(() => {
-    const handleSessionError = async () => {
-      if (hasError) {
-        try {
-          localStorage.clear();
-          sessionStorage.clear();
-          await supabase.auth.signOut();
-        } catch (error) {
-          console.error("Error during cleanup:", error);
-        } finally {
-          window.location.href = '/login';
-        }
-      }
-    };
-
-    handleSessionError();
-  }, [hasError]);
 
   if (isLoading) {
     return <div>Chargement...</div>;

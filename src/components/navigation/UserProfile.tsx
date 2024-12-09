@@ -1,22 +1,32 @@
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 type UserProfileProps = {
   storeName: string;
 };
 
 const UserProfile = ({ storeName }: UserProfileProps) => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
   const handleLogout = async () => {
     try {
-      // Nettoyage complet avant la déconnexion
-      localStorage.clear();
-      sessionStorage.clear();
       await supabase.auth.signOut();
+      toast({
+        title: "Déconnexion réussie",
+        description: "Vous avez été déconnecté avec succès",
+      });
+      navigate('/login');
     } catch (error) {
       console.error("Logout error:", error);
-    } finally {
-      window.location.href = '/login?action=logout';
+      toast({
+        title: "Erreur de déconnexion",
+        description: "Une erreur est survenue lors de la déconnexion",
+        variant: "destructive",
+      });
     }
   };
 
