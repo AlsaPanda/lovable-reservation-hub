@@ -6,6 +6,7 @@ import ProductGrid from "@/components/products/ProductGrid";
 import ProductsHeader from "@/components/products/ProductsHeader";
 import ProductActions from "@/components/products/ProductActions";
 import PageHeader from "@/components/products/PageHeader";
+import ProductSearch from "@/components/products/ProductSearch";
 import { useProducts } from "@/hooks/useProducts";
 import { useProductMutations } from "@/hooks/useProductMutations";
 import { useReservationMutation } from "@/hooks/useReservationMutation";
@@ -43,10 +44,6 @@ const Products = () => {
     updateProductMutation.mutate(data);
     setOpen(false);
     setEditingProduct(null);
-  };
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
   };
 
   const filteredProducts = products.filter(product => {
@@ -88,7 +85,7 @@ const Products = () => {
               addProductMutation.mutate(product);
             });
           }}
-          onSearch={handleSearch}
+          onSearch={setSearchQuery}
           products={filteredProducts}
           onReserve={handleReserveAll}
         />
