@@ -11,25 +11,6 @@ const Login = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Nettoyage de la session au chargement de la page de login
-    const cleanupSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        console.log("No active session found");
-        return;
-      }
-      
-      // Si une session existe, on la nettoie explicitement
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error("Error cleaning up session:", error);
-      } else {
-        console.log("Session cleaned up successfully");
-      }
-    };
-
-    cleanupSession();
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state changed:', event, session);
       
