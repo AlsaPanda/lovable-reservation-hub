@@ -46,7 +46,7 @@ const Products = () => {
   };
 
   const handleSearch = (query: string) => {
-    setSearchQuery(query);
+    setSearchQuery(query.toLowerCase());
   };
 
   const handleReserveAll = () => {
@@ -63,10 +63,13 @@ const Products = () => {
   };
 
   // Filter products based on search query
-  const filteredProducts = products.filter(product => 
-    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.reference.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredProducts = products.filter(product => {
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      product.name.toLowerCase().includes(searchLower) ||
+      product.reference.toLowerCase().includes(searchLower)
+    );
+  });
 
   return (
     <>
@@ -82,7 +85,7 @@ const Products = () => {
             });
           }}
           onSearch={handleSearch}
-          products={products}
+          products={filteredProducts}
           onReserve={handleReserveAll}
         />
 
