@@ -12,6 +12,7 @@ const PrivateRoute = ({ children, allowedRoles }: PrivateRouteProps) => {
   const session = useSession();
   const [userRole, setUserRole] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [hasError, setHasError] = React.useState(false);
   
   React.useEffect(() => {
     const checkUserRole = async () => {
@@ -29,6 +30,7 @@ const PrivateRoute = ({ children, allowedRoles }: PrivateRouteProps) => {
         
         if (error) {
           console.error("Error fetching user role:", error);
+          setHasError(true);
           setIsLoading(false);
           return;
         }
@@ -36,6 +38,7 @@ const PrivateRoute = ({ children, allowedRoles }: PrivateRouteProps) => {
         setUserRole(data?.role);
       } catch (error) {
         console.error("Error in checkUserRole:", error);
+        setHasError(true);
       } finally {
         setIsLoading(false);
       }
@@ -48,7 +51,12 @@ const PrivateRoute = ({ children, allowedRoles }: PrivateRouteProps) => {
     return <div>Chargement...</div>;
   }
   
-  if (!session) {
+  // Si une erreur survient ou si la session n'existe pas, rediriger vers la page de connexion
+  if (hasError || !session) {
+    // Déconnexion explicite en cas d'erreur de session
+    if (hasError) {
+      supabase.auth.signOut();
+    }
     return <Navigate to="/login" />;
   }
   
