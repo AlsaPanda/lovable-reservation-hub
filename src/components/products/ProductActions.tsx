@@ -13,7 +13,7 @@ const ProductActions = () => {
       const { error } = await supabase
         .from('products')
         .update({ initial_quantity: 0 })
-        .neq('id', ''); // Cette condition permet de mettre à jour tous les produits
+        .gt('id', '0'); // Cette condition sélectionne tous les produits car les UUID sont toujours > '0'
 
       if (error) throw error;
 
