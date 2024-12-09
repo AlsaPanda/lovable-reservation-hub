@@ -13,9 +13,17 @@ const Login = () => {
   // Vérifie une seule fois la session au montage
   useEffect(() => {
     const checkInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      console.log("Checking initial session...");
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("Error checking session:", error);
+        return;
+      }
       if (session) {
+        console.log("Initial session found:", session);
         navigate("/products");
+      } else {
+        console.log("No initial session found");
       }
     };
 
@@ -24,8 +32,11 @@ const Login = () => {
 
   // Gestion des changements d'état d'authentification
   useEffect(() => {
+    console.log("Setting up auth state change listener");
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event, session);
       if (event === 'SIGNED_IN' && session) {
+        console.log("User signed in successfully:", session);
         toast({
           title: "Connexion réussie",
           description: "Vous allez être redirigé vers la page des produits",
@@ -34,7 +45,10 @@ const Login = () => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log("Cleaning up auth subscription");
+      subscription.unsubscribe();
+    };
   }, [navigate, toast]);
 
   return (
