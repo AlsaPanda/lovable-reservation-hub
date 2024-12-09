@@ -23,11 +23,15 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
       }
       
       try {
+        console.log("Fetching user role for ID:", session.user.id);
         const { data, error } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', session.user.id)
           .single();
+        
+        console.log("Profile data response:", data);
+        console.log("Profile error response:", error);
         
         if (error) {
           console.error("Error fetching user role:", error);
