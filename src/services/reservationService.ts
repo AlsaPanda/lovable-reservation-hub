@@ -11,6 +11,7 @@ export const fetchReservations = async (userId: string, isSuperAdmin: boolean) =
     `)
     .order('reservation_date', { ascending: true });
 
+  // Only filter by store_name if not a superadmin
   if (!isSuperAdmin) {
     query = query.eq('store_name', userId);
   }
