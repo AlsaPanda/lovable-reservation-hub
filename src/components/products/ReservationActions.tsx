@@ -14,11 +14,16 @@ const ReservationActions = ({
   totalQuantity,
   canResetQuantities,
 }: ReservationActionsProps) => {
+  console.log('ReservationActions rendered with totalQuantity:', totalQuantity);
+  
   return (
     <div className="flex gap-2">
       <Button
         size="default"
-        onClick={onReserve}
+        onClick={() => {
+          console.log('Reserve button clicked with totalQuantity:', totalQuantity);
+          onReserve();
+        }}
         disabled={totalQuantity === 0}
         className="whitespace-nowrap"
       >
@@ -29,7 +34,10 @@ const ReservationActions = ({
         <Button
           variant="outline"
           size="default"
-          onClick={onReset}
+          onClick={() => {
+            console.log('Reset button clicked');
+            onReset();
+          }}
           className="whitespace-nowrap"
         >
           <RotateCcw className="mr-2 h-4 w-4" />

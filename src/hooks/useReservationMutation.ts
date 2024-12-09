@@ -11,6 +11,8 @@ export const useReservationMutation = () => {
 
   const addReservationMutation = useMutation({
     mutationFn: async (productsToReserve: Product[]) => {
+      console.log('Starting reservation mutation with products:', productsToReserve);
+      
       const reservations = productsToReserve
         .filter(product => product.initial_quantity > 0)
         .map(product => ({
@@ -20,13 +22,32 @@ export const useReservationMutation = () => {
           reservation_date: new Date().toISOString()
         }));
 
+      console.log('Processed reservations to insert:', reservations);
+
+      if (reservations.length === 0) {
+        console.log('No valid reservations to process');
+        throw new Error('Aucun produit à réserver');
+      }
+
       const { error } = await supabase
         .from('reservations')
         .insert(reservations);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error inserting reservations:', error);
+        throw error;
+      }
+
+      // Reset quantities after successful reservation
+      const { error: resetError } = await supabase.rpc('reset_all_quantities');
+      
+      if (resetError) {
+        console.error('Error resetting quantities:', resetError);
+        throw resetError;
+      }
     },
     onSuccess: () => {
+      console.log('Reservation mutation succeeded, invalidating queries');
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['reservations'] });
       toast({
@@ -35,9 +56,10 @@ export const useReservationMutation = () => {
       });
     },
     onError: (error) => {
+      console.error('Reservation mutation failed:', error);
       toast({
         title: "Erreur",
-        description: error.message,
+        description: error.message || "Une erreur est survenue lors de la réservation.",
         variant: "destructive"
       });
     }

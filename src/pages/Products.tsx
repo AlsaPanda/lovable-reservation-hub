@@ -23,6 +23,7 @@ const Products = () => {
   const { addReservationMutation } = useReservationMutation();
 
   const handleQuantityChange = (reference: string, newQuantity: string) => {
+    console.log(`Updating quantity for ${reference} to ${newQuantity}`);
     const quantity = parseInt(newQuantity);
     if (isNaN(quantity) || quantity < 0) return;
 
@@ -57,16 +58,21 @@ const Products = () => {
   }, [products, searchQuery]);
 
   const totalQuantity = useMemo(() => {
-    return filteredProducts.reduce((acc, product) => {
+    const total = filteredProducts.reduce((acc, product) => {
       const quantity = parseInt(product.initial_quantity?.toString() || '0');
       return acc + (isNaN(quantity) || quantity < 0 ? 0 : quantity);
     }, 0);
+    console.log('Calculated total quantity:', total);
+    return total;
   }, [filteredProducts]);
 
   const handleReserveAll = () => {
+    console.log('Starting reservation process');
     const productsToReserve = filteredProducts.filter(product => 
       Number(product.initial_quantity) > 0
     );
+    
+    console.log('Products to reserve:', productsToReserve);
     
     if (productsToReserve.length === 0) {
       toast({
@@ -76,6 +82,7 @@ const Products = () => {
       });
       return;
     }
+
     addReservationMutation.mutate(productsToReserve);
   };
 
