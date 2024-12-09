@@ -8,29 +8,8 @@ type UserProfileProps = {
 
 const UserProfile = ({ storeName }: UserProfileProps) => {
   const handleLogout = async () => {
-    console.log("Déconnexion initiée");
-    try {
-      // 1. Supprimer tous les tokens de localStorage
-      for (const key of Object.keys(localStorage)) {
-        if (key.startsWith('sb-')) {
-          localStorage.removeItem(key);
-        }
-      }
-      
-      // 2. Forcer la déconnexion Supabase
-      await supabase.auth.signOut();
-      
-      // 3. Vider le sessionStorage aussi
-      sessionStorage.clear();
-      
-      // 4. Rediriger vers login avec un paramètre pour éviter la reconnexion
-      window.location.href = '/login?action=logout';
-      
-    } catch (error) {
-      console.error("Erreur critique lors de la déconnexion:", error);
-      // En cas d'erreur, on force quand même la redirection
-      window.location.href = '/login?action=logout';
-    }
+    await supabase.auth.signOut();
+    window.location.href = '/login?action=logout';
   };
 
   return (

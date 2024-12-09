@@ -10,74 +10,41 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
+  const isLogout = searchParams.get('action') === 'logout';
 
   useEffect(() => {
-    console.log("Login component mounted");
-    
-    // Si on vient d'une déconnexion, on ne vérifie pas la session
-    if (searchParams.get('action') === 'logout') {
-      console.log("Logout action detected, skipping session check");
+    // Si on vient d'une déconnexion, on ne fait rien
+    if (isLogout) {
       return;
     }
-    
-    // Check if user is already logged in
-    const checkCurrentSession = async () => {
+
+    // Sinon, on vérifie une seule fois la session au montage
+    const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        console.log("User already has an active session:", session);
         navigate("/products");
       }
     };
-    
-    checkCurrentSession();
-    
+
+    checkSession();
+  }, [navigate, isLogout]);
+
+  // Un seul listener pour les changements d'état d'authentification
+  useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session);
-      
-      switch(event) {
-        case 'SIGNED_IN':
-          if (session) {
-            console.log('User signed in successfully:', session.user);
-            toast({
-              title: "Connexion réussie",
-              description: "Vous allez être redirigé vers la page des produits",
-            });
-            navigate("/products");
-          }
-          break;
-        
-        case 'SIGNED_OUT':
-          console.log('User signed out');
-          // On s'assure que la session est bien nettoyée
-          for (const key of Object.keys(localStorage)) {
-            if (key.startsWith('sb-')) {
-              localStorage.removeItem(key);
-            }
-          }
-          sessionStorage.clear();
-          break;
-        
-        case 'USER_UPDATED':
-          console.log('User profile updated:', session);
-          break;
-        
-        case 'PASSWORD_RECOVERY':
-          toast({
-            title: "Réinitialisation du mot de passe",
-            description: "Veuillez vérifier votre email",
-          });
-          break;
-        
-        default:
-          console.log('Auth event:', event);
+      if (event === 'SIGNED_IN' && session) {
+        toast({
+          title: "Connexion réussie",
+          description: "Vous allez être redirigé vers la page des produits",
+        });
+        navigate("/products");
       }
     });
 
     return () => {
-      console.log("Cleaning up auth subscription");
       subscription.unsubscribe();
     };
-  }, [navigate, toast, searchParams]);
+  }, [navigate, toast]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-secondary p-4">

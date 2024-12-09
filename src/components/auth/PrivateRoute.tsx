@@ -43,32 +43,16 @@ const PrivateRoute = ({ children, allowedRoles }: PrivateRouteProps) => {
 
     checkUserRole();
   }, [session]);
-  
-  React.useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
-      console.log("Auth state changed:", event, currentSession);
-      if (event === 'SIGNED_OUT') {
-        // On s'assure que la session est bien supprimée
-        supabase.auth.signOut();
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
 
   if (isLoading) {
     return <div>Chargement...</div>;
   }
   
   if (!session) {
-    console.log("No session, redirecting to login");
     return <Navigate to="/login" />;
   }
   
   if (allowedRoles && !allowedRoles.includes(userRole || '')) {
-    console.log("User role not authorized:", userRole);
     return <Navigate to="/products" />;
   }
   
