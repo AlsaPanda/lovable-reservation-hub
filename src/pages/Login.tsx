@@ -11,6 +11,25 @@ const Login = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    // Nettoyage de la session au chargement de la page de login
+    const cleanupSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.log("No active session found");
+        return;
+      }
+      
+      // Si une session existe, on la nettoie explicitement
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Error cleaning up session:", error);
+      } else {
+        console.log("Session cleaned up successfully");
+      }
+    };
+
+    cleanupSession();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state changed:', event, session);
       
@@ -28,7 +47,6 @@ const Login = () => {
         
         case 'SIGNED_OUT':
           console.log('User signed out');
-          navigate("/");
           break;
         
         case 'USER_UPDATED':
@@ -46,28 +64,6 @@ const Login = () => {
           console.log('Auth event:', event);
       }
     });
-
-    // Check current session on mount
-    const checkSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      console.log('Current session:', session, 'Error:', error);
-      
-      if (error) {
-        console.error('Session check error:', error);
-        toast({
-          title: "Erreur de session",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (session) {
-        navigate("/products");
-      }
-    };
-    
-    checkSession();
 
     return () => {
       subscription.unsubscribe();
