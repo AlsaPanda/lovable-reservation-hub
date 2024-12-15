@@ -16,7 +16,10 @@ export const useProductMutations = () => {
           name: product.name,
           description: product.description,
           initial_quantity: product.initial_quantity,
-          image_url: product.image_url
+          image_url: product.image_url,
+          purchase_price_ht: product.purchase_price_ht,
+          sale_price_ttc: product.sale_price_ttc,
+          product_url: product.product_url
         });
       if (error) throw error;
     },
@@ -38,7 +41,10 @@ export const useProductMutations = () => {
           name: product.name,
           description: product.description,
           initial_quantity: product.initial_quantity,
-          image_url: product.image_url
+          image_url: product.image_url,
+          purchase_price_ht: product.purchase_price_ht,
+          sale_price_ttc: product.sale_price_ttc,
+          product_url: product.product_url
         })
         .eq('reference', product.reference);
       if (error) throw error;
