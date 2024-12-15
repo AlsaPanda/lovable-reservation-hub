@@ -5,6 +5,7 @@ import StarterKit from '@tiptap/starter-kit';
 import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 const ProductsHeaderContent = () => {
   const { toast } = useToast();
@@ -34,13 +35,19 @@ const ProductsHeaderContent = () => {
 
   const editor = useEditor({
     extensions: [StarterKit],
-    content: content,
     editable: isSuperAdmin,
+    content: '',
   });
+
+  // Mettre à jour le contenu de l'éditeur quand les données sont chargées
+  useEffect(() => {
+    if (editor && content) {
+      editor.commands.setContent(content);
+    }
+  }, [editor, content]);
 
   const updateContentMutation = useMutation({
     mutationFn: async (newContent: string) => {
-      // On récupère d'abord l'ID existant s'il existe
       const { data: existingContent } = await supabase
         .from('content_blocks')
         .select('id')
@@ -52,7 +59,7 @@ const ProductsHeaderContent = () => {
       const { error } = await supabase
         .from('content_blocks')
         .upsert({
-          id: existingContent?.id, // Utilise l'ID existant s'il existe
+          id: existingContent?.id,
           placement: 'products_header',
           content: newContent,
         });
