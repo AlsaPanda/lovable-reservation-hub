@@ -4,7 +4,7 @@ import { Product } from "@/utils/types";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import ProductImage from "./ProductImage";
 import ProductAdminActions from "./ProductAdminActions";
 import ProductDetails from "./ProductDetails";
@@ -25,15 +25,10 @@ const ProductCard = ({ product, quantity = 0, onQuantityChange, onEdit, onDelete
 
   useEffect(() => {
     const fetchUserRole = async () => {
-      if (!session?.user?.id) {
-        setIsLoading(false);
-        return;
-      }
-
       try {
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
         
-        if (sessionError || !sessionData.session) {
+        if (sessionError || !currentSession) {
           console.error("Session error:", sessionError);
           toast({
             variant: "destructive",
@@ -41,40 +36,51 @@ const ProductCard = ({ product, quantity = 0, onQuantityChange, onEdit, onDelete
             description: "Veuillez vous reconnecter",
           });
           await supabase.auth.signOut();
-          setIsLoading(false);
           return;
         }
 
-        const { data, error } = await supabase
+        if (!currentSession.user?.id) {
+          console.log('No user ID in session');
+          return;
+        }
+
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('role')
-          .eq('id', session.user.id)
+          .eq('id', currentSession.user.id)
           .single();
         
-        if (error) {
-          console.error('Error fetching user role:', error);
+        if (profileError) {
+          console.error("Error fetching user role:", profileError);
           toast({
             variant: "destructive",
             title: "Erreur",
             description: "Impossible de récupérer votre rôle",
           });
-        } else if (data) {
-          console.log('User role fetched successfully:', data.role);
-          setUserRole(data.role);
+          return;
+        }
+        
+        if (profileData) {
+          console.log('User role fetched successfully:', profileData.role);
+          setUserRole(profileData.role);
         }
       } catch (error) {
-        console.error('Error in fetchUserRole:', error);
+        console.error("Error in fetchUserRole:", error);
         toast({
           variant: "destructive",
-            title: "Erreur",
-            description: "Une erreur est survenue",
+          title: "Erreur",
+          description: "Une erreur est survenue",
         });
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchUserRole();
+    if (session?.user?.id) {
+      fetchUserRole();
+    } else {
+      setIsLoading(false);
+    }
   }, [session, toast]);
 
   if (isLoading) {
