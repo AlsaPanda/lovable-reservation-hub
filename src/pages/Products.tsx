@@ -5,15 +5,14 @@ import ProductForm from "@/components/products/ProductForm";
 import ProductGrid from "@/components/products/ProductGrid";
 import ProductsHeader from "@/components/products/ProductsHeader";
 import PageHeader from "@/components/products/PageHeader";
+import ProductsHeaderContent from "@/components/products/ProductsHeaderContent";
 import { useProducts } from "@/hooks/useProducts";
 import { useProductMutations } from "@/hooks/useProductMutations";
 import { useReservationMutation } from "@/hooks/useReservationMutation";
 import { useToast } from "@/components/ui/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
 
 const Products = () => {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -95,6 +94,7 @@ const Products = () => {
       <NavBar />
       <div className="container mx-auto p-6 space-y-6">
         <PageHeader title="Réservation des produits" />
+        <ProductsHeaderContent />
 
         <ProductsHeader
           onOpenDialog={() => setOpen(true)}

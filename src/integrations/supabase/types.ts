@@ -9,6 +9,30 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      content_blocks: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          placement: Database["public"]["Enums"]["content_placement"]
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          placement: Database["public"]["Enums"]["content_placement"]
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          placement?: Database["public"]["Enums"]["content_placement"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           created_at: string
@@ -115,6 +139,7 @@ export type Database = {
       }
     }
     Enums: {
+      content_placement: "products_header"
       user_role: "user" | "superadmin" | "magasin"
     }
     CompositeTypes: {
