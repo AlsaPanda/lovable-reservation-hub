@@ -10,7 +10,6 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Vérifie une seule fois la session au montage
   useEffect(() => {
     const checkInitialSession = async () => {
       console.log("Checking initial session...");
@@ -28,7 +27,7 @@ const Login = () => {
         }
 
         if (session) {
-          console.log("Initial session found:", session);
+          console.log("Initial session found, redirecting to products");
           navigate("/products");
         } else {
           console.log("No initial session found");
@@ -46,14 +45,13 @@ const Login = () => {
     checkInitialSession();
   }, [navigate, toast]);
 
-  // Gestion des changements d'état d'authentification
   useEffect(() => {
     console.log("Setting up auth state change listener");
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session);
+      console.log("Auth state changed:", event);
       
       if (event === 'SIGNED_IN' && session) {
-        console.log("User signed in successfully:", session);
+        console.log("User signed in successfully");
         toast({
           title: "Connexion réussie",
           description: "Vous allez être redirigé vers la page des produits",
@@ -62,6 +60,12 @@ const Login = () => {
       } else if (event === 'SIGNED_OUT') {
         console.log("User signed out");
         navigate("/login");
+      } else if (event === 'USER_UPDATED') {
+        console.log("User updated");
+      } else if (event === 'PASSWORD_RECOVERY') {
+        console.log("Password recovery event");
+      } else if (event === 'TOKEN_REFRESHED') {
+        console.log("Token refreshed");
       }
     });
 
@@ -99,7 +103,6 @@ const Login = () => {
               },
             }}
             providers={[]}
-            redirectTo={window.location.origin + "/products"}
             localization={{
               variables: {
                 sign_in: {
