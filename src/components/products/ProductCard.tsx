@@ -123,7 +123,7 @@ const ProductCard = ({ product, quantity = 0, onQuantityChange, onEdit, onDelete
               {product.description}
             </p>
             <div className="space-y-2">
-              <p className="text-sm font-medium">SKU: {product.reference}</p>
+              <p className="text-sm font-medium">Référence: {product.reference}</p>
               {!isAdmin && (
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">Quantité souhaitée:</span>
