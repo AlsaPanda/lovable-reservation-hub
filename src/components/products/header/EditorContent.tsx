@@ -1,20 +1,20 @@
-import { Editor, EditorContent } from '@tiptap/react';
+import { Editor, EditorContent as TipTapEditor } from '@tiptap/react';
 import { Pencil } from "lucide-react";
 
-interface EditorContentProps {
+interface ProductsHeaderEditorProps {
   editor: Editor | null;
   isEditing: boolean;
   isSuperAdmin: boolean;
   onStartEdit: () => void;
 }
 
-const EditorContent = ({ editor, isEditing, isSuperAdmin, onStartEdit }: EditorContentProps) => {
+const ProductsHeaderEditor = ({ editor, isEditing, isSuperAdmin, onStartEdit }: ProductsHeaderEditorProps) => {
   if (!editor) return null;
 
   return (
     <div className="relative group">
       <div className={`text-gray-600 ${isEditing ? 'border rounded-lg p-4' : ''}`}>
-        <EditorContent editor={editor} />
+        <TipTapEditor editor={editor} />
       </div>
       {isSuperAdmin && !isEditing && (
         <button
@@ -28,4 +28,4 @@ const EditorContent = ({ editor, isEditing, isSuperAdmin, onStartEdit }: EditorC
   );
 };
 
-export default EditorContent;
+export default ProductsHeaderEditor;
