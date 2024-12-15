@@ -26,8 +26,8 @@ const ProductDetails = ({ product, isAdmin, quantity, onQuantityChange }: Produc
         <p className="text-sm font-medium">Référence: {product.reference}</p>
         {isAdmin && (
           <>
-            <p className="text-sm font-medium">Prix d'achat HT: {formatPrice(product.purchase_price_ht)}</p>
-            <p className="text-sm font-medium">Prix de vente TTC: {formatPrice(product.sale_price_ttc)}</p>
+            <p className="text-sm font-medium">PA HT: {formatPrice(product.purchase_price_ht)}</p>
+            <p className="text-sm font-medium">PV TTC: {formatPrice(product.sale_price_ttc)}</p>
           </>
         )}
         {!isAdmin && (
@@ -50,7 +50,7 @@ const ProductDetails = ({ product, isAdmin, quantity, onQuantityChange }: Produc
             onClick={() => window.open(product.product_url, '_blank')}
           >
             <ExternalLink className="h-4 w-4 mr-2" />
-            Voir la fiche produit
+            Plus d'infos
           </Button>
         )}
       </div>
