@@ -29,7 +29,8 @@ const ProductForm = ({ onSubmit, editingProduct, open, onOpenChange }: ProductFo
   };
 
   const form = useForm<Product>({
-    defaultValues
+    defaultValues,
+    values: editingProduct || undefined
   });
 
   return (
