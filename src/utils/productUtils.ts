@@ -47,16 +47,16 @@ export const importProducts = (file: File): Promise<Product[]> => {
           
           const products: Product[] = jsonData.map((row: any) => ({
             id: '',
-            reference: row['sku']?.toString() || '',
-            name: row['name-fr_FR-cla']?.toString() || row['sku']?.toString() || '',
+            reference: row['reference']?.toString() || row['sku']?.toString() || '',
+            name: row['name']?.toString() || row['name-fr_FR-cla']?.toString() || '',
             description: row['description']?.toString() || '',
-            initial_quantity: 0,
-            image_url: row['image-file_path']?.toString() || 'https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=500',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
+            initial_quantity: parseInt(row['initial_quantity']) || 0,
+            image_url: row['image_url']?.toString() || row['image-file_path']?.toString() || 'https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=500',
             purchase_price_ht: parseFloat(row['purchase_price_ht']) || null,
             sale_price_ttc: parseFloat(row['sale_price_ttc']) || null,
-            product_url: row['product_url']?.toString() || null
+            product_url: row['product_url']?.toString() || null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           }));
           
           resolve(products);
