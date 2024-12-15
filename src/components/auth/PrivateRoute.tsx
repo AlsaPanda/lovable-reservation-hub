@@ -1,5 +1,5 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -15,54 +15,53 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
   const [userRole, setUserRole] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   React.useEffect(() => {
-    const checkUserRole = async () => {
-      if (!session?.user?.id) {
-        console.log('No session or user ID available');
-        setIsLoading(false);
-        return;
-      }
-      
+    const checkSession = async () => {
       try {
-        console.log('Fetching role for user:', session.user.id);
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
         
-        if (sessionError || !sessionData.session) {
+        if (sessionError || !currentSession) {
           console.error("Session error:", sessionError);
           toast({
             variant: "destructive",
-            title: "Erreur de session",
+            title: "Session expirée",
             description: "Veuillez vous reconnecter",
           });
           await supabase.auth.signOut();
-          setIsLoading(false);
+          navigate('/login');
           return;
         }
 
-        const { data, error } = await supabase
+        if (!currentSession.user?.id) {
+          console.log('No user ID in session');
+          navigate('/login');
+          return;
+        }
+
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('role')
-          .eq('id', session.user.id)
+          .eq('id', currentSession.user.id)
           .single();
         
-        if (error) {
-          console.error("Error fetching user role:", error);
+        if (profileError) {
+          console.error("Error fetching user role:", profileError);
           toast({
             variant: "destructive",
             title: "Erreur",
             description: "Impossible de récupérer votre rôle",
           });
-          setIsLoading(false);
           return;
         }
         
-        if (data) {
-          console.log('Role fetched successfully:', data.role);
-          setUserRole(data.role);
+        if (profileData) {
+          console.log('Role fetched successfully:', profileData.role);
+          setUserRole(profileData.role);
         }
       } catch (error) {
-        console.error("Error in checkUserRole:", error);
+        console.error("Error in checkSession:", error);
         toast({
           variant: "destructive",
           title: "Erreur",
@@ -73,8 +72,18 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
       }
     };
 
-    checkUserRole();
-  }, [session, toast]);
+    checkSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT') {
+        navigate('/login');
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate, toast]);
 
   if (isLoading) {
     return <div>Chargement...</div>;
