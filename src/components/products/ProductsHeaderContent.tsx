@@ -5,13 +5,15 @@ import StarterKit from '@tiptap/starter-kit';
 import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Pencil } from "lucide-react";
 
 const ProductsHeaderContent = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { userRole } = useUserRole();
   const isSuperAdmin = userRole === 'superadmin';
+  const [isEditing, setIsEditing] = useState(false);
 
   const { data: content, isLoading } = useQuery({
     queryKey: ['header-content'],
@@ -35,7 +37,7 @@ const ProductsHeaderContent = () => {
 
   const editor = useEditor({
     extensions: [StarterKit],
-    editable: isSuperAdmin,
+    editable: isEditing,
     content: '',
   });
 
@@ -68,6 +70,7 @@ const ProductsHeaderContent = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['header-content'] });
+      setIsEditing(false);
       toast({
         title: "Contenu mis à jour",
         description: "Le contenu de l'en-tête a été mis à jour avec succès.",
@@ -95,16 +98,37 @@ const ProductsHeaderContent = () => {
 
   return (
     <div className="prose prose-gray max-w-none mb-6">
-      <div className={`text-gray-600 ${isSuperAdmin ? 'border rounded-lg p-4' : ''}`}>
-        <EditorContent editor={editor} />
+      <div className="relative group">
+        <div className={`text-gray-600 ${isEditing ? 'border rounded-lg p-4' : ''}`}>
+          <EditorContent editor={editor} />
+        </div>
+        {isSuperAdmin && !isEditing && (
+          <button
+            onClick={() => setIsEditing(true)}
+            className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-full shadow-sm hover:shadow-md"
+          >
+            <Pencil className="h-4 w-4 text-gray-600" />
+          </button>
+        )}
       </div>
-      {isSuperAdmin && (
-        <div className="mt-4">
+      {isSuperAdmin && isEditing && (
+        <div className="mt-4 flex gap-2">
           <Button 
             onClick={handleSave}
             disabled={updateContentMutation.isPending}
           >
             {updateContentMutation.isPending ? 'Sauvegarde...' : 'Sauvegarder les modifications'}
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={() => {
+              setIsEditing(false);
+              if (editor && content) {
+                editor.commands.setContent(content);
+              }
+            }}
+          >
+            Annuler
           </Button>
         </div>
       )}
