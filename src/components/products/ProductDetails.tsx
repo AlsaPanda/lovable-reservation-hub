@@ -18,30 +18,42 @@ const ProductDetails = ({ product, isAdmin, quantity, onQuantityChange }: Produc
   };
 
   return (
-    <div className="space-y-2">
-      <p className="text-sm text-muted-foreground line-clamp-3">
-        {product.description}
-      </p>
+    <div className="space-y-4">
       <div className="space-y-2">
-        <p className="text-sm font-medium">Référence: {product.reference}</p>
-        {isAdmin && (
-          <>
-            <p className="text-sm font-medium">PA HT: {formatPrice(product.purchase_price_ht)}</p>
-            <p className="text-sm font-medium">PV TTC: {formatPrice(product.sale_price_ttc)}</p>
-          </>
-        )}
-        {!isAdmin && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">Quantité souhaitée:</span>
-            <Input
-              type="number"
-              value={quantity}
-              onChange={(e) => onQuantityChange(product.reference, e.target.value)}
-              className="w-24 h-8"
-              min="0"
-            />
-          </div>
-        )}
+        <p className="text-sm text-muted-foreground line-clamp-3">
+          {product.description || "Aucune description disponible"}
+        </p>
+        
+        <div className="flex flex-col gap-2">
+          <p className="text-sm font-medium">Référence: {product.reference}</p>
+          
+          {isAdmin && (
+            <div className="space-y-1">
+              <p className="text-sm font-medium flex justify-between">
+                <span>PA HT:</span>
+                <span className="font-bold">{formatPrice(product.purchase_price_ht)}</span>
+              </p>
+              <p className="text-sm font-medium flex justify-between">
+                <span>PV TTC:</span>
+                <span className="font-bold">{formatPrice(product.sale_price_ttc)}</span>
+              </p>
+            </div>
+          )}
+          
+          {!isAdmin && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">Quantité souhaitée:</span>
+              <Input
+                type="number"
+                value={quantity}
+                onChange={(e) => onQuantityChange(product.reference, e.target.value)}
+                className="w-24 h-8"
+                min="0"
+              />
+            </div>
+          )}
+        </div>
+
         {product.product_url && (
           <Button
             variant="outline"
