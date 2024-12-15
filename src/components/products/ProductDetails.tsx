@@ -52,17 +52,15 @@ const ProductDetails = ({ product, isAdmin, quantity, onQuantityChange }: Produc
           )}
         </div>
 
-        {product.product_url && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full mt-2"
-            onClick={() => window.open(product.product_url, '_blank')}
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            Plus d'infos
-          </Button>
-        )}
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full mt-2"
+          onClick={() => window.open(product.product_url || `https://example.com/products/${product.reference}`, '_blank')}
+        >
+          <ExternalLink className="h-4 w-4 mr-2" />
+          Plus d'infos
+        </Button>
       </div>
     </div>
   );
