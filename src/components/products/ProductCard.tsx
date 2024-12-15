@@ -34,6 +34,7 @@ const ProductCard = ({ product, quantity = 0, onQuantityChange, onEdit, onDelete
       }
 
       try {
+        console.log('Fetching user role for ID:', session.user.id);
         const { data, error } = await supabase
           .from('profiles')
           .select('role')
@@ -48,6 +49,7 @@ const ProductCard = ({ product, quantity = 0, onQuantityChange, onEdit, onDelete
             description: "Impossible de récupérer le rôle de l'utilisateur.",
           });
         } else if (data) {
+          console.log('User role fetched successfully:', data.role);
           setUserRole(data.role);
         }
       } catch (error) {

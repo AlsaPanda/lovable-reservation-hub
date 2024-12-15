@@ -54,7 +54,9 @@ export const importProducts = (file: File): Promise<Product[]> => {
             image_url: row['image-file_path']?.toString() || 'https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=500',
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
-            availableQuantity: 0
+            purchase_price_ht: null,
+            sale_price_ttc: null,
+            product_url: null
           }));
           
           resolve(products);
