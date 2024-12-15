@@ -1,10 +1,12 @@
 import { Product } from "@/utils/types";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
 import { DialogContent, DialogHeader, DialogTitle, Dialog } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import BasicProductFields from "./form-fields/BasicProductFields";
+import NumericProductFields from "./form-fields/NumericProductFields";
+import UrlProductFields from "./form-fields/UrlProductFields";
 
 interface ProductFormProps {
   onSubmit: (data: Product) => void;
@@ -44,118 +46,9 @@ const ProductForm = ({ onSubmit, editingProduct, open, onOpenChange }: ProductFo
         <ScrollArea className="h-[calc(90vh-8rem)] pr-4">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="reference"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Référence</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nom</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="initial_quantity"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Quantité initiale</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        {...field} 
-                        onChange={e => field.onChange(parseInt(e.target.value))} 
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="purchase_price_ht"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Prix d'achat HT</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        step="0.01"
-                        {...field} 
-                        onChange={e => field.onChange(parseFloat(e.target.value))}
-                        value={field.value || ''}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="sale_price_ttc"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Prix de vente TTC</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        step="0.01"
-                        {...field}
-                        onChange={e => field.onChange(parseFloat(e.target.value))}
-                        value={field.value || ''}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="image_url"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>URL de l'image</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="product_url"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>URL du produit</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ''} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
+              <BasicProductFields form={form} />
+              <NumericProductFields form={form} />
+              <UrlProductFields form={form} />
               <Button type="submit" className="w-full">
                 {editingProduct ? "Mettre à jour" : "Ajouter"}
               </Button>
