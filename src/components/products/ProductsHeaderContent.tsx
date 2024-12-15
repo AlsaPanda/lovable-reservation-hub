@@ -37,16 +37,23 @@ const ProductsHeaderContent = () => {
 
   const editor = useEditor({
     extensions: [StarterKit],
-    editable: isEditing,
     content: '',
+    editorProps: {
+      attributes: {
+        class: 'prose prose-sm focus:outline-none max-w-none',
+      },
+    },
   });
 
-  // Mettre à jour le contenu de l'éditeur quand les données sont chargées
+  // Update editor content when data is loaded and when edit mode changes
   useEffect(() => {
-    if (editor && content) {
-      editor.commands.setContent(content);
+    if (editor) {
+      editor.setEditable(isEditing);
+      if (content) {
+        editor.commands.setContent(content);
+      }
     }
-  }, [editor, content]);
+  }, [editor, content, isEditing]);
 
   const updateContentMutation = useMutation({
     mutationFn: async (newContent: string) => {
