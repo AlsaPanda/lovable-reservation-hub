@@ -2,6 +2,7 @@ import React from "react";
 import { Navigate } from "react-router-dom";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface PrivateRouteProps {
   children: React.ReactNode;
@@ -13,6 +14,7 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
   const session = useSession();
   const [userRole, setUserRole] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
+  const { toast } = useToast();
   
   React.useEffect(() => {
     const checkUserRole = async () => {
@@ -24,6 +26,20 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
       
       try {
         console.log('Fetching role for user:', session.user.id);
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError || !sessionData.session) {
+          console.error("Session error:", sessionError);
+          toast({
+            variant: "destructive",
+            title: "Erreur de session",
+            description: "Veuillez vous reconnecter",
+          });
+          await supabase.auth.signOut();
+          setIsLoading(false);
+          return;
+        }
+
         const { data, error } = await supabase
           .from('profiles')
           .select('role')
@@ -32,6 +48,11 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
         
         if (error) {
           console.error("Error fetching user role:", error);
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Impossible de récupérer votre rôle",
+          });
           setIsLoading(false);
           return;
         }
@@ -42,13 +63,18 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
         }
       } catch (error) {
         console.error("Error in checkUserRole:", error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Une erreur est survenue",
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
     checkUserRole();
-  }, [session]);
+  }, [session, toast]);
 
   if (isLoading) {
     return <div>Chargement...</div>;

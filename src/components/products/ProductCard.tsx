@@ -31,7 +31,20 @@ const ProductCard = ({ product, quantity = 0, onQuantityChange, onEdit, onDelete
       }
 
       try {
-        console.log('Fetching user role for ID:', session.user.id);
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError || !sessionData.session) {
+          console.error("Session error:", sessionError);
+          toast({
+            variant: "destructive",
+            title: "Erreur de session",
+            description: "Veuillez vous reconnecter",
+          });
+          await supabase.auth.signOut();
+          setIsLoading(false);
+          return;
+        }
+
         const { data, error } = await supabase
           .from('profiles')
           .select('role')
@@ -43,7 +56,7 @@ const ProductCard = ({ product, quantity = 0, onQuantityChange, onEdit, onDelete
           toast({
             variant: "destructive",
             title: "Erreur",
-            description: "Impossible de récupérer le rôle de l'utilisateur.",
+            description: "Impossible de récupérer votre rôle",
           });
         } else if (data) {
           console.log('User role fetched successfully:', data.role);
@@ -51,6 +64,11 @@ const ProductCard = ({ product, quantity = 0, onQuantityChange, onEdit, onDelete
         }
       } catch (error) {
         console.error('Error in fetchUserRole:', error);
+        toast({
+          variant: "destructive",
+            title: "Erreur",
+            description: "Une erreur est survenue",
+        });
       } finally {
         setIsLoading(false);
       }
