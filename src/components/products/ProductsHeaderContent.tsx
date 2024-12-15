@@ -19,6 +19,8 @@ const ProductsHeaderContent = () => {
         .from('content_blocks')
         .select('content')
         .eq('placement', 'products_header')
+        .order('created_at', { ascending: false })
+        .limit(1)
         .single();
 
       if (error) {
@@ -38,9 +40,19 @@ const ProductsHeaderContent = () => {
 
   const updateContentMutation = useMutation({
     mutationFn: async (newContent: string) => {
+      // On récupère d'abord l'ID existant s'il existe
+      const { data: existingContent } = await supabase
+        .from('content_blocks')
+        .select('id')
+        .eq('placement', 'products_header')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
       const { error } = await supabase
         .from('content_blocks')
         .upsert({
+          id: existingContent?.id, // Utilise l'ID existant s'il existe
           placement: 'products_header',
           content: newContent,
         });
