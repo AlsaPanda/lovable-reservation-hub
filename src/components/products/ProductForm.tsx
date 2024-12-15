@@ -20,6 +20,9 @@ const ProductForm = ({ onSubmit, editingProduct, open, onOpenChange }: ProductFo
     description: "",
     initial_quantity: 0,
     image_url: "",
+    purchase_price_ht: null,
+    sale_price_ttc: null,
+    product_url: "",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   };
@@ -81,7 +84,47 @@ const ProductForm = ({ onSubmit, editingProduct, open, onOpenChange }: ProductFo
                 <FormItem>
                   <FormLabel>Quantité initiale</FormLabel>
                   <FormControl>
-                    <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                    <Input 
+                      type="number" 
+                      {...field} 
+                      onChange={e => field.onChange(parseInt(e.target.value))} 
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="purchase_price_ht"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Prix d'achat HT</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      step="0.01"
+                      {...field} 
+                      onChange={e => field.onChange(parseFloat(e.target.value))}
+                      value={field.value || ''}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="sale_price_ttc"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Prix de vente TTC</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      step="0.01"
+                      {...field}
+                      onChange={e => field.onChange(parseFloat(e.target.value))}
+                      value={field.value || ''}
+                    />
                   </FormControl>
                 </FormItem>
               )}
@@ -94,6 +137,18 @@ const ProductForm = ({ onSubmit, editingProduct, open, onOpenChange }: ProductFo
                   <FormLabel>URL de l'image</FormLabel>
                   <FormControl>
                     <Input {...field} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="product_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>URL du produit</FormLabel>
+                  <FormControl>
+                    <Input {...field} value={field.value || ''} />
                   </FormControl>
                 </FormItem>
               )}
