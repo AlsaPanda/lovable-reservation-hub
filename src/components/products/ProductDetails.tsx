@@ -27,18 +27,16 @@ const ProductDetails = ({ product, isAdmin, quantity, onQuantityChange }: Produc
         <div className="flex flex-col gap-2">
           <p className="text-sm font-medium">Référence: {product.reference}</p>
           
-          {isAdmin && (
-            <div className="space-y-1">
-              <p className="text-sm font-medium flex justify-between">
-                <span>PA HT:</span>
-                <span className="font-bold">{formatPrice(product.purchase_price_ht)}</span>
-              </p>
-              <p className="text-sm font-medium flex justify-between">
-                <span>PV TTC:</span>
-                <span className="font-bold">{formatPrice(product.sale_price_ttc)}</span>
-              </p>
-            </div>
-          )}
+          <div className="space-y-1">
+            <p className="text-sm font-medium flex justify-between">
+              <span>PA HT:</span>
+              <span className="font-bold">{formatPrice(product.purchase_price_ht)}</span>
+            </p>
+            <p className="text-sm font-medium flex justify-between">
+              <span>PV TTC:</span>
+              <span className="font-bold">{formatPrice(product.sale_price_ttc)}</span>
+            </p>
+          </div>
           
           {!isAdmin && (
             <div className="flex items-center gap-2">
