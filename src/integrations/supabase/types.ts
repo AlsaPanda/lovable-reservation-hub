@@ -41,7 +41,10 @@ export type Database = {
           image_url: string | null
           initial_quantity: number
           name: string
+          product_url: string | null
+          purchase_price_ht: number | null
           reference: string
+          sale_price_ttc: number | null
           updated_at: string
         }
         Insert: {
@@ -51,7 +54,10 @@ export type Database = {
           image_url?: string | null
           initial_quantity?: number
           name: string
+          product_url?: string | null
+          purchase_price_ht?: number | null
           reference: string
+          sale_price_ttc?: number | null
           updated_at?: string
         }
         Update: {
@@ -61,7 +67,10 @@ export type Database = {
           image_url?: string | null
           initial_quantity?: number
           name?: string
+          product_url?: string | null
+          purchase_price_ht?: number | null
           reference?: string
+          sale_price_ttc?: number | null
           updated_at?: string
         }
         Relationships: []

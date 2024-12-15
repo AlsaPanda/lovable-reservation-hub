@@ -18,6 +18,9 @@ export type Product = {
   created_at: string;
   updated_at: string;
   availableQuantity?: number;
+  purchase_price_ht: number | null;
+  sale_price_ttc: number | null;
+  product_url: string | null;
 };
 
 export type Reservation = {

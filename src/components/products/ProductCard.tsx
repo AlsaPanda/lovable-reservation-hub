@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Pencil, Trash2 } from "lucide-react";
+import { ExternalLink, Pencil, Trash2 } from "lucide-react";
 import { Product } from "@/utils/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -60,7 +60,6 @@ const ProductCard = ({ product, quantity = 0, onQuantityChange, onEdit, onDelete
     fetchUserRole();
   }, [session, toast]);
 
-  // Update input value when quantity prop changes
   useEffect(() => {
     setInputValue(quantity.toString());
   }, [quantity]);
@@ -73,6 +72,11 @@ const ProductCard = ({ product, quantity = 0, onQuantityChange, onEdit, onDelete
     const newValue = e.target.value;
     setInputValue(newValue);
     onQuantityChange(product.reference, newValue);
+  };
+
+  const formatPrice = (price: number | null) => {
+    if (price === null) return "N/A";
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(price);
   };
 
   if (isLoading) {
@@ -124,6 +128,12 @@ const ProductCard = ({ product, quantity = 0, onQuantityChange, onEdit, onDelete
             </p>
             <div className="space-y-2">
               <p className="text-sm font-medium">Référence: {product.reference}</p>
+              {isAdmin && (
+                <>
+                  <p className="text-sm font-medium">Prix d'achat HT: {formatPrice(product.purchase_price_ht)}</p>
+                  <p className="text-sm font-medium">Prix de vente TTC: {formatPrice(product.sale_price_ttc)}</p>
+                </>
+              )}
               {!isAdmin && (
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">Quantité souhaitée:</span>
@@ -136,6 +146,17 @@ const ProductCard = ({ product, quantity = 0, onQuantityChange, onEdit, onDelete
                   />
                 </div>
               )}
+              {product.product_url && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full mt-2"
+                  onClick={() => window.open(product.product_url, '_blank')}
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Voir la fiche produit
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -144,5 +165,4 @@ const ProductCard = ({ product, quantity = 0, onQuantityChange, onEdit, onDelete
   );
 };
 
-// Memoize the component to prevent unnecessary re-renders
 export default memo(ProductCard);
