@@ -12,9 +12,9 @@ const ImportExportActions = ({ onFileChange }: ImportExportActionsProps) => {
         type="file"
         onChange={onFileChange}
         accept=".json,.xlsx"
-        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        className="absolute inset-0 w-full h-full opacity-0 z-10"
       />
-      <Button variant="outline" className="cursor-pointer">
+      <Button variant="outline">
         <UploadCloud className="mr-2 h-4 w-4" />
         Importer
       </Button>
