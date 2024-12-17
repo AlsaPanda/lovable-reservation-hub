@@ -16,7 +16,8 @@ export const useUserProfile = () => {
 
     const fetchUserProfile = async () => {
       try {
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        // First check if we have a valid session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
           console.error("Session error:", sessionError);
@@ -31,7 +32,7 @@ export const useUserProfile = () => {
           return;
         }
 
-        if (!sessionData.session?.user?.id) {
+        if (!session) {
           console.log("No active session found");
           if (mounted) {
             navigate('/login');
@@ -39,10 +40,11 @@ export const useUserProfile = () => {
           return;
         }
 
+        // Then fetch the profile data
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('role, store_name, brand')
-          .eq('id', sessionData.session.user.id)
+          .eq('id', session.user.id)
           .single();
         
         if (profileError) {
@@ -84,10 +86,19 @@ export const useUserProfile = () => {
       }
     };
 
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session && mounted) {
+        navigate('/login');
+      }
+    });
+
     fetchUserProfile();
 
+    // Cleanup
     return () => {
       mounted = false;
+      subscription.unsubscribe();
     };
   }, [toast, navigate]);
 
