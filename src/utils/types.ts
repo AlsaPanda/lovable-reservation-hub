@@ -6,21 +6,11 @@ export type Profile = {
   role: UserRole;
   created_at: string;
   updated_at: string;
+  brand: 'schmidt' | 'cuisinella';
 };
 
-export type Product = {
-  id: string;
-  reference: string;
-  name: string;
-  description: string | null;
-  initial_quantity: number;
-  image_url: string | null;
-  created_at: string;
-  updated_at: string;
-  purchase_price_ht: number | null;
-  sale_price_ttc: number | null;
-  product_url: string | null;
-};
+// Remove duplicate Product type and export from types/products
+export { Product } from '@/types/products';
 
 export type Reservation = {
   id: string;

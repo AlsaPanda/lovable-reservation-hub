@@ -1,7 +1,7 @@
 import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
-import { Product } from "@/utils/types";
+import { Product } from "@/types/products";
 
 interface UrlProductFieldsProps {
   form: UseFormReturn<Product>;
@@ -17,7 +17,7 @@ const UrlProductFields = ({ form }: UrlProductFieldsProps) => {
           <FormItem>
             <FormLabel>URL de l'image</FormLabel>
             <FormControl>
-              <Input {...field} />
+              <Input {...field} value={field.value || ''} />
             </FormControl>
           </FormItem>
         )}

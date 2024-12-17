@@ -1,7 +1,8 @@
 import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { UseFormReturn } from "react-hook-form";
-import { Product } from "@/utils/types";
+import { Product } from "@/types/products";
 
 interface BasicProductFieldsProps {
   form: UseFormReturn<Product>;
@@ -41,7 +42,7 @@ const BasicProductFields = ({ form }: BasicProductFieldsProps) => {
           <FormItem>
             <FormLabel>Description</FormLabel>
             <FormControl>
-              <Input {...field} />
+              <Textarea {...field} value={field.value || ''} />
             </FormControl>
           </FormItem>
         )}

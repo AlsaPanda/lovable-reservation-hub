@@ -1,7 +1,7 @@
 import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
-import { Product } from "@/utils/types";
+import { Product } from "@/types/products";
 
 interface NumericProductFieldsProps {
   form: UseFormReturn<Product>;
@@ -20,7 +20,7 @@ const NumericProductFields = ({ form }: NumericProductFieldsProps) => {
               <Input 
                 type="number" 
                 {...field} 
-                onChange={e => field.onChange(parseInt(e.target.value))} 
+                onChange={e => field.onChange(parseInt(e.target.value) || 0)} 
               />
             </FormControl>
           </FormItem>
@@ -37,7 +37,7 @@ const NumericProductFields = ({ form }: NumericProductFieldsProps) => {
                 type="number" 
                 step="0.01"
                 {...field} 
-                onChange={e => field.onChange(parseFloat(e.target.value))}
+                onChange={e => field.onChange(parseFloat(e.target.value) || null)}
                 value={field.value || ''}
               />
             </FormControl>
@@ -55,7 +55,7 @@ const NumericProductFields = ({ form }: NumericProductFieldsProps) => {
                 type="number" 
                 step="0.01"
                 {...field}
-                onChange={e => field.onChange(parseFloat(e.target.value))}
+                onChange={e => field.onChange(parseFloat(e.target.value) || null)}
                 value={field.value || ''}
               />
             </FormControl>

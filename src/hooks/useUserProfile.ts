@@ -34,7 +34,9 @@ export const useUserProfile = () => {
             console.log("User profile data:", data);
             setUserRole(data.role);
             setStoreName(data.store_name);
-            setBrand(data.brand || 'schmidt');
+            if (data.brand === 'schmidt' || data.brand === 'cuisinella') {
+              setBrand(data.brand);
+            }
           }
         }
       } catch (error) {
