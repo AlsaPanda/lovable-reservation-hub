@@ -26,7 +26,38 @@ export const StoreAuthHandler = ({
   useEffect(() => {
     const handleStoreAuth = async () => {
       try {
-        console.log('Attempting store authentication with:', { storeId, token, brand });
+        // Input validation
+        if (!storeId || !token || storeId.length < 3 || token.length < 32) {
+          console.error('Invalid store ID or token format');
+          toast({
+            variant: "destructive",
+            title: "Erreur d'authentification",
+            description: "Identifiants invalides",
+          });
+          navigate('/login');
+          return;
+        }
+
+        console.log('Attempting store authentication with:', { storeId, brand });
+        
+        // First check if the store exists and validate token
+        const { data: existingProfile, error: profileError } = await supabase
+          .from('profiles')
+          .select('store_id')
+          .eq('store_id', storeId)
+          .single();
+
+        // If there's an error other than "no rows found"
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.error('Error checking store profile:', profileError);
+          toast({
+            variant: "destructive",
+            title: "Erreur d'authentification",
+            description: "Impossible de vérifier le magasin",
+          });
+          navigate('/login');
+          return;
+        }
         
         // Normalize brand name
         const normalizedBrand = brand === 'sch' ? 'schmidt' : brand;
@@ -40,7 +71,6 @@ export const StoreAuthHandler = ({
           password: token,
         });
 
-        // If sign in fails, check if it's due to invalid credentials
         if (signInError) {
           console.log('Sign in failed:', signInError);
           
@@ -54,26 +84,9 @@ export const StoreAuthHandler = ({
             return;
           }
 
-          // Check if the store exists in profiles
-          const { data: existingProfile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('store_id', storeId)
-            .single();
-
-          if (profileError && profileError.code !== 'PGRST116') {
-            console.error('Error checking store profile:', profileError);
-            toast({
-              variant: "destructive",
-              title: "Erreur d'authentification",
-              description: "Impossible de vérifier le magasin",
-            });
-            navigate('/login');
-            return;
-          }
-
+          // Only attempt to create a new account if the store doesn't exist
           if (!existingProfile) {
-            // Create new user if store doesn't exist
+            // Create new user
             const { error: signUpError } = await supabase.auth.signUp({
               email: storeEmail,
               password: token,
@@ -116,6 +129,15 @@ export const StoreAuthHandler = ({
               navigate('/login');
               return;
             }
+          } else {
+            // If store exists but sign-in failed, it means the token is invalid
+            toast({
+              variant: "destructive",
+              title: "Erreur d'authentification",
+              description: "Token invalide pour ce magasin",
+            });
+            navigate('/login');
+            return;
           }
         }
 
@@ -153,6 +175,8 @@ export const StoreAuthHandler = ({
 
     if (storeId && token) {
       handleStoreAuth();
+    } else {
+      navigate('/login');
     }
   }, [storeId, token, brand, countryCode, languageCode, context, navigate, toast]);
 
