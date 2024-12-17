@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createHash } from "https://deno.land/std@0.177.0/hash/mod.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -27,9 +26,13 @@ serve(async (req) => {
       throw new Error('STORE_SECRET_PHRASE not set')
     }
 
-    // Generate token
+    // Generate token using native crypto
     const input = `${store_id}-${dateStr}-${secretPhrase}`
-    const token = createHash('sha256').update(input).toString('hex')
+    const encoder = new TextEncoder()
+    const data = encoder.encode(input)
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    const token = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 
     // Generate full URL
     const baseUrl = Deno.env.get('SITE_URL') || 'http://localhost:5173'
