@@ -11,6 +11,7 @@ import { StoreOrderDetails } from "@/components/store-orders/StoreOrderDetails";
 
 interface StoreOrder {
   store_name: string;
+  store_id: string;
   total_reservations: number;
   total_products: number;
   last_reservation: string;
@@ -36,6 +37,20 @@ const StoreOrders = () => {
 
   const fetchStoreOrders = async () => {
     try {
+      // First, get all profiles to map store_ids
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('store_name, store_id');
+
+      if (profilesError) throw profilesError;
+
+      const storeIdMap = profiles.reduce((acc: { [key: string]: string }, profile) => {
+        if (profile.store_name && profile.store_id) {
+          acc[profile.store_name] = profile.store_id;
+        }
+        return acc;
+      }, {});
+
       const { data, error } = await supabase
         .from('reservations')
         .select(`
@@ -51,6 +66,7 @@ const StoreOrders = () => {
         if (!acc[curr.store_name]) {
           acc[curr.store_name] = {
             store_name: curr.store_name,
+            store_id: storeIdMap[curr.store_name] || 'N/A',
             total_reservations: 0,
             total_products: 0,
             last_reservation: curr.reservation_date
