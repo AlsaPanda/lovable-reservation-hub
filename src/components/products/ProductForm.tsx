@@ -1,4 +1,4 @@
-import { Product } from "@/utils/types";
+import { Product } from "@/types/products";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -20,7 +20,7 @@ interface ProductFormProps {
 }
 
 const ProductForm = ({ onSubmit, editingProduct, open, onOpenChange, userRole, brand }: ProductFormProps) => {
-  const defaultValues = editingProduct || {
+  const defaultValues: Product = editingProduct || {
     id: '',
     reference: "",
     name: "",
@@ -65,7 +65,7 @@ const ProductForm = ({ onSubmit, editingProduct, open, onOpenChange, userRole, b
                       <FormControl>
                         <Select
                           value={field.value}
-                          onValueChange={field.onChange}
+                          onValueChange={(value: 'schmidt' | 'cuisinella') => field.onChange(value)}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Sélectionnez une marque" />

@@ -1,36 +1,54 @@
 import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
-import type { Profile } from '@/types';
+import { useToast } from "@/hooks/use-toast";
 
 export const useUserProfile = () => {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [storeName, setStoreName] = useState<string>("");
   const [brand, setBrand] = useState<'schmidt' | 'cuisinella'>('schmidt');
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchUserProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user) {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('role, store_name, brand')
-          .eq('id', user.id)
-          .single();
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
         
-        if (!error && data) {
-          console.log("User profile data:", data);
-          setUserRole(data.role);
-          setStoreName(data.store_name);
-          setBrand(data.brand as 'schmidt' | 'cuisinella');
-        } else {
-          console.error("Error fetching profile:", error);
+        if (user) {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('role, store_name, brand')
+            .eq('id', user.id)
+            .single();
+          
+          if (error) {
+            console.error("Error fetching profile:", error);
+            toast({
+              variant: "destructive",
+              title: "Erreur",
+              description: "Impossible de récupérer votre profil",
+            });
+            return;
+          }
+
+          if (data) {
+            console.log("User profile data:", data);
+            setUserRole(data.role);
+            setStoreName(data.store_name);
+            setBrand(data.brand || 'schmidt');
+          }
         }
+      } catch (error) {
+        console.error("Error in fetchUserProfile:", error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la récupération de votre profil",
+        });
       }
     };
 
     fetchUserProfile();
-  }, []);
+  }, [toast]);
 
   return { userRole, storeName, brand };
 };
