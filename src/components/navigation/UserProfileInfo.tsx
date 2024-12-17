@@ -11,6 +11,7 @@ const UserProfileInfo = ({ storeName, storeId, userRole, email }: UserProfileInf
   return (
     <div className="flex flex-col items-end">
       <span className="text-sm font-medium">{storeId}</span>
+      <span className="text-sm text-muted-foreground">{email}</span>
     </div>
   );
 };

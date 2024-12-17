@@ -44,6 +44,7 @@ const StoreOrders = () => {
 
       if (profilesError) throw profilesError;
 
+      // Create a mapping of store_name to store_id
       const storeIdMap = profiles.reduce((acc: { [key: string]: string }, profile) => {
         if (profile.store_name && profile.store_id) {
           acc[profile.store_name] = profile.store_id;
@@ -62,6 +63,7 @@ const StoreOrders = () => {
 
       if (error) throw error;
 
+      // Process the data to include store_id from profiles
       const ordersByStore = data.reduce((acc: { [key: string]: StoreOrder }, curr) => {
         if (!acc[curr.store_name]) {
           acc[curr.store_name] = {
