@@ -18,7 +18,8 @@ const ImportExportActions = ({ onFileChange }: ImportExportActionsProps) => {
         image_url: 'https://example.com/image1.jpg',
         purchase_price_ht: 15.50,
         sale_price_ttc: 20.00,
-        product_url: 'https://example.com/produit1'
+        product_url: 'https://example.com/produit1',
+        brand: 'schmidt'
       },
       {
         reference: 'REF002',
@@ -28,7 +29,8 @@ const ImportExportActions = ({ onFileChange }: ImportExportActionsProps) => {
         image_url: 'https://example.com/image2.jpg',
         purchase_price_ht: 25.00,
         sale_price_ttc: 30.00,
-        product_url: 'https://example.com/produit2'
+        product_url: 'https://example.com/produit2',
+        brand: 'cuisinella'
       }
     ];
 
