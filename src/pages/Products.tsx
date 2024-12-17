@@ -38,6 +38,35 @@ const Products = () => {
     }));
   }, []);
 
+  const handleAddProduct = async (product: Product) => {
+    try {
+      await addProductMutation.mutateAsync(product);
+      setOpen(false);
+    } catch (error) {
+      console.error('Error adding product:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible d'ajouter le produit.",
+      });
+    }
+  };
+
+  const handleUpdateProduct = async (product: Product) => {
+    try {
+      await updateProductMutation.mutateAsync(product);
+      setEditingProduct(null);
+      setOpen(false);
+    } catch (error) {
+      console.error('Error updating product:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de mettre à jour le produit.",
+      });
+    }
+  };
+
   const filteredProducts = useMemo(() => {
     return products
       .filter(product => {
