@@ -8,11 +8,9 @@ type UserProfileInfoProps = {
 };
 
 const UserProfileInfo = ({ storeName, storeId, userRole, email }: UserProfileInfoProps) => {
-  const displayText = storeId || storeName;
-
   return (
     <div className="flex flex-col items-end">
-      <span className="text-sm font-medium">{displayText}</span>
+      <span className="text-sm font-medium">{storeId}</span>
     </div>
   );
 };
