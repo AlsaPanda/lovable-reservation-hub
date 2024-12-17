@@ -45,25 +45,31 @@ const Dashboard = () => {
         if (profileData) {
           console.log("Profile loaded:", profileData);
           console.log("User role:", profileData.role);
-          setProfile(profileData);
+          // Ensure brand is either 'schmidt' or 'cuisinella'
+          const validatedProfile: Profile = {
+            ...profileData,
+            brand: profileData.brand === 'cuisinella' ? 'cuisinella' : 'schmidt'
+          };
+          setProfile(validatedProfile);
           
-          if (profileData.role === 'magasin') {
+          if (validatedProfile.role === 'magasin') {
             console.log("Redirecting magasin user to products");
             navigate("/products");
           }
         } else {
           console.log("No profile found, creating new profile for user:", user.id);
-          const { data: newProfile, error: createError } = await supabase
+          const newProfile: Profile = {
+            id: user.id,
+            store_name: `Store ${user.id.substring(0, 6)}`,
+            role: 'magasin',
+            brand: 'schmidt',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+
+          const { error: createError } = await supabase
             .from('profiles')
-            .insert([
-              { 
-                id: user.id,
-                store_name: `Store ${user.id.substring(0, 6)}`,
-                role: 'magasin'
-              }
-            ])
-            .select()
-            .single();
+            .insert([newProfile]);
 
           if (createError) {
             console.error("Error creating profile:", createError);

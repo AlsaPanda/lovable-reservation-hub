@@ -9,8 +9,8 @@ export type Profile = {
   brand: 'schmidt' | 'cuisinella';
 };
 
-// Remove duplicate Product type and export from types/products
-export { Product } from '@/types/products';
+// Re-export Product type using 'export type'
+export type { Product } from '@/types/products';
 
 export type Reservation = {
   id: string;

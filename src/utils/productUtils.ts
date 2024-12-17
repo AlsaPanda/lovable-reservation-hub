@@ -1,77 +1,47 @@
-import { Product } from "./types";
 import * as XLSX from 'xlsx';
+import { Product } from '@/types/products';
 
-export const exportProducts = (products: Product[]) => {
-  const dataStr = JSON.stringify(products, null, 2);
-  const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-  
-  const exportFileDefaultName = 'products.json';
-  
-  const linkElement = document.createElement('a');
-  linkElement.setAttribute('href', dataUri);
-  linkElement.setAttribute('download', exportFileDefaultName);
-  linkElement.click();
+export const importProducts = async (file: File): Promise<Product[]> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      try {
+        const data = e.target?.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+        const products: Product[] = jsonData.map((row: any) => ({
+          id: crypto.randomUUID(),
+          reference: row.reference,
+          name: row.name,
+          description: row.description,
+          initial_quantity: Number(row.initial_quantity) || 0,
+          image_url: row.image_url,
+          purchase_price_ht: Number(row.purchase_price_ht) || null,
+          sale_price_ttc: Number(row.sale_price_ttc) || null,
+          product_url: row.product_url,
+          brand: row.brand === 'cuisinella' ? 'cuisinella' : 'schmidt',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }));
+
+        resolve(products);
+      } catch (error) {
+        reject(error);
+      }
+    };
+
+    reader.onerror = (error) => reject(error);
+    reader.readAsBinaryString(file);
+  });
 };
 
-export const importProducts = (file: File): Promise<Product[]> => {
-  return new Promise((resolve, reject) => {
-    if (file.name.endsWith('.json')) {
-      const reader = new FileReader();
-      
-      reader.onload = (event) => {
-        try {
-          const products = JSON.parse(event.target?.result as string);
-          resolve(products);
-        } catch (error) {
-          reject(new Error("Format de fichier JSON invalide"));
-        }
-      };
-      
-      reader.onerror = () => {
-        reject(new Error("Erreur lors de la lecture du fichier"));
-      };
-      
-      reader.readAsText(file);
-    } else if (file.name.endsWith('.xlsx')) {
-      const reader = new FileReader();
-      
-      reader.onload = (event) => {
-        try {
-          const data = new Uint8Array(event.target?.result as ArrayBuffer);
-          const workbook = XLSX.read(data, { type: 'array' });
-          
-          const firstSheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[firstSheetName];
-          
-          const jsonData = XLSX.utils.sheet_to_json(worksheet);
-          
-          const products: Product[] = jsonData.map((row: any) => ({
-            id: '',
-            reference: row['reference']?.toString() || row['sku']?.toString() || '',
-            name: row['name']?.toString() || row['name-fr_FR-cla']?.toString() || '',
-            description: row['description']?.toString() || '',
-            initial_quantity: parseInt(row['initial_quantity']) || 0,
-            image_url: row['image_url']?.toString() || row['image-file_path']?.toString() || 'https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=500',
-            purchase_price_ht: parseFloat(row['purchase_price_ht']) || null,
-            sale_price_ttc: parseFloat(row['sale_price_ttc']) || null,
-            product_url: row['product_url']?.toString() || null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }));
-          
-          resolve(products);
-        } catch (error) {
-          reject(new Error("Format de fichier Excel invalide"));
-        }
-      };
-      
-      reader.onerror = () => {
-        reject(new Error("Erreur lors de la lecture du fichier Excel"));
-      };
-      
-      reader.readAsArrayBuffer(file);
-    } else {
-      reject(new Error("Format de fichier non supporté. Utilisez .json ou .xlsx"));
-    }
-  });
+export const exportProducts = (products: Product[]) => {
+  const worksheet = XLSX.utils.json_to_sheet(products);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Products");
+  XLSX.writeFile(workbook, "products.xlsx");
 };
