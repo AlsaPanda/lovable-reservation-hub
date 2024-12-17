@@ -8,14 +8,11 @@ type UserProfileInfoProps = {
 };
 
 const UserProfileInfo = ({ storeName, storeId, userRole, email }: UserProfileInfoProps) => {
+  const displayText = userRole === 'superadmin' ? (storeId || email) : storeName;
+
   return (
     <div className="flex flex-col items-end">
-      <span className="text-sm font-medium">{storeName}</span>
-      {userRole === 'superadmin' && (
-        <span className="text-xs text-muted-foreground">
-          {storeId || email}
-        </span>
-      )}
+      <span className="text-sm font-medium">{displayText}</span>
     </div>
   );
 };
