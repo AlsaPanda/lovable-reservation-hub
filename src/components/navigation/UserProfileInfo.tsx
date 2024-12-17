@@ -7,11 +7,14 @@ type UserProfileInfoProps = {
   email?: string;
 };
 
-const UserProfileInfo = ({ storeName, storeId, userRole, email }: UserProfileInfoProps) => {
+const UserProfileInfo = ({ storeId, userRole, email }: UserProfileInfoProps) => {
+  const displayValue = userRole === 'magasin' 
+    ? (storeId || email)
+    : email;
+
   return (
     <div className="flex flex-col items-end">
-      <span className="text-sm font-medium">{storeId}</span>
-      <span className="text-sm text-muted-foreground">{email}</span>
+      <span className="text-sm font-medium">{displayValue}</span>
     </div>
   );
 };
