@@ -4,6 +4,7 @@ import { Eye } from "lucide-react";
 
 interface StoreOrder {
   store_name: string;
+  store_id: string;
   total_reservations: number;
   total_products: number;
   last_reservation: string;
@@ -20,6 +21,7 @@ export function StoreOrdersTable({ storeOrders, onViewDetails }: StoreOrdersTabl
       <TableHeader>
         <TableRow>
           <TableHead>Magasin</TableHead>
+          <TableHead>ID Magasin</TableHead>
           <TableHead>Nombre de réservations</TableHead>
           <TableHead>Total produits réservés</TableHead>
           <TableHead>Dernière réservation</TableHead>
@@ -30,6 +32,7 @@ export function StoreOrdersTable({ storeOrders, onViewDetails }: StoreOrdersTabl
         {storeOrders.map((order) => (
           <TableRow key={order.store_name}>
             <TableCell>{order.store_name}</TableCell>
+            <TableCell>{order.store_id}</TableCell>
             <TableCell>{order.total_reservations}</TableCell>
             <TableCell>{order.total_products}</TableCell>
             <TableCell>
