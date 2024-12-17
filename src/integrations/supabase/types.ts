@@ -81,25 +81,37 @@ export type Database = {
       profiles: {
         Row: {
           brand: string | null
+          context: string | null
+          country_code: string | null
           created_at: string
           id: string
+          language_code: string | null
           role: Database["public"]["Enums"]["user_role"]
+          store_id: string | null
           store_name: string
           updated_at: string
         }
         Insert: {
           brand?: string | null
+          context?: string | null
+          country_code?: string | null
           created_at?: string
           id: string
+          language_code?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          store_id?: string | null
           store_name: string
           updated_at?: string
         }
         Update: {
           brand?: string | null
+          context?: string | null
+          country_code?: string | null
           created_at?: string
           id?: string
+          language_code?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          store_id?: string | null
           store_name?: string
           updated_at?: string
         }
@@ -151,6 +163,14 @@ export type Database = {
       reset_all_quantities: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      validate_store_token: {
+        Args: {
+          store_id: string
+          token: string
+          secret_phrase: string
+        }
+        Returns: boolean
       }
     }
     Enums: {
