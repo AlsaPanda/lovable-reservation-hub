@@ -35,6 +35,7 @@ export type Database = {
       }
       products: {
         Row: {
+          brand: string | null
           created_at: string
           description: string | null
           id: string
@@ -48,6 +49,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          brand?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -61,6 +63,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          brand?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -77,6 +80,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          brand: string | null
           created_at: string
           id: string
           role: Database["public"]["Enums"]["user_role"]
@@ -84,6 +88,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          brand?: string | null
           created_at?: string
           id: string
           role?: Database["public"]["Enums"]["user_role"]
@@ -91,6 +96,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          brand?: string | null
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["user_role"]
