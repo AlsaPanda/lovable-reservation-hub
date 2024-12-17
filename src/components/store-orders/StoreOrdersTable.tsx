@@ -20,7 +20,6 @@ export function StoreOrdersTable({ storeOrders, onViewDetails }: StoreOrdersTabl
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Magasin</TableHead>
           <TableHead>ID Magasin</TableHead>
           <TableHead>Nombre de réservations</TableHead>
           <TableHead>Total produits réservés</TableHead>
@@ -30,8 +29,7 @@ export function StoreOrdersTable({ storeOrders, onViewDetails }: StoreOrdersTabl
       </TableHeader>
       <TableBody>
         {storeOrders.map((order) => (
-          <TableRow key={order.store_name}>
-            <TableCell>{order.store_name}</TableCell>
+          <TableRow key={order.store_id}>
             <TableCell>{order.store_id}</TableCell>
             <TableCell>{order.total_reservations}</TableCell>
             <TableCell>{order.total_products}</TableCell>
