@@ -26,7 +26,10 @@ export const StoreAuthHandler = ({
   useEffect(() => {
     const handleStoreAuth = async () => {
       try {
-        console.log('Attempting store authentication with:', { storeId, token });
+        console.log('Attempting store authentication with:', { storeId, token, brand });
+        
+        // Normalize brand name
+        const normalizedBrand = brand === 'sch' ? 'schmidt' : brand;
         
         // First, check if the store exists
         const { data: existingProfile, error: profileError } = await supabase
@@ -56,7 +59,7 @@ export const StoreAuthHandler = ({
             options: {
               data: {
                 store_id: storeId,
-                brand,
+                brand: normalizedBrand,
                 country_code: countryCode,
                 language_code: languageCode,
                 context,
@@ -97,7 +100,7 @@ export const StoreAuthHandler = ({
           const { error: updateError } = await supabase
             .from('profiles')
             .update({
-              brand,
+              brand: normalizedBrand,
               country_code: countryCode,
               language_code: languageCode,
               context
