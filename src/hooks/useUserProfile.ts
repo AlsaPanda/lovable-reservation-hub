@@ -22,7 +22,7 @@ export const useUserProfile = () => {
           console.log("User profile data:", data);
           setUserRole(data.role);
           setStoreName(data.store_name);
-          setBrand(data.brand || 'schmidt');
+          setBrand(data.brand as 'schmidt' | 'cuisinella');
         } else {
           console.error("Error fetching profile:", error);
         }
