@@ -12,16 +12,15 @@ export const useUserProfile = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    let isMounted = true;
+    let mounted = true;
 
     const fetchUserProfile = async () => {
       try {
-        // First check if we have a valid session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
           console.error("Session error:", sessionError);
-          if (isMounted) {
+          if (mounted) {
             toast({
               variant: "destructive",
               title: "Erreur de session",
@@ -32,47 +31,46 @@ export const useUserProfile = () => {
           return;
         }
 
-        if (!session?.user?.id) {
+        if (!sessionData.session?.user?.id) {
           console.log("No active session found");
-          if (isMounted) {
+          if (mounted) {
             navigate('/login');
           }
           return;
         }
 
-        // Now fetch the user profile
-        const { data, error } = await supabase
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('role, store_name, brand')
-          .eq('id', session.user.id)
+          .eq('id', sessionData.session.user.id)
           .single();
         
-        if (error) {
-          console.error("Error fetching profile:", error);
-          if (isMounted) {
+        if (profileError) {
+          console.error("Error fetching profile:", profileError);
+          if (mounted) {
             toast({
               variant: "destructive",
               title: "Erreur",
               description: "Impossible de récupérer votre profil",
             });
-            if (error.code === 'PGRST301') {
+            if (profileError.code === 'PGRST301') {
               navigate('/login');
             }
           }
           return;
         }
 
-        if (data && isMounted) {
-          console.log("User profile data:", data);
-          setUserRole(data.role);
-          setStoreName(data.store_name);
-          if (data.brand === 'schmidt' || data.brand === 'cuisinella') {
-            setBrand(data.brand);
+        if (profileData && mounted) {
+          console.log("User profile data:", profileData);
+          setUserRole(profileData.role);
+          setStoreName(profileData.store_name);
+          if (profileData.brand === 'schmidt' || profileData.brand === 'cuisinella') {
+            setBrand(profileData.brand);
           }
         }
       } catch (error) {
         console.error("Error in fetchUserProfile:", error);
-        if (isMounted) {
+        if (mounted) {
           toast({
             variant: "destructive",
             title: "Erreur",
@@ -80,7 +78,7 @@ export const useUserProfile = () => {
           });
         }
       } finally {
-        if (isMounted) {
+        if (mounted) {
           setIsLoading(false);
         }
       }
@@ -89,7 +87,7 @@ export const useUserProfile = () => {
     fetchUserProfile();
 
     return () => {
-      isMounted = false;
+      mounted = false;
     };
   }, [toast, navigate]);
 

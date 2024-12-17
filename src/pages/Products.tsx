@@ -9,25 +9,24 @@ import ProductsHeaderContent from "@/components/products/ProductsHeaderContent";
 import { useProducts } from "@/hooks/useProducts";
 import { useProductMutations } from "@/hooks/useProductMutations";
 import { useReservationMutation } from "@/hooks/useReservationMutation";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useUserProfile } from "@/hooks/useUserProfile";
 
 const Products = () => {
   const { toast } = useToast();
-  const { userRole, brand } = useUserProfile();
+  const { userRole, brand, isLoading: isProfileLoading } = useUserProfile();
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [quantities, setQuantities] = useState<Record<string, number>>({});
 
-  const { data: products = [] } = useProducts();
+  const { data: products = [], isLoading: isProductsLoading } = useProducts();
   const { addProductMutation, updateProductMutation, deleteProductMutation } = useProductMutations();
   const { addReservationMutation } = useReservationMutation();
 
   const handleQuantityChange = useCallback((reference: string, newQuantity: string) => {
     console.log(`[Products] handleQuantityChange called for ${reference} with value:`, newQuantity);
     
-    // Parse and clean input value
     const cleanValue = newQuantity.replace(/^0+/, '') || "0";
     const quantity = Math.max(0, parseInt(cleanValue));
     
@@ -39,31 +38,9 @@ const Products = () => {
     }));
   }, []);
 
-  const handleAddProduct = (data: Product) => {
-    // Add brand to the product data
-    const productWithBrand = {
-      ...data,
-      brand: userRole === 'superadmin' ? data.brand : brand
-    };
-    addProductMutation.mutate(productWithBrand);
-    setOpen(false);
-  };
-
-  const handleUpdateProduct = (data: Product) => {
-    // Ensure brand is preserved when updating
-    const productWithBrand = {
-      ...data,
-      brand: userRole === 'superadmin' ? data.brand : brand
-    };
-    updateProductMutation.mutate(productWithBrand);
-    setOpen(false);
-    setEditingProduct(null);
-  };
-
   const filteredProducts = useMemo(() => {
     return products
       .filter(product => {
-        // Filter by brand unless user is superadmin
         if (userRole !== 'superadmin' && product.brand !== brand) {
           return false;
         }
@@ -107,6 +84,25 @@ const Products = () => {
     addReservationMutation.mutate(productsToReserve);
   };
 
+  if (isProfileLoading || isProductsLoading) {
+    return (
+      <>
+        <NavBar />
+        <div className="container mx-auto p-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+            <div className="h-12 bg-gray-200 rounded"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <div key={n} className="h-64 bg-gray-200 rounded"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <NavBar />
@@ -117,7 +113,6 @@ const Products = () => {
         <ProductsHeader
           onOpenDialog={() => setOpen(true)}
           onProductsImported={(products) => {
-            // Add brand to imported products
             const productsWithBrand = products.map(product => ({
               ...product,
               brand: userRole === 'superadmin' ? (product.brand || 'schmidt') : brand
