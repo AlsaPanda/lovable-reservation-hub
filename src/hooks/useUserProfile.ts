@@ -6,6 +6,8 @@ import { useNavigate } from 'react-router-dom';
 export const useUserProfile = () => {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [storeName, setStoreName] = useState<string>("");
+  const [storeId, setStoreId] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
   const [brand, setBrand] = useState<'schmidt' | 'cuisinella'>('schmidt');
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
@@ -40,10 +42,13 @@ export const useUserProfile = () => {
           return;
         }
 
+        // Set email from session
+        setEmail(session.user.email);
+
         // Then fetch the profile data
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('role, store_name, brand')
+          .select('role, store_name, brand, store_id')
           .eq('id', session.user.id)
           .single();
         
@@ -66,6 +71,7 @@ export const useUserProfile = () => {
           console.log("User profile data:", profileData);
           setUserRole(profileData.role);
           setStoreName(profileData.store_name);
+          setStoreId(profileData.store_id);
           if (profileData.brand === 'schmidt' || profileData.brand === 'cuisinella') {
             setBrand(profileData.brand);
           }
@@ -102,5 +108,5 @@ export const useUserProfile = () => {
     };
   }, [toast, navigate]);
 
-  return { userRole, storeName, brand, isLoading };
+  return { userRole, storeName, storeId, email, brand, isLoading };
 };

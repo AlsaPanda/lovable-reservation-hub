@@ -6,9 +6,12 @@ import { useToast } from "@/hooks/use-toast";
 
 type UserProfileProps = {
   storeName: string;
+  storeId?: string;
+  userRole?: string;
+  email?: string;
 };
 
-const UserProfile = ({ storeName }: UserProfileProps) => {
+const UserProfile = ({ storeName, storeId, userRole, email }: UserProfileProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -35,7 +38,14 @@ const UserProfile = ({ storeName }: UserProfileProps) => {
 
   return (
     <div className="flex items-center gap-4">
-      <span className="text-sm font-medium">{storeName}</span>
+      <div className="flex flex-col">
+        <span className="text-sm font-medium">{storeName}</span>
+        {userRole === 'superadmin' && (storeId || email) && (
+          <span className="text-xs text-muted-foreground">
+            {storeId || email}
+          </span>
+        )}
+      </div>
       <Button 
         variant="outline" 
         onClick={handleLogout}
