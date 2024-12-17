@@ -20,6 +20,6 @@ export type Reservation = {
   reservation_date: string;
   created_at: string;
   updated_at: string;
-  product?: Product;
+  product?: import('@/types/products').Product;
   store?: Profile;
 };
