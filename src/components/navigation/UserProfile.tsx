@@ -14,7 +14,10 @@ const UserProfile = ({ storeName }: UserProfileProps) => {
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      console.log("User logged out successfully");
       toast({
         title: "Déconnexion réussie",
         description: "Vous avez été déconnecté avec succès",
