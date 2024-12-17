@@ -40,10 +40,20 @@ export const StoreAuthHandler = ({
           password: token,
         });
 
-        // If sign in fails, try to create a new account
+        // If sign in fails, check if it's due to invalid credentials
         if (signInError) {
-          console.log('Sign in failed, attempting to create new account:', signInError);
+          console.log('Sign in failed:', signInError);
           
+          if (signInError.message.includes('Invalid login credentials')) {
+            toast({
+              variant: "destructive",
+              title: "Erreur d'authentification",
+              description: "Identifiants invalides",
+            });
+            navigate('/login');
+            return;
+          }
+
           // Check if the store exists in profiles
           const { data: existingProfile, error: profileError } = await supabase
             .from('profiles')
@@ -51,13 +61,14 @@ export const StoreAuthHandler = ({
             .eq('store_id', storeId)
             .single();
 
-          if (profileError && profileError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+          if (profileError && profileError.code !== 'PGRST116') {
             console.error('Error checking store profile:', profileError);
             toast({
               variant: "destructive",
               title: "Erreur d'authentification",
               description: "Impossible de vérifier le magasin",
             });
+            navigate('/login');
             return;
           }
 
@@ -85,6 +96,7 @@ export const StoreAuthHandler = ({
                 title: "Erreur de création",
                 description: "Impossible de créer le compte magasin",
               });
+              navigate('/login');
               return;
             }
 
@@ -101,6 +113,7 @@ export const StoreAuthHandler = ({
                 title: "Erreur de connexion",
                 description: "Impossible de connecter le magasin après création",
               });
+              navigate('/login');
               return;
             }
           }
@@ -134,6 +147,7 @@ export const StoreAuthHandler = ({
           title: "Erreur",
           description: "Une erreur est survenue lors de l'authentification",
         });
+        navigate('/login');
       }
     };
 
