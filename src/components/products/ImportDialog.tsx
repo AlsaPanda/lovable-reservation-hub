@@ -34,7 +34,6 @@ const ImportDialog = ({
   const [forceImport, setForceImport] = useState(false);
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const fileInputRef = useState<HTMLInputElement | null>(null);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -53,7 +52,6 @@ const ImportDialog = ({
         duration: 3000,
       });
       
-      // Only close the dialog after successful import
       onOpenChange(false);
     } catch (error) {
       console.error('Import error:', error);
@@ -75,16 +73,22 @@ const ImportDialog = ({
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.xlsx,.xls';
-    input.onchange = (e) => handleFileChange(e as React.ChangeEvent<HTMLInputElement>);
+    input.onchange = (e) => {
+      const event = e as unknown as React.ChangeEvent<HTMLInputElement>;
+      handleFileChange(event);
+    };
     input.click();
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={(newOpen) => {
-      if (!isLoading) {
-        onOpenChange(newOpen);
-      }
-    }}>
+    <AlertDialog 
+      open={open} 
+      onOpenChange={(newOpen) => {
+        if (!isLoading) {
+          onOpenChange(newOpen);
+        }
+      }}
+    >
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Importer des produits</AlertDialogTitle>
@@ -123,7 +127,7 @@ const ImportDialog = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => !isLoading && onOpenChange(false)}>
+          <AlertDialogCancel disabled={isLoading}>
             {isLoading ? "Importation en cours..." : "Fermer"}
           </AlertDialogCancel>
         </AlertDialogFooter>
