@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Product } from "@/utils/types";
 import { UploadCloud } from "lucide-react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { importProducts } from "@/utils/productUtils";
 import { useToast } from "@/hooks/use-toast";
 
@@ -36,11 +36,14 @@ const ImportDialog = ({
   const [isLoading, setIsLoading] = useState(false);
   const [importCount, setImportCount] = useState<number | null>(null);
 
-  const resetState = useCallback(() => {
-    setIsLoading(false);
-    setImportCount(null);
-    setForceImport(false);
-  }, []);
+  // Reset state when dialog is opened/closed
+  useEffect(() => {
+    if (!open) {
+      setIsLoading(false);
+      setImportCount(null);
+      setForceImport(false);
+    }
+  }, [open]);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -55,9 +58,10 @@ const ImportDialog = ({
       console.log('Products imported successfully:', importedProducts.length);
       
       setImportCount(importedProducts.length);
-      onProductsImported(importedProducts);
       
       if (importedProducts.length > 0) {
+        onProductsImported(importedProducts);
+        
         toast({
           title: "Import réussi",
           description: importedProducts.length === 1 
@@ -74,7 +78,6 @@ const ImportDialog = ({
           description: "Aucun nouveau produit n'a été trouvé dans le fichier.",
           duration: 3000,
         });
-        setIsLoading(false);
       }
     } catch (error) {
       console.error('Import error:', error);
@@ -84,12 +87,11 @@ const ImportDialog = ({
         description: error instanceof Error ? error.message : "Une erreur est survenue lors de l'import",
         duration: 3000,
       });
+    } finally {
       setIsLoading(false);
-    }
-
-    // Reset file input
-    if (event.target) {
-      event.target.value = '';
+      if (event.target) {
+        event.target.value = '';
+      }
     }
   };
 
@@ -108,10 +110,9 @@ const ImportDialog = ({
 
   const handleClose = useCallback(() => {
     if (!isLoading) {
-      resetState();
       onOpenChange(false);
     }
-  }, [isLoading, onOpenChange, resetState]);
+  }, [isLoading, onOpenChange]);
 
   return (
     <AlertDialog open={open} onOpenChange={handleClose}>

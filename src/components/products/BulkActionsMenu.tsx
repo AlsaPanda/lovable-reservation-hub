@@ -6,7 +6,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ImportDialog from "./ImportDialog";
 import DeleteCatalogDialog from "./DeleteCatalogDialog";
 import { Product } from "@/utils/types";
@@ -28,6 +28,15 @@ const BulkActionsMenu = ({ onProductsImported, products, userRole }: BulkActions
   const queryClient = useQueryClient();
   const isSuperAdmin = userRole === 'superadmin';
 
+  // Reset states when component unmounts
+  useEffect(() => {
+    return () => {
+      setShowImportDialog(false);
+      setShowDeleteDialog(false);
+      setIsDeleting(false);
+    };
+  }, []);
+
   const handleDeleteCatalog = async () => {
     if (isDeleting) return;
     
@@ -45,7 +54,6 @@ const BulkActionsMenu = ({ onProductsImported, products, userRole }: BulkActions
         return;
       }
 
-      // Invalidate the products query to refresh the UI
       await queryClient.invalidateQueries({ queryKey: ['products'] });
       
       toast({
@@ -77,7 +85,6 @@ const BulkActionsMenu = ({ onProductsImported, products, userRole }: BulkActions
   const handleImportDialogClose = (open: boolean) => {
     if (!open) {
       setShowImportDialog(false);
-      // Refresh products after import dialog is closed
       queryClient.invalidateQueries({ queryKey: ['products'] });
     }
   };
