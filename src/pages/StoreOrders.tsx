@@ -8,7 +8,7 @@ import { FileDown } from "lucide-react";
 import * as XLSX from 'xlsx';
 import { StoreOrdersTable } from "@/components/store-orders/StoreOrdersTable";
 import { StoreOrderDetails } from "@/components/store-orders/StoreOrderDetails";
-import { Database } from "@/types/database";
+import { Database } from "@/integrations/supabase/types";
 
 interface StoreOrder {
   store_name: string;
@@ -25,12 +25,8 @@ interface DetailedReservation {
   reservation_date: string;
 }
 
-type ProductWithReservation = Database['public']['Tables']['products']['Row'] & {
-  reservations: {
-    id: string;
-    quantity: number;
-    reservation_date: string;
-  }[];
+type ReservationWithProduct = Database['public']['Tables']['reservations']['Row'] & {
+  products: Database['public']['Tables']['products']['Row'];
 };
 
 const StoreOrders = () => {
@@ -73,7 +69,7 @@ const StoreOrders = () => {
         if (!acc[curr.store_name]) {
           acc[curr.store_name] = {
             store_name: curr.store_name,
-            store_id: storeIdMap[curr.store_name] || 'N/A',
+            store_id: storeIdMap?.[curr.store_name] || 'N/A',
             total_reservations: 0,
             total_products: 0,
             last_reservation: curr.reservation_date
@@ -99,7 +95,7 @@ const StoreOrders = () => {
     try {
       const { data, error } = await supabase
         .from('reservations')
-        .select(`
+        .select<string, ReservationWithProduct>(`
           id,
           quantity,
           reservation_date,
@@ -136,7 +132,7 @@ const StoreOrders = () => {
     try {
       const { data, error } = await supabase
         .from('reservations')
-        .select(`
+        .select<string, ReservationWithProduct>(`
           store_name,
           quantity,
           reservation_date,
