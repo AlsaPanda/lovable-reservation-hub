@@ -40,15 +40,15 @@ const ImportDialog = ({
               Les produits existants ne seront pas modifiés.
             </p>
             {isSuperAdmin && (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 border rounded p-2 bg-gray-50">
                 <input
                   type="checkbox"
                   id="force-import"
                   checked={forceImport}
                   onChange={(e) => setForceImport(e.target.checked)}
-                  className="rounded border-gray-300"
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                 />
-                <label htmlFor="force-import" className="text-sm font-medium">
+                <label htmlFor="force-import" className="text-sm font-medium text-gray-700">
                   Forcer l'import (supprime le catalogue existant)
                 </label>
               </div>

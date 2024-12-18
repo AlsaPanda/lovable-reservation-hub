@@ -16,7 +16,7 @@ const BulkActionsMenuContent = ({
   isSuperAdmin 
 }: BulkActionsMenuContentProps) => {
   return (
-    <DropdownMenuContent>
+    <DropdownMenuContent align="end" className="w-56">
       <BulkActionMenuItem
         icon={Upload}
         label="Importer des produits"
@@ -35,7 +35,7 @@ const BulkActionsMenuContent = ({
             icon={Trash2}
             label="Supprimer le catalogue"
             onClick={onDelete}
-            className="text-red-600"
+            className="text-red-600 hover:text-red-500"
           />
         </>
       )}
