@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 interface ImportDialogProps {
-  showDialog: boolean;
+  open: boolean;  // Changed from showDialog to open
   onOpenChange: (open: boolean) => void;
   onImport: () => void;
   onCancel: () => void;
@@ -20,7 +20,7 @@ interface ImportDialogProps {
 }
 
 const ImportDialog = ({
-  showDialog,
+  open,  // Changed from showDialog to open
   onOpenChange,
   onImport,
   onCancel,
@@ -32,7 +32,7 @@ const ImportDialog = ({
   console.log('ImportDialog - forceImport:', forceImport);
 
   return (
-    <AlertDialog open={showDialog} onOpenChange={onOpenChange}>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Confirmer l'import</AlertDialogTitle>
