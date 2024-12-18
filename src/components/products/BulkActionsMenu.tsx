@@ -6,13 +6,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
-import { useState, useEffect } from "react";
 import ImportDialog from "./ImportDialog";
 import DeleteCatalogDialog from "./DeleteCatalogDialog";
 import { Product } from "@/utils/types";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
+import { useBulkActions } from "./bulk-actions/useBulkActions";
 
 interface BulkActionsMenuProps {
   onProductsImported: (products: Product[]) => void;
@@ -20,74 +17,23 @@ interface BulkActionsMenuProps {
   userRole: string | null;
 }
 
-const BulkActionsMenu = ({ onProductsImported, products, userRole }: BulkActionsMenuProps) => {
-  const [showImportDialog, setShowImportDialog] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+const BulkActionsMenu = ({ 
+  onProductsImported, 
+  products, 
+  userRole 
+}: BulkActionsMenuProps) => {
+  const {
+    showImportDialog,
+    setShowImportDialog,
+    showDeleteDialog,
+    setShowDeleteDialog,
+    isDeleting,
+    handleDeleteCatalog,
+    handleCloseDeleteDialog,
+    handleImportDialogClose
+  } = useBulkActions();
+
   const isSuperAdmin = userRole === 'superadmin';
-
-  // Reset states when component unmounts
-  useEffect(() => {
-    return () => {
-      setShowImportDialog(false);
-      setShowDeleteDialog(false);
-      setIsDeleting(false);
-    };
-  }, []);
-
-  const handleDeleteCatalog = async () => {
-    if (isDeleting) return;
-    
-    setIsDeleting(true);
-    try {
-      const { error } = await supabase.rpc('delete_all_products');
-      
-      if (error) {
-        console.error('Error deleting catalog:', error);
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la suppression du catalogue.",
-        });
-        return;
-      }
-
-      await queryClient.invalidateQueries({ queryKey: ['products'] });
-      
-      toast({
-        title: "Catalogue supprimé",
-        description: "Le catalogue a été supprimé avec succès.",
-        duration: 3000,
-      });
-      
-      setShowDeleteDialog(false);
-    } catch (error) {
-      console.error('Error in handleDeleteCatalog:', error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la suppression.",
-        duration: 3000,
-      });
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const handleCloseDeleteDialog = () => {
-    if (!isDeleting) {
-      setShowDeleteDialog(false);
-    }
-  };
-
-  const handleImportDialogClose = (open: boolean) => {
-    if (!open) {
-      setShowImportDialog(false);
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-    }
-  };
 
   return (
     <>
