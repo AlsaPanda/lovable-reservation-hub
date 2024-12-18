@@ -77,6 +77,8 @@ const ImportDialog = ({
   };
 
   const handleButtonClick = () => {
+    if (isLoading) return; // Prevent multiple clicks while loading
+    
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.xlsx,.xls';
@@ -87,16 +89,15 @@ const ImportDialog = ({
     input.click();
   };
 
+  const handleClose = () => {
+    if (!isLoading) {
+      setImportCount(null);
+      onOpenChange(false);
+    }
+  };
+
   return (
-    <AlertDialog 
-      open={open} 
-      onOpenChange={(newOpen) => {
-        if (!isLoading) {
-          onOpenChange(newOpen);
-          setImportCount(null);
-        }
-      }}
-    >
+    <AlertDialog open={open} onOpenChange={handleClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Importer des produits</AlertDialogTitle>
@@ -113,6 +114,7 @@ const ImportDialog = ({
                   id="force-import"
                   checked={forceImport}
                   onChange={(e) => setForceImport(e.target.checked)}
+                  disabled={isLoading}
                   className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                 />
                 <label htmlFor="force-import" className="text-sm font-medium text-gray-700">
