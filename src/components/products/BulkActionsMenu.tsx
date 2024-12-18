@@ -35,9 +35,17 @@ const BulkActionsMenu = ({
 
   const isSuperAdmin = userRole === 'superadmin';
 
+  // Prevent menu from closing when loading
+  const handleMenuOpenChange = (open: boolean) => {
+    if (!isDeleting) {
+      return open;
+    }
+    return true;
+  };
+
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu onOpenChange={handleMenuOpenChange}>
         <DropdownMenuTrigger asChild>
           <Button 
             variant="outline" 
@@ -50,7 +58,7 @@ const BulkActionsMenu = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
           <DropdownMenuItem 
-            onClick={() => setShowImportDialog(true)}
+            onClick={() => !isDeleting && setShowImportDialog(true)}
             disabled={isDeleting}
             className="cursor-pointer"
           >
@@ -58,7 +66,7 @@ const BulkActionsMenu = ({
           </DropdownMenuItem>
           {isSuperAdmin && (
             <DropdownMenuItem 
-              onClick={() => setShowDeleteDialog(true)}
+              onClick={() => !isDeleting && setShowDeleteDialog(true)}
               className="text-red-600 focus:text-red-600 cursor-pointer"
               disabled={isDeleting}
             >

@@ -19,7 +19,7 @@ export const useImportDialog = ({
   const [importCount, setImportCount] = useState<number | null>(null);
   const { toast } = useToast();
 
-  // Reset state when dialog closes
+  // Reset state when dialog opens/closes
   useEffect(() => {
     if (!open) {
       setIsLoading(false);
