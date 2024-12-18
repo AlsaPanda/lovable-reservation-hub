@@ -18,7 +18,7 @@ export const useStoreAuth = () => {
     try {
       // Input validation
       if (!storeId || !token || storeId.length < 3 || token.length < 32) {
-        console.error('Invalid store ID or token format');
+        console.error('Invalid store ID or token format:', { storeId, tokenLength: token?.length });
         toast({
           variant: "destructive",
           title: "Erreur d'authentification",
@@ -52,73 +52,74 @@ export const useStoreAuth = () => {
       const storeEmail = generateStoreEmail(storeId);
 
       // Try to sign in
-      const { error: signInError } = await signInStore(storeEmail, token);
+      const { data: signInData, error: signInError } = await signInStore(storeEmail, token);
 
       if (signInError) {
-        console.log('Sign in failed:', signInError);
+        console.log('Sign in attempt failed:', signInError);
         
         if (signInError.message.includes('Invalid login credentials')) {
-          toast({
-            variant: "destructive",
-            title: "Erreur d'authentification",
-            description: "Identifiants invalides",
-          });
-          navigate('/login');
-          return;
-        }
+          console.log('Invalid credentials, checking if store needs to be created');
+          
+          // Create new account if store doesn't exist
+          if (!existingProfile) {
+            console.log('Creating new store account');
+            const { data: signUpData, error: signUpError } = await signUpStore(
+              storeEmail,
+              token,
+              {
+                store_id: storeId,
+                brand: normalizedBrand,
+                country_code: countryCode,
+                language_code: languageCode,
+                context,
+              }
+            );
 
-        // Create new account if store doesn't exist
-        if (!existingProfile) {
-          const { error: signUpError } = await signUpStore(
-            storeEmail,
-            token,
-            {
-              store_id: storeId,
-              brand: normalizedBrand,
-              country_code: countryCode,
-              language_code: languageCode,
-              context,
+            if (signUpError) {
+              console.error('Store signup failed:', signUpError);
+              toast({
+                variant: "destructive",
+                title: "Erreur de création",
+                description: "Impossible de créer le compte magasin",
+              });
+              navigate('/login');
+              return;
             }
-          );
 
-          if (signUpError) {
-            console.error('Sign up error:', signUpError);
+            console.log('Store account created successfully:', signUpData);
+
+            // Sign in after successful signup
+            const { error: finalSignInError } = await signInStore(storeEmail, token);
+
+            if (finalSignInError) {
+              console.error('Final sign in error:', finalSignInError);
+              toast({
+                variant: "destructive",
+                title: "Erreur de connexion",
+                description: "Impossible de connecter le magasin après création",
+              });
+              navigate('/login');
+              return;
+            }
+          } else {
+            console.log('Store exists but token is invalid');
             toast({
               variant: "destructive",
-              title: "Erreur de création",
-              description: "Impossible de créer le compte magasin",
+              title: "Erreur d'authentification",
+              description: "Token invalide pour ce magasin",
             });
             navigate('/login');
             return;
           }
-
-          // Sign in after successful signup
-          const { error: finalSignInError } = await signInStore(storeEmail, token);
-
-          if (finalSignInError) {
-            console.error('Final sign in error:', finalSignInError);
-            toast({
-              variant: "destructive",
-              title: "Erreur de connexion",
-              description: "Impossible de connecter le magasin après création",
-            });
-            navigate('/login');
-            return;
-          }
-        } else {
-          toast({
-            variant: "destructive",
-            title: "Erreur d'authentification",
-            description: "Token invalide pour ce magasin",
-          });
-          navigate('/login');
-          return;
         }
+      } else {
+        console.log('Sign in successful:', signInData);
       }
 
       // Update store metadata if signed in
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
+        console.log('Updating store profile with new metadata');
         const { error: updateError } = await updateStoreProfile(
           session.user.id,
           {

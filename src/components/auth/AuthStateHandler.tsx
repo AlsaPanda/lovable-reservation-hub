@@ -23,12 +23,14 @@ export const AuthStateHandler = () => {
         navigate("/login");
         return;
       }
+
+      console.log("Active session found:", session);
     };
 
     checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event);
+      console.log("Auth state changed:", event, session?.user?.id);
       
       if (event === 'SIGNED_IN' && session) {
         console.log("User signed in successfully");
@@ -37,8 +39,11 @@ export const AuthStateHandler = () => {
           description: "Vous allez être redirigé vers la page des produits",
         });
         navigate("/products");
-      } else if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
-        console.log("User signed out or token refreshed");
+      } else if (event === 'SIGNED_OUT') {
+        console.log("User signed out");
+        navigate("/login");
+      } else if (event === 'TOKEN_REFRESHED') {
+        console.log("Token refreshed");
         if (!session) {
           navigate("/login");
         }
