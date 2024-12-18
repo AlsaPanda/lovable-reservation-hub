@@ -53,7 +53,9 @@ const ImportDialog = ({
       
       toast({
         title: "Import réussi",
-        description: `${importedProducts.length} produit${importedProducts.length > 1 ? 's' : ''} ${importedProducts.length > 1 ? 'ont été importés' : 'a été importé'} avec succès.`,
+        description: importedProducts.length === 1 
+          ? "1 produit a été importé avec succès."
+          : `${importedProducts.length} produits ont été importés avec succès.`,
         duration: 3000,
       });
       
@@ -138,7 +140,9 @@ const ImportDialog = ({
               
               {importCount !== null && !isLoading && (
                 <p className="text-sm text-center text-green-600 font-medium">
-                  {importCount} produit{importCount > 1 ? 's' : ''} {importCount > 1 ? 'ont été importés' : 'a été importé'} avec succès.
+                  {importCount === 1 
+                    ? "1 produit a été importé avec succès."
+                    : `${importCount} produits ont été importés avec succès.`}
                 </p>
               )}
             </div>
