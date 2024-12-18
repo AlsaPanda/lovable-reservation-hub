@@ -1,12 +1,18 @@
-import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Settings2 } from "lucide-react";
-import { Product } from "@/utils/types";
-import { exportProducts } from "@/utils/productUtils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal } from "lucide-react";
+import { useState } from "react";
 import ImportDialog from "./ImportDialog";
 import DeleteCatalogDialog from "./DeleteCatalogDialog";
-import { useBulkActions } from "@/hooks/useBulkActions";
-import BulkActionsMenuContent from "./bulk-actions/BulkActionsMenuContent";
+import { Product } from "@/utils/types";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface BulkActionsMenuProps {
   onProductsImported: (products: Product[]) => void;
@@ -15,67 +21,82 @@ interface BulkActionsMenuProps {
 }
 
 const BulkActionsMenu = ({ onProductsImported, products, userRole }: BulkActionsMenuProps) => {
-  const {
-    showImportDialog,
-    setShowImportDialog,
-    showDeleteDialog,
-    setShowDeleteDialog,
-    pendingFile,
-    setPendingFile,
-    forceImport,
-    setForceImport,
-    handleImport,
-    handleDeleteCatalog,
-    handleFileSelect,
-  } = useBulkActions(onProductsImported);
-
-  const handleExport = () => {
-    exportProducts(products);
-  };
-
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const isSuperAdmin = userRole === 'superadmin';
-  console.log('Is Super Admin:', isSuperAdmin);
+
+  const handleDeleteCatalog = async () => {
+    try {
+      const { error } = await supabase.rpc('delete_all_products');
+      
+      if (error) {
+        console.error('Error deleting catalog:', error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la suppression du catalogue.",
+        });
+        return;
+      }
+
+      // Invalidate the products query to refresh the UI
+      await queryClient.invalidateQueries({ queryKey: ['products'] });
+      
+      toast({
+        title: "Catalogue supprimé",
+        description: "Le catalogue a été supprimé avec succès.",
+        duration: 3000, // Set duration to 3 seconds
+      });
+      
+      setShowDeleteDialog(false);
+    } catch (error) {
+      console.error('Error in handleDeleteCatalog:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la suppression.",
+        duration: 3000,
+      });
+    }
+  };
 
   return (
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="gap-2">
-            <Settings2 className="h-4 w-4" />
-            Actions en masse
+          <Button variant="outline" size="icon">
+            <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        
-        <BulkActionsMenuContent
-          onImport={() => document.getElementById('import-file')?.click()}
-          onExport={handleExport}
-          onDelete={isSuperAdmin ? () => setShowDeleteDialog(true) : undefined}
-          isSuperAdmin={isSuperAdmin}
-        />
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem onClick={() => setShowImportDialog(true)}>
+            Importer des produits
+          </DropdownMenuItem>
+          {isSuperAdmin && (
+            <DropdownMenuItem 
+              onClick={() => setShowDeleteDialog(true)}
+              className="text-red-600 focus:text-red-600"
+            >
+              Supprimer le catalogue
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
       </DropdownMenu>
 
       <ImportDialog
-        showDialog={showImportDialog}
+        open={showImportDialog}
         onOpenChange={setShowImportDialog}
-        onImport={handleImport}
-        onCancel={() => setPendingFile(null)}
-        forceImport={forceImport}
-        setForceImport={setForceImport}
-        isSuperAdmin={isSuperAdmin}
+        onProductsImported={onProductsImported}
+        products={products}
+        userRole={userRole}
       />
 
       <DeleteCatalogDialog
-        showDialog={showDeleteDialog}
+        open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
-        onDelete={handleDeleteCatalog}
-      />
-
-      <input
-        id="import-file"
-        type="file"
-        accept=".json,.xlsx"
-        className="hidden"
-        onChange={handleFileSelect}
+        onConfirm={handleDeleteCatalog}
       />
     </>
   );
