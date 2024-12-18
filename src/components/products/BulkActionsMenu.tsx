@@ -1,17 +1,12 @@
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Download, Upload, Settings2, Trash2 } from "lucide-react";
+import { Settings2 } from "lucide-react";
 import { Product } from "@/utils/types";
 import { exportProducts } from "@/utils/productUtils";
 import ImportDialog from "./ImportDialog";
 import DeleteCatalogDialog from "./DeleteCatalogDialog";
 import { useBulkActions } from "@/hooks/useBulkActions";
+import BulkActionsMenuContent from "./bulk-actions/BulkActionsMenuContent";
 
 interface BulkActionsMenuProps {
   onProductsImported: (products: Product[]) => void;
@@ -49,29 +44,13 @@ const BulkActionsMenu = ({ onProductsImported, products, userRole }: BulkActions
             Actions en masse
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem onClick={() => document.getElementById('import-file')?.click()} className="cursor-pointer">
-            <Upload className="h-4 w-4 mr-2" />
-            Importer des produits
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleExport} className="cursor-pointer">
-            <Download className="h-4 w-4 mr-2" />
-            Exporter les produits
-          </DropdownMenuItem>
-          
-          {isSuperAdmin && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                onClick={() => setShowDeleteDialog(true)} 
-                className="cursor-pointer text-red-600"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Supprimer le catalogue
-              </DropdownMenuItem>
-            </>
-          )}
-        </DropdownMenuContent>
+        
+        <BulkActionsMenuContent
+          onImport={() => document.getElementById('import-file')?.click()}
+          onExport={handleExport}
+          onDelete={isSuperAdmin ? () => setShowDeleteDialog(true) : undefined}
+          isSuperAdmin={isSuperAdmin}
+        />
       </DropdownMenu>
 
       <ImportDialog
