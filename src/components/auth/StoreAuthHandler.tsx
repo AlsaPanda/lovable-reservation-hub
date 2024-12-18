@@ -22,12 +22,10 @@ export const StoreAuthHandler = ({
 
   useEffect(() => {
     if (storeId && token) {
-      // Use the original storeId format without removing leading zeros
-      console.log('Using store ID:', storeId);
-      
+      console.log('Attempting store authentication:', { storeId, brand });
       handleStoreAuth(storeId, token, brand, countryCode, languageCode, context);
     }
-  }, [storeId, token, brand, countryCode, languageCode, context]);
+  }, [storeId, token, brand, countryCode, languageCode, context, handleStoreAuth]);
 
   return null;
 };

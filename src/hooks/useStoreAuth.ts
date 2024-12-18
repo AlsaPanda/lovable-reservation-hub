@@ -32,91 +32,81 @@ export const useStoreAuth = () => {
       
       // Preserve original storeId format (including leading zeros)
       const originalStoreId = storeId;
-      
-      // Check if store exists
-      const { data: existingProfile, error: profileError } = await supabase
-        .from('profiles')
-        .select('store_id')
-        .eq('store_id', originalStoreId)
-        .single();
-
-      if (profileError && profileError.code !== 'PGRST116') {
-        console.error('Error checking store profile:', profileError);
-        toast({
-          variant: "destructive",
-          title: "Erreur d'authentification",
-          description: "Impossible de vérifier le magasin",
-        });
-        navigate('/login');
-        return;
-      }
-
-      const normalizedBrand = normalizeBrand(brand);
       const storeEmail = generateStoreEmail(originalStoreId);
+      const normalizedBrand = normalizeBrand(brand);
 
-      // Try to sign in
+      // Try to sign in first
       const { data: signInData, error: signInError } = await signInStore(storeEmail, token);
 
       if (signInError) {
-        console.log('Sign in attempt failed:', signInError);
+        console.log('Sign in failed, attempting to create account:', signInError.message);
         
-        if (signInError.message.includes('Invalid login credentials')) {
-          console.log('Invalid credentials, checking if store needs to be created');
-          
-          // Create new account if store doesn't exist
-          if (!existingProfile) {
-            console.log('Creating new store account');
-            const { data: signUpData, error: signUpError } = await signUpStore(
-              storeEmail,
-              token,
-              {
-                store_id: originalStoreId,
-                brand: normalizedBrand,
-                country_code: countryCode,
-                language_code: languageCode,
-                context,
-              }
-            );
+        // Check if store exists
+        const { data: existingProfile, error: profileError } = await supabase
+          .from('profiles')
+          .select('store_id')
+          .eq('store_id', originalStoreId)
+          .single();
 
-            if (signUpError) {
-              console.error('Store signup failed:', signUpError);
-              toast({
-                variant: "destructive",
-                title: "Erreur de création",
-                description: "Impossible de créer le compte magasin",
-              });
-              navigate('/login');
-              return;
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.error('Error checking store profile:', profileError);
+          toast({
+            variant: "destructive",
+            title: "Erreur d'authentification",
+            description: "Impossible de vérifier le magasin",
+          });
+          navigate('/login');
+          return;
+        }
+
+        if (!existingProfile) {
+          console.log('Creating new store account');
+          const { error: signUpError } = await signUpStore(
+            storeEmail,
+            token,
+            {
+              store_id: originalStoreId,
+              brand: normalizedBrand,
+              country_code: countryCode,
+              language_code: languageCode,
+              context,
             }
+          );
 
-            console.log('Store account created successfully:', signUpData);
-
-            // Sign in after successful signup
-            const { error: finalSignInError } = await signInStore(storeEmail, token);
-
-            if (finalSignInError) {
-              console.error('Final sign in error:', finalSignInError);
-              toast({
-                variant: "destructive",
-                title: "Erreur de connexion",
-                description: "Impossible de connecter le magasin après création",
-              });
-              navigate('/login');
-              return;
-            }
-          } else {
-            console.log('Store exists but token is invalid');
+          if (signUpError) {
+            console.error('Store signup failed:', signUpError);
             toast({
               variant: "destructive",
-              title: "Erreur d'authentification",
-              description: "Token invalide pour ce magasin",
+              title: "Erreur de création",
+              description: "Impossible de créer le compte magasin",
             });
             navigate('/login');
             return;
           }
+
+          // Sign in after successful signup
+          const { error: finalSignInError } = await signInStore(storeEmail, token);
+
+          if (finalSignInError) {
+            console.error('Final sign in error:', finalSignInError);
+            toast({
+              variant: "destructive",
+              title: "Erreur de connexion",
+              description: "Impossible de connecter le magasin après création",
+            });
+            navigate('/login');
+            return;
+          }
+        } else {
+          console.log('Store exists but token is invalid');
+          toast({
+            variant: "destructive",
+            title: "Erreur d'authentification",
+            description: "Token invalide pour ce magasin",
+          });
+          navigate('/login');
+          return;
         }
-      } else {
-        console.log('Sign in successful:', signInData);
       }
 
       // Update store metadata if signed in
