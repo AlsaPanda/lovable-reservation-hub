@@ -8,7 +8,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Product } from "@/utils/types";
 
 interface ImportDialogProps {
   showDialog: boolean;
@@ -29,6 +28,9 @@ const ImportDialog = ({
   setForceImport,
   isSuperAdmin,
 }: ImportDialogProps) => {
+  console.log('ImportDialog - isSuperAdmin:', isSuperAdmin);
+  console.log('ImportDialog - forceImport:', forceImport);
+
   return (
     <AlertDialog open={showDialog} onOpenChange={onOpenChange}>
       <AlertDialogContent>

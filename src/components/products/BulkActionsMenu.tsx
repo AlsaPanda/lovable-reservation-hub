@@ -34,6 +34,7 @@ const BulkActionsMenu = ({ onProductsImported, products, userRole }: BulkActions
   };
 
   const isSuperAdmin = userRole === 'superadmin';
+  console.log('Is Super Admin:', isSuperAdmin);
 
   return (
     <>
