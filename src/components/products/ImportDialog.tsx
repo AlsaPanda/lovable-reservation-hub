@@ -34,6 +34,7 @@ const ImportDialog = ({
   const [forceImport, setForceImport] = useState(false);
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const fileInputRef = useState<HTMLInputElement | null>(null);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -41,14 +42,19 @@ const ImportDialog = ({
 
     setIsLoading(true);
     try {
+      console.log('Starting import process with file:', file.name);
       const importedProducts = await importProducts(file, !forceImport);
+      console.log('Products imported successfully:', importedProducts.length);
+      
       onProductsImported(importedProducts);
-      onOpenChange(false);
       toast({
         title: "Import réussi",
         description: `${importedProducts.length} produits ont été importés avec succès.`,
         duration: 3000,
       });
+      
+      // Only close the dialog after successful import
+      onOpenChange(false);
     } catch (error) {
       console.error('Import error:', error);
       toast({
@@ -59,22 +65,37 @@ const ImportDialog = ({
       });
     } finally {
       setIsLoading(false);
-      event.target.value = ''; // Reset file input
+      if (event.target) {
+        event.target.value = ''; // Reset file input
+      }
     }
   };
 
+  const handleButtonClick = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.xlsx,.xls';
+    input.onchange = (e) => handleFileChange(e as React.ChangeEvent<HTMLInputElement>);
+    input.click();
+  };
+
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={open} onOpenChange={(newOpen) => {
+      if (!isLoading) {
+        onOpenChange(newOpen);
+      }
+    }}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Importer des produits</AlertDialogTitle>
           <AlertDialogDescription className="space-y-4">
             <p>
               Par défaut, seuls les nouveaux produits seront importés (import différentiel).
-              Les produits existants ne seront pas modifiés.
+              {isSuperAdmin && " En tant que superadmin, vous pouvez forcer l'import de tous les produits."}
             </p>
+
             {isSuperAdmin && (
-              <div className="flex items-center space-x-2 border rounded p-2 bg-gray-50">
+              <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
                   id="force-import"
@@ -83,29 +104,28 @@ const ImportDialog = ({
                   className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                 />
                 <label htmlFor="force-import" className="text-sm font-medium text-gray-700">
-                  Forcer l'import (supprime le catalogue existant)
+                  Forcer l'import (remplacer tous les produits)
                 </label>
               </div>
             )}
+
             <div className="flex justify-center mt-4">
-              <div className="relative">
-                <input
-                  type="file"
-                  onChange={handleFileChange}
-                  accept=".xlsx,.xls"
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  disabled={isLoading}
-                />
-                <Button variant="outline" disabled={isLoading}>
-                  <UploadCloud className="mr-2 h-4 w-4" />
-                  {isLoading ? "Importation..." : "Sélectionner un fichier"}
-                </Button>
-              </div>
+              <Button 
+                variant="outline" 
+                onClick={handleButtonClick}
+                disabled={isLoading}
+                className="w-full"
+              >
+                <UploadCloud className="mr-2 h-4 w-4" />
+                {isLoading ? "Importation en cours..." : "Sélectionner un fichier Excel"}
+              </Button>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => onOpenChange(false)}>Fermer</AlertDialogCancel>
+          <AlertDialogCancel onClick={() => !isLoading && onOpenChange(false)}>
+            {isLoading ? "Importation en cours..." : "Fermer"}
+          </AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
