@@ -30,11 +30,14 @@ export const useStoreAuth = () => {
 
       console.log('Attempting store authentication with:', { storeId, brand });
       
+      // Preserve original storeId format (including leading zeros)
+      const originalStoreId = storeId;
+      
       // Check if store exists
       const { data: existingProfile, error: profileError } = await supabase
         .from('profiles')
         .select('store_id')
-        .eq('store_id', storeId)
+        .eq('store_id', originalStoreId)
         .single();
 
       if (profileError && profileError.code !== 'PGRST116') {
@@ -49,7 +52,7 @@ export const useStoreAuth = () => {
       }
 
       const normalizedBrand = normalizeBrand(brand);
-      const storeEmail = generateStoreEmail(storeId);
+      const storeEmail = generateStoreEmail(originalStoreId);
 
       // Try to sign in
       const { data: signInData, error: signInError } = await signInStore(storeEmail, token);
@@ -67,7 +70,7 @@ export const useStoreAuth = () => {
               storeEmail,
               token,
               {
-                store_id: storeId,
+                store_id: originalStoreId,
                 brand: normalizedBrand,
                 country_code: countryCode,
                 language_code: languageCode,
