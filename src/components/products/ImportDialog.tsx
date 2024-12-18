@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Product } from "@/utils/types";
 import { UploadCloud } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { importProducts } from "@/utils/productUtils";
 import { useToast } from "@/hooks/use-toast";
 
@@ -35,6 +35,12 @@ const ImportDialog = ({
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [importCount, setImportCount] = useState<number | null>(null);
+
+  const resetState = useCallback(() => {
+    setIsLoading(false);
+    setImportCount(null);
+    setForceImport(false);
+  }, []);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -60,7 +66,7 @@ const ImportDialog = ({
           duration: 3000,
         });
         
-        onOpenChange(false);
+        handleClose();
       } else {
         toast({
           variant: "default",
@@ -68,6 +74,7 @@ const ImportDialog = ({
           description: "Aucun nouveau produit n'a été trouvé dans le fichier.",
           duration: 3000,
         });
+        setIsLoading(false);
       }
     } catch (error) {
       console.error('Import error:', error);
@@ -77,16 +84,17 @@ const ImportDialog = ({
         description: error instanceof Error ? error.message : "Une erreur est survenue lors de l'import",
         duration: 3000,
       });
-    } finally {
       setIsLoading(false);
-      if (event.target) {
-        event.target.value = ''; // Reset file input
-      }
+    }
+
+    // Reset file input
+    if (event.target) {
+      event.target.value = '';
     }
   };
 
   const handleButtonClick = () => {
-    if (isLoading) return; // Prevent multiple clicks while loading
+    if (isLoading) return;
     
     const input = document.createElement('input');
     input.type = 'file';
@@ -98,13 +106,12 @@ const ImportDialog = ({
     input.click();
   };
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     if (!isLoading) {
-      setImportCount(null);
-      setForceImport(false);
+      resetState();
       onOpenChange(false);
     }
-  };
+  }, [isLoading, onOpenChange, resetState]);
 
   return (
     <AlertDialog open={open} onOpenChange={handleClose}>
@@ -127,7 +134,10 @@ const ImportDialog = ({
                   disabled={isLoading}
                   className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                 />
-                <label htmlFor="force-import" className="text-sm font-medium text-gray-700">
+                <label 
+                  htmlFor="force-import" 
+                  className={`text-sm font-medium ${isLoading ? 'text-gray-400' : 'text-gray-700'}`}
+                >
                   Forcer l'import (remplacer tous les produits)
                 </label>
               </div>
@@ -145,7 +155,7 @@ const ImportDialog = ({
               </Button>
               
               {isLoading && (
-                <p className="text-sm text-center text-muted-foreground">
+                <p className="text-sm text-center text-muted-foreground animate-pulse">
                   Import en cours, veuillez patienter...
                 </p>
               )}
@@ -164,7 +174,7 @@ const ImportDialog = ({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isLoading}>
-            {isLoading ? "Importation en cours..." : "Fermer"}
+            Fermer
           </AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>

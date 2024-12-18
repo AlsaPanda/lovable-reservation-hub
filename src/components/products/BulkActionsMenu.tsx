@@ -74,6 +74,14 @@ const BulkActionsMenu = ({ onProductsImported, products, userRole }: BulkActions
     }
   };
 
+  const handleImportDialogClose = (open: boolean) => {
+    if (!open) {
+      setShowImportDialog(false);
+      // Refresh products after import dialog is closed
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    }
+  };
+
   return (
     <>
       <DropdownMenu>
@@ -103,7 +111,7 @@ const BulkActionsMenu = ({ onProductsImported, products, userRole }: BulkActions
 
       <ImportDialog
         open={showImportDialog}
-        onOpenChange={setShowImportDialog}
+        onOpenChange={handleImportDialogClose}
         onProductsImported={onProductsImported}
         products={products}
         userRole={userRole}
