@@ -8,6 +8,25 @@ export const AuthStateHandler = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    // First check if we have an existing session
+    const checkSession = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error("Session check error:", error);
+        navigate("/login");
+        return;
+      }
+
+      if (!session) {
+        console.log("No active session found");
+        navigate("/login");
+        return;
+      }
+    };
+
+    checkSession();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event);
       
@@ -18,9 +37,11 @@ export const AuthStateHandler = () => {
           description: "Vous allez être redirigé vers la page des produits",
         });
         navigate("/products");
-      } else if (event === 'SIGNED_OUT') {
-        console.log("User signed out");
-        navigate("/login");
+      } else if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+        console.log("User signed out or token refreshed");
+        if (!session) {
+          navigate("/login");
+        }
       }
     });
 
