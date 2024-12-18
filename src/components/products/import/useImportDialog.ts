@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Product } from "@/utils/types";
 import { importProducts } from "@/utils/productUtils";
@@ -19,6 +19,7 @@ export const useImportDialog = ({
   const [importCount, setImportCount] = useState<number | null>(null);
   const { toast } = useToast();
 
+  // Reset state when dialog closes
   useEffect(() => {
     if (!open) {
       setIsLoading(false);
@@ -27,7 +28,7 @@ export const useImportDialog = ({
     }
   }, [open]);
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -75,9 +76,9 @@ export const useImportDialog = ({
         event.target.value = '';
       }
     }
-  };
+  }, [forceImport, onProductsImported, toast]);
 
-  const handleFileSelect = () => {
+  const handleFileSelect = useCallback(() => {
     if (isLoading) return;
     
     const input = document.createElement('input');
@@ -88,13 +89,13 @@ export const useImportDialog = ({
       handleFileChange(event);
     };
     input.click();
-  };
+  }, [handleFileChange, isLoading]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     if (!isLoading) {
       onOpenChange(false);
     }
-  };
+  }, [isLoading, onOpenChange]);
 
   return {
     forceImport,

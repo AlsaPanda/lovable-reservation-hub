@@ -1,11 +1,10 @@
 import {
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import { Product } from "@/utils/types";
 import ImportDialogContent from "./import/ImportDialogContent";
@@ -34,10 +33,17 @@ const ImportDialog = ({
     importCount,
     handleFileSelect,
     handleClose
-  } = useImportDialog({ onProductsImported, onOpenChange, open });
+  } = useImportDialog({ 
+    onProductsImported, 
+    onOpenChange, 
+    open 
+  });
 
   return (
-    <AlertDialog open={open} onOpenChange={handleClose}>
+    <AlertDialog 
+      open={open} 
+      onOpenChange={handleClose}
+    >
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Importer des produits</AlertDialogTitle>

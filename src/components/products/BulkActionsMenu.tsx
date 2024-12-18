@@ -39,7 +39,12 @@ const BulkActionsMenu = ({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon" disabled={isDeleting}>
+          <Button 
+            variant="outline" 
+            size="icon"
+            disabled={isDeleting}
+            className="relative"
+          >
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
@@ -47,13 +52,14 @@ const BulkActionsMenu = ({
           <DropdownMenuItem 
             onClick={() => setShowImportDialog(true)}
             disabled={isDeleting}
+            className="cursor-pointer"
           >
             Importer des produits
           </DropdownMenuItem>
           {isSuperAdmin && (
             <DropdownMenuItem 
               onClick={() => setShowDeleteDialog(true)}
-              className="text-red-600 focus:text-red-600"
+              className="text-red-600 focus:text-red-600 cursor-pointer"
               disabled={isDeleting}
             >
               Supprimer le catalogue

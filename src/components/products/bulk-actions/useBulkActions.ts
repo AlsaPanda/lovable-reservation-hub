@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -10,19 +10,12 @@ export const useBulkActions = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    return () => {
-      setShowImportDialog(false);
-      setShowDeleteDialog(false);
-      setIsDeleting(false);
-    };
-  }, []);
-
-  const handleDeleteCatalog = async () => {
+  const handleDeleteCatalog = useCallback(async () => {
     if (isDeleting) return;
     
     setIsDeleting(true);
     try {
+      console.log('Starting catalog deletion...');
       const { error } = await supabase.rpc('delete_all_products');
       
       if (error) {
@@ -55,20 +48,21 @@ export const useBulkActions = () => {
     } finally {
       setIsDeleting(false);
     }
-  };
+  }, [isDeleting, queryClient, toast]);
 
-  const handleCloseDeleteDialog = () => {
-    if (!isDeleting) {
+  const handleCloseDeleteDialog = useCallback((open: boolean) => {
+    if (!isDeleting && !open) {
       setShowDeleteDialog(false);
     }
-  };
+  }, [isDeleting]);
 
-  const handleImportDialogClose = (open: boolean) => {
+  const handleImportDialogClose = useCallback((open: boolean) => {
     if (!open) {
+      console.log('Closing import dialog and refreshing products...');
       setShowImportDialog(false);
       queryClient.invalidateQueries({ queryKey: ['products'] });
     }
-  };
+  }, [queryClient]);
 
   return {
     showImportDialog,
