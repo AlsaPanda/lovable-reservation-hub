@@ -22,7 +22,11 @@ export const StoreAuthHandler = ({
 
   useEffect(() => {
     if (storeId && token) {
-      handleStoreAuth(storeId, token, brand, countryCode, languageCode, context);
+      // Ensure storeId is properly formatted (remove leading zeros)
+      const formattedStoreId = storeId.replace(/^0+/, '');
+      console.log('Formatted store ID:', formattedStoreId);
+      
+      handleStoreAuth(formattedStoreId, token, brand, countryCode, languageCode, context);
     }
   }, [storeId, token, brand, countryCode, languageCode, context]);
 
