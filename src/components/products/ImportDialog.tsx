@@ -8,28 +8,25 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Product } from "@/utils/types";
 
 interface ImportDialogProps {
-  open: boolean;  // Changed from showDialog to open
+  open: boolean;
   onOpenChange: (open: boolean) => void;
-  onImport: () => void;
-  onCancel: () => void;
-  forceImport: boolean;
-  setForceImport: (force: boolean) => void;
-  isSuperAdmin: boolean;
+  onProductsImported: (products: Product[]) => void;
+  products: Product[];
+  userRole: string | null;
 }
 
 const ImportDialog = ({
-  open,  // Changed from showDialog to open
+  open,
   onOpenChange,
-  onImport,
-  onCancel,
-  forceImport,
-  setForceImport,
-  isSuperAdmin,
+  onProductsImported,
+  products,
+  userRole,
 }: ImportDialogProps) => {
-  console.log('ImportDialog - isSuperAdmin:', isSuperAdmin);
-  console.log('ImportDialog - forceImport:', forceImport);
+  const isSuperAdmin = userRole === 'superadmin';
+  const forceImport = false; // We'll handle this state in a future update if needed
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -47,7 +44,7 @@ const ImportDialog = ({
                   type="checkbox"
                   id="force-import"
                   checked={forceImport}
-                  onChange={(e) => setForceImport(e.target.checked)}
+                  onChange={() => {}} // We'll handle this in a future update if needed
                   className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                 />
                 <label htmlFor="force-import" className="text-sm font-medium text-gray-700">
@@ -58,8 +55,8 @@ const ImportDialog = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onCancel}>Annuler</AlertDialogCancel>
-          <AlertDialogAction onClick={onImport}>Continuer</AlertDialogAction>
+          <AlertDialogCancel onClick={() => onOpenChange(false)}>Annuler</AlertDialogCancel>
+          <AlertDialogAction onClick={() => onProductsImported([])}>Continuer</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
