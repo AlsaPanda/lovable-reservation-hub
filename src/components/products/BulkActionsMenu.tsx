@@ -11,7 +11,7 @@ import ImportDialog from "./ImportDialog";
 import DeleteCatalogDialog from "./DeleteCatalogDialog";
 import { Product } from "@/utils/types";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface BulkActionsMenuProps {
@@ -23,11 +23,15 @@ interface BulkActionsMenuProps {
 const BulkActionsMenu = ({ onProductsImported, products, userRole }: BulkActionsMenuProps) => {
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const isSuperAdmin = userRole === 'superadmin';
 
   const handleDeleteCatalog = async () => {
+    if (isDeleting) return;
+    
+    setIsDeleting(true);
     try {
       const { error } = await supabase.rpc('delete_all_products');
       
@@ -47,7 +51,7 @@ const BulkActionsMenu = ({ onProductsImported, products, userRole }: BulkActions
       toast({
         title: "Catalogue supprimé",
         description: "Le catalogue a été supprimé avec succès.",
-        duration: 3000, // Set duration to 3 seconds
+        duration: 3000,
       });
       
       setShowDeleteDialog(false);
@@ -59,6 +63,14 @@ const BulkActionsMenu = ({ onProductsImported, products, userRole }: BulkActions
         description: "Une erreur est survenue lors de la suppression.",
         duration: 3000,
       });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleCloseDeleteDialog = () => {
+    if (!isDeleting) {
+      setShowDeleteDialog(false);
     }
   };
 
@@ -66,18 +78,22 @@ const BulkActionsMenu = ({ onProductsImported, products, userRole }: BulkActions
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" disabled={isDeleting}>
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem onClick={() => setShowImportDialog(true)}>
+          <DropdownMenuItem 
+            onClick={() => setShowImportDialog(true)}
+            disabled={isDeleting}
+          >
             Importer des produits
           </DropdownMenuItem>
           {isSuperAdmin && (
             <DropdownMenuItem 
               onClick={() => setShowDeleteDialog(true)}
               className="text-red-600 focus:text-red-600"
+              disabled={isDeleting}
             >
               Supprimer le catalogue
             </DropdownMenuItem>
@@ -95,8 +111,9 @@ const BulkActionsMenu = ({ onProductsImported, products, userRole }: BulkActions
 
       <DeleteCatalogDialog
         open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
+        onOpenChange={handleCloseDeleteDialog}
         onConfirm={handleDeleteCatalog}
+        isDeleting={isDeleting}
       />
     </>
   );

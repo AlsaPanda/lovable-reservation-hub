@@ -51,15 +51,24 @@ const ImportDialog = ({
       setImportCount(importedProducts.length);
       onProductsImported(importedProducts);
       
-      toast({
-        title: "Import réussi",
-        description: importedProducts.length === 1 
-          ? "1 produit a été importé avec succès."
-          : `${importedProducts.length} produits ont été importés avec succès.`,
-        duration: 3000,
-      });
-      
-      onOpenChange(false);
+      if (importedProducts.length > 0) {
+        toast({
+          title: "Import réussi",
+          description: importedProducts.length === 1 
+            ? "1 produit a été importé avec succès."
+            : `${importedProducts.length} produits ont été importés avec succès.`,
+          duration: 3000,
+        });
+        
+        onOpenChange(false);
+      } else {
+        toast({
+          variant: "default",
+          title: "Aucun produit importé",
+          description: "Aucun nouveau produit n'a été trouvé dans le fichier.",
+          duration: 3000,
+        });
+      }
     } catch (error) {
       console.error('Import error:', error);
       toast({
@@ -92,6 +101,7 @@ const ImportDialog = ({
   const handleClose = () => {
     if (!isLoading) {
       setImportCount(null);
+      setForceImport(false);
       onOpenChange(false);
     }
   };
@@ -142,9 +152,11 @@ const ImportDialog = ({
               
               {importCount !== null && !isLoading && (
                 <p className="text-sm text-center text-green-600 font-medium">
-                  {importCount === 1 
-                    ? "1 produit a été importé avec succès."
-                    : `${importCount} produits ont été importés avec succès.`}
+                  {importCount === 0 
+                    ? "Aucun nouveau produit n'a été trouvé dans le fichier."
+                    : importCount === 1 
+                      ? "1 produit a été importé avec succès."
+                      : `${importCount} produits ont été importés avec succès.`}
                 </p>
               )}
             </div>
