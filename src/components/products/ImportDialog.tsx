@@ -13,7 +13,7 @@ import { Product } from "@/utils/types";
 import { UploadCloud } from "lucide-react";
 import { useState } from "react";
 import { importProducts } from "@/utils/productUtils";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface ImportDialogProps {
   open: boolean;
@@ -34,21 +34,26 @@ const ImportDialog = ({
   const [forceImport, setForceImport] = useState(false);
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [importCount, setImportCount] = useState<number | null>(null);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     setIsLoading(true);
+    setImportCount(null);
+    
     try {
       console.log('Starting import process with file:', file.name);
       const importedProducts = await importProducts(file, !forceImport);
       console.log('Products imported successfully:', importedProducts.length);
       
+      setImportCount(importedProducts.length);
       onProductsImported(importedProducts);
+      
       toast({
         title: "Import réussi",
-        description: `${importedProducts.length} produits ont été importés avec succès.`,
+        description: `${importedProducts.length} produit${importedProducts.length > 1 ? 's' : ''} ${importedProducts.length > 1 ? 'ont été importés' : 'a été importé'} avec succès.`,
         duration: 3000,
       });
       
@@ -86,6 +91,7 @@ const ImportDialog = ({
       onOpenChange={(newOpen) => {
         if (!isLoading) {
           onOpenChange(newOpen);
+          setImportCount(null);
         }
       }}
     >
@@ -113,7 +119,7 @@ const ImportDialog = ({
               </div>
             )}
 
-            <div className="flex justify-center mt-4">
+            <div className="flex flex-col gap-4">
               <Button 
                 variant="outline" 
                 onClick={handleButtonClick}
@@ -123,6 +129,18 @@ const ImportDialog = ({
                 <UploadCloud className="mr-2 h-4 w-4" />
                 {isLoading ? "Importation en cours..." : "Sélectionner un fichier Excel"}
               </Button>
+              
+              {isLoading && (
+                <p className="text-sm text-center text-muted-foreground">
+                  Import en cours, veuillez patienter...
+                </p>
+              )}
+              
+              {importCount !== null && !isLoading && (
+                <p className="text-sm text-center text-green-600 font-medium">
+                  {importCount} produit{importCount > 1 ? 's' : ''} {importCount > 1 ? 'ont été importés' : 'a été importé'} avec succès.
+                </p>
+              )}
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
