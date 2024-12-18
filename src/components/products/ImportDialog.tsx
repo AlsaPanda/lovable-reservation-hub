@@ -41,7 +41,7 @@ const ImportDialog = ({
 
   // Ensure dialog closes properly when not loading
   const handleDialogClose = (isOpen: boolean) => {
-    if (!isLoading && !isOpen) {
+    if (!isOpen && !isLoading) {
       handleClose();
     }
   };
@@ -64,7 +64,7 @@ const ImportDialog = ({
           />
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>
+          <AlertDialogCancel disabled={isLoading} onClick={handleClose}>
             Fermer
           </AlertDialogCancel>
         </AlertDialogFooter>

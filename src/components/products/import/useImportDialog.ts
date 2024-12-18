@@ -53,7 +53,9 @@ export const useImportDialog = ({
           duration: 3000,
         });
         
-        handleClose();
+        // Ensure we reset states before closing
+        setIsLoading(false);
+        onOpenChange(false);
       } else {
         toast({
           variant: "default",
@@ -61,6 +63,7 @@ export const useImportDialog = ({
           description: "Aucun nouveau produit n'a été trouvé dans le fichier.",
           duration: 3000,
         });
+        setIsLoading(false);
       }
     } catch (error) {
       console.error('Import error:', error);
@@ -76,7 +79,7 @@ export const useImportDialog = ({
         event.target.value = '';
       }
     }
-  }, [forceImport, onProductsImported, toast]);
+  }, [forceImport, onProductsImported, toast, onOpenChange]);
 
   const handleFileSelect = useCallback(() => {
     if (isLoading) return;
@@ -93,6 +96,9 @@ export const useImportDialog = ({
 
   const handleClose = useCallback(() => {
     if (!isLoading) {
+      setIsLoading(false);
+      setImportCount(null);
+      setForceImport(false);
       onOpenChange(false);
     }
   }, [isLoading, onOpenChange]);
