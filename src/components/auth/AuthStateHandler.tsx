@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 export const AuthStateHandler = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const redirectInProgress = useRef(false);
 
   useEffect(() => {
     // First check if we have an existing session
@@ -28,6 +29,10 @@ export const AuthStateHandler = () => {
         }
 
         console.log("Active session found:", session.user?.id);
+        if (!redirectInProgress.current) {
+          redirectInProgress.current = true;
+          navigate("/products");
+        }
       } catch (err) {
         console.error("Session check failed:", err);
         navigate("/login");
@@ -41,13 +46,17 @@ export const AuthStateHandler = () => {
       
       if (event === 'SIGNED_IN' && session) {
         console.log("User signed in successfully");
-        toast({
-          title: "Connexion réussie",
-          description: "Vous allez être redirigé vers la page des produits",
-        });
-        navigate("/products");
+        if (!redirectInProgress.current) {
+          redirectInProgress.current = true;
+          toast({
+            title: "Connexion réussie",
+            description: "Vous allez être redirigé vers la page des produits",
+          });
+          navigate("/products");
+        }
       } else if (event === 'SIGNED_OUT') {
         console.log("User signed out");
+        redirectInProgress.current = false;
         navigate("/login");
       } else if (event === 'TOKEN_REFRESHED') {
         console.log("Token refreshed successfully");
@@ -62,6 +71,7 @@ export const AuthStateHandler = () => {
     return () => {
       console.log("Cleaning up auth subscription");
       subscription.unsubscribe();
+      redirectInProgress.current = false;
     };
   }, [navigate, toast]);
 
