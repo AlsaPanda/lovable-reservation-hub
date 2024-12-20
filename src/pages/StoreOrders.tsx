@@ -1,22 +1,14 @@
-import { useEffect, useState } from "react";
 import NavBar from "@/components/NavBar";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
 import * as XLSX from 'xlsx';
 import { StoreOrdersTable } from "@/components/store-orders/StoreOrdersTable";
 import { StoreOrderDetails } from "@/components/store-orders/StoreOrderDetails";
-import { Database } from "@/integrations/supabase/types";
-
-interface StoreOrder {
-  store_name: string;
-  store_id: string;
-  total_reservations: number;
-  total_products: number;
-  last_reservation: string;
-}
+import { useStoreOrders } from "@/hooks/useStoreOrders";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface DetailedReservation {
   id: string;
@@ -25,97 +17,29 @@ interface DetailedReservation {
   reservation_date: string;
 }
 
-type ReservationWithProduct = Database['public']['Tables']['reservations']['Row'] & {
-  products: Database['public']['Tables']['products']['Row'];
-};
-
 const StoreOrders = () => {
-  const [storeOrders, setStoreOrders] = useState<StoreOrder[]>([]);
+  const { storeOrders } = useStoreOrders();
   const [selectedStore, setSelectedStore] = useState<string | null>(null);
   const [storeDetails, setStoreDetails] = useState<DetailedReservation[]>([]);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchStoreOrders();
-  }, []);
-
-  const fetchStoreOrders = async () => {
-    try {
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('store_name, store_id');
-
-      if (profilesError) throw profilesError;
-
-      const storeIdMap = profiles?.reduce((acc: { [key: string]: string }, profile) => {
-        if (profile.store_name && profile.store_id) {
-          acc[profile.store_name] = profile.store_id;
-        }
-        return acc;
-      }, {});
-
-      const { data, error } = await supabase
-        .from('reservations')
-        .select(`
-          store_name,
-          quantity,
-          reservation_date
-        `);
-
-      if (error) throw error;
-
-      const ordersByStore = data?.reduce((acc: { [key: string]: StoreOrder }, curr) => {
-        if (!acc[curr.store_name]) {
-          acc[curr.store_name] = {
-            store_name: curr.store_name,
-            store_id: storeIdMap?.[curr.store_name] || 'N/A',
-            total_reservations: 0,
-            total_products: 0,
-            last_reservation: curr.reservation_date
-          };
-        }
-        acc[curr.store_name].total_reservations += 1;
-        acc[curr.store_name].total_products += curr.quantity;
-        return acc;
-      }, {});
-
-      setStoreOrders(Object.values(ordersByStore || {}));
-    } catch (error) {
-      console.error('Error fetching store orders:', error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de charger les commandes des magasins"
-      });
-    }
-  };
-
   const fetchStoreDetails = async (storeName: string) => {
     try {
       const { data, error } = await supabase
         .from('reservations')
-        .select<string, ReservationWithProduct>(`
+        .select(`
           id,
+          product_name,
           quantity,
-          reservation_date,
-          products (
-            name
-          )
+          reservation_date
         `)
         .eq('store_name', storeName)
         .order('reservation_date', { ascending: false });
 
       if (error) throw error;
 
-      const formattedData = data?.map(item => ({
-        id: item.id,
-        product_name: item.products?.name || 'Unknown Product',
-        quantity: item.quantity,
-        reservation_date: item.reservation_date,
-      }));
-
-      setStoreDetails(formattedData || []);
+      setStoreDetails(data || []);
       setSelectedStore(storeName);
       setIsDetailOpen(true);
     } catch (error) {
@@ -132,14 +56,11 @@ const StoreOrders = () => {
     try {
       const { data, error } = await supabase
         .from('reservations')
-        .select<string, ReservationWithProduct>(`
+        .select(`
           store_name,
+          product_name,
           quantity,
-          reservation_date,
-          products (
-            name,
-            reference
-          )
+          reservation_date
         `)
         .order('reservation_date', { ascending: false });
 
@@ -147,8 +68,7 @@ const StoreOrders = () => {
 
       const exportData = data?.map(item => ({
         'Magasin': item.store_name,
-        'Produit': item.products?.name || 'Unknown Product',
-        'Référence': item.products?.reference || 'N/A',
+        'Produit': item.product_name || 'Produit supprimé',
         'Quantité': item.quantity,
         'Date de réservation': new Date(item.reservation_date).toLocaleDateString('fr-FR'),
       })) || [];
