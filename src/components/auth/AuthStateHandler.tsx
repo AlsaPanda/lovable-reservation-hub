@@ -10,21 +10,28 @@ export const AuthStateHandler = () => {
   useEffect(() => {
     // First check if we have an existing session
     const checkSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
-      if (error) {
-        console.error("Session check error:", error);
-        navigate("/login");
-        return;
-      }
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Session check error:", error);
+          // Clear any invalid session data
+          await supabase.auth.signOut();
+          navigate("/login");
+          return;
+        }
 
-      if (!session) {
-        console.log("No active session found");
-        navigate("/login");
-        return;
-      }
+        if (!session) {
+          console.log("No active session found");
+          navigate("/login");
+          return;
+        }
 
-      console.log("Active session found:", session);
+        console.log("Active session found:", session.user?.id);
+      } catch (err) {
+        console.error("Session check failed:", err);
+        navigate("/login");
+      }
     };
 
     checkSession();
@@ -43,10 +50,12 @@ export const AuthStateHandler = () => {
         console.log("User signed out");
         navigate("/login");
       } else if (event === 'TOKEN_REFRESHED') {
-        console.log("Token refreshed");
+        console.log("Token refreshed successfully");
         if (!session) {
           navigate("/login");
         }
+      } else if (event === 'USER_UPDATED') {
+        console.log("User data updated");
       }
     });
 
