@@ -6,8 +6,8 @@ export const useHeaderContent = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: headerTitle } = useQuery({
-    queryKey: ['header-title'],
+  const { data: content, isLoading } = useQuery({
+    queryKey: ['header-content'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('content_blocks')
@@ -18,7 +18,7 @@ export const useHeaderContent = () => {
         .single();
 
       if (error) {
-        console.error('Error fetching header title:', error);
+        console.error('Error fetching header content:', error);
         return null;
       }
 
@@ -26,8 +26,8 @@ export const useHeaderContent = () => {
     },
   });
 
-  const updateTitleMutation = useMutation({
-    mutationFn: async (newTitle: string) => {
+  const updateContentMutation = useMutation({
+    mutationFn: async (newContent: string) => {
       const { data: existingContent } = await supabase
         .from('content_blocks')
         .select('id')
@@ -41,30 +41,31 @@ export const useHeaderContent = () => {
         .upsert({
           id: existingContent?.id,
           placement: 'products_header',
-          content: newTitle,
+          content: newContent,
         });
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['header-title'] });
+      queryClient.invalidateQueries({ queryKey: ['header-content'] });
       toast({
-        title: "Titre mis à jour",
-        description: "Le titre de la page a été mis à jour avec succès.",
+        title: "Contenu mis à jour",
+        description: "Le contenu de l'en-tête a été mis à jour avec succès.",
       });
     },
     onError: (error) => {
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de la mise à jour du titre.",
+        description: "Une erreur est survenue lors de la mise à jour du contenu.",
         variant: "destructive",
       });
-      console.error('Error updating title:', error);
+      console.error('Error updating content:', error);
     },
   });
 
   return {
-    headerTitle,
-    updateTitleMutation,
+    content,
+    isLoading,
+    updateContentMutation,
   };
 };
