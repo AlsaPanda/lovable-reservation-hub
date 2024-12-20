@@ -1,5 +1,5 @@
 import { FC, useState } from "react";
-import { Editor, useEditor } from '@tiptap/react';
+import { Editor, useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -105,7 +105,7 @@ const PageHeader: FC<PageHeaderProps> = ({ title, userRole }) => {
     <div className="space-y-4">
       <div className="relative group">
         <div className={`${isEditing ? 'border rounded-lg p-4' : ''}`}>
-          {editor && <editor.EditorContent editor={editor} />}
+          <EditorContent editor={editor} />
         </div>
         {isSuperAdmin && !isEditing && (
           <button
