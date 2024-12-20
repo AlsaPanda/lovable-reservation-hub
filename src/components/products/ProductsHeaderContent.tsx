@@ -10,7 +10,7 @@ const ProductsHeaderContent = () => {
   const { userRole } = useUserRole();
   const isSuperAdmin = userRole === 'superadmin';
   const [isEditing, setIsEditing] = useState(false);
-  const { content, isLoading, updateContentMutation } = useHeaderContent();
+  const { headerTitle, isLoading, updateTitleMutation } = useHeaderContent();
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -25,23 +25,23 @@ const ProductsHeaderContent = () => {
   useEffect(() => {
     if (editor) {
       editor.setEditable(isEditing);
-      if (content) {
-        editor.commands.setContent(content);
+      if (headerTitle) {
+        editor.commands.setContent(headerTitle);
       }
     }
-  }, [editor, content, isEditing]);
+  }, [editor, headerTitle, isEditing]);
 
   const handleSave = () => {
     if (editor) {
-      updateContentMutation.mutate(editor.getHTML());
+      updateTitleMutation.mutate(editor.getHTML());
       setIsEditing(false);
     }
   };
 
   const handleCancel = () => {
     setIsEditing(false);
-    if (editor && content) {
-      editor.commands.setContent(content);
+    if (editor && headerTitle) {
+      editor.commands.setContent(headerTitle);
     }
   };
 
@@ -59,7 +59,7 @@ const ProductsHeaderContent = () => {
       />
       <EditorActions
         isEditing={isEditing}
-        isSaving={updateContentMutation.isPending}
+        isSaving={updateTitleMutation.isPending}
         onSave={handleSave}
         onCancel={handleCancel}
       />

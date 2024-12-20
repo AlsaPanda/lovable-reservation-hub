@@ -6,8 +6,8 @@ export const useHeaderContent = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: content, isLoading } = useQuery({
-    queryKey: ['header-content'],
+  const { data: headerTitle, isLoading } = useQuery({
+    queryKey: ['header-title'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('content_blocks')
@@ -18,7 +18,7 @@ export const useHeaderContent = () => {
         .single();
 
       if (error) {
-        console.error('Error fetching header content:', error);
+        console.error('Error fetching header title:', error);
         return null;
       }
 
@@ -26,8 +26,8 @@ export const useHeaderContent = () => {
     },
   });
 
-  const updateContentMutation = useMutation({
-    mutationFn: async (newContent: string) => {
+  const updateTitleMutation = useMutation({
+    mutationFn: async (newTitle: string) => {
       const { data: existingContent } = await supabase
         .from('content_blocks')
         .select('id')
@@ -41,31 +41,31 @@ export const useHeaderContent = () => {
         .upsert({
           id: existingContent?.id,
           placement: 'products_header',
-          content: newContent,
+          content: newTitle,
         });
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['header-content'] });
+      queryClient.invalidateQueries({ queryKey: ['header-title'] });
       toast({
-        title: "Contenu mis à jour",
-        description: "Le contenu de l'en-tête a été mis à jour avec succès.",
+        title: "Titre mis à jour",
+        description: "Le titre de la page a été mis à jour avec succès.",
       });
     },
     onError: (error) => {
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de la mise à jour du contenu.",
+        description: "Une erreur est survenue lors de la mise à jour du titre.",
         variant: "destructive",
       });
-      console.error('Error updating content:', error);
+      console.error('Error updating title:', error);
     },
   });
 
   return {
-    content,
+    headerTitle,
     isLoading,
-    updateContentMutation,
+    updateTitleMutation,
   };
 };
