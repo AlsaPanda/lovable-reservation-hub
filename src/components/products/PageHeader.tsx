@@ -24,7 +24,7 @@ const PageHeader: FC<PageHeaderProps> = ({ title, userRole }) => {
       const { data, error } = await supabase
         .from('content_blocks')
         .select('content')
-        .eq('placement', 'page_header')
+        .eq('placement', 'products_header')
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
@@ -53,7 +53,7 @@ const PageHeader: FC<PageHeaderProps> = ({ title, userRole }) => {
       const { data: existingContent } = await supabase
         .from('content_blocks')
         .select('id')
-        .eq('placement', 'page_header')
+        .eq('placement', 'products_header')
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
@@ -62,7 +62,7 @@ const PageHeader: FC<PageHeaderProps> = ({ title, userRole }) => {
         .from('content_blocks')
         .upsert({
           id: existingContent?.id,
-          placement: 'page_header',
+          placement: 'products_header',
           content: newTitle,
         });
 
