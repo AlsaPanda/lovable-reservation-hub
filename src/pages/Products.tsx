@@ -36,7 +36,7 @@ const Products = () => {
     <>
       <NavBar />
       <div className="container mx-auto p-6 space-y-6">
-        <PageHeader title="Réservation des produits" />
+        <PageHeader title="Réservation des produits" userRole={userRole} />
         <ProductsHeaderContent />
 
         <ProductsHeader
