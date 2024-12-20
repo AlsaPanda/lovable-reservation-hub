@@ -30,13 +30,15 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
           return;
         }
 
-        // First verify the session is still valid
-        const { data: { session: currentSession }, error: sessionError } = 
-          await supabase.auth.getSession();
-
-        if (sessionError || !currentSession) {
-          console.error("Session error:", sessionError);
-          if (isMounted) {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (profileError) {
+          console.error("Error fetching user role:", profileError);
+          if (profileError.code === 'PGRST301' || profileError.message?.includes('JWT')) {
             await supabase.auth.signOut();
             navigate('/login');
             toast({
@@ -44,37 +46,12 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
               title: "Session expirée",
               description: "Veuillez vous reconnecter",
             });
-          }
-          return;
-        }
-
-        // Then fetch the profile data
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', currentSession.user.id)
-          .single();
-        
-        if (profileError) {
-          console.error("Error fetching user role:", profileError);
-          if (profileError.code === 'PGRST116' || profileError.message?.includes('JWT')) {
-            if (isMounted) {
-              await supabase.auth.signOut();
-              navigate('/login');
-              toast({
-                variant: "destructive",
-                title: "Session expirée",
-                description: "Veuillez vous reconnecter",
-              });
-            }
           } else {
-            if (isMounted) {
-              toast({
-                variant: "destructive",
-                title: "Erreur",
-                description: "Impossible de récupérer votre rôle",
-              });
-            }
+            toast({
+              variant: "destructive",
+              title: "Erreur",
+              description: "Impossible de récupérer votre rôle",
+            });
           }
           return;
         }
@@ -85,13 +62,11 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
         }
       } catch (error) {
         console.error("Error in checkSession:", error);
-        if (isMounted) {
-          toast({
-            variant: "destructive",
-            title: "Erreur",
-            description: "Une erreur est survenue lors de la vérification de la session",
-          });
-        }
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la vérification de la session",
+        });
       } finally {
         if (isMounted) {
           setIsLoading(false);
