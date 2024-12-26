@@ -1,8 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
 
 export const useHeaderContent = () => {
+  const [isEditing, setIsEditing] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -12,35 +14,24 @@ export const useHeaderContent = () => {
       const { data, error } = await supabase
         .from('content_blocks')
         .select('content')
-        .eq('placement', 'products_header')
-        .order('created_at', { ascending: false })
-        .limit(1)
+        .eq('placement', 'products-header')
         .single();
 
       if (error) {
         console.error('Error fetching header content:', error);
-        return 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
+        throw error;
       }
 
-      return data?.content;
+      return data?.content || '';
     },
   });
 
   const updateContentMutation = useMutation({
     mutationFn: async (newContent: string) => {
-      const { data: existingContent } = await supabase
-        .from('content_blocks')
-        .select('id')
-        .eq('placement', 'products_header')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
       const { error } = await supabase
         .from('content_blocks')
         .upsert({
-          id: existingContent?.id,
-          placement: 'products_header',
+          placement: 'products-header',
           content: newContent,
         });
 
@@ -50,16 +41,16 @@ export const useHeaderContent = () => {
       queryClient.invalidateQueries({ queryKey: ['header-content'] });
       toast({
         title: "Contenu mis à jour",
-        description: "Le contenu de l'en-tête a été mis à jour avec succès.",
+        description: "Le contenu a été sauvegardé avec succès.",
       });
     },
     onError: (error) => {
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la mise à jour du contenu.",
-        variant: "destructive",
-      });
       console.error('Error updating content:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de mettre à jour le contenu.",
+      });
     },
   });
 
@@ -67,5 +58,7 @@ export const useHeaderContent = () => {
     content,
     isLoading,
     updateContentMutation,
+    isEditing,
+    setIsEditing,
   };
 };
