@@ -12,10 +12,16 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     flowType: 'pkce',
     storage: window.localStorage,
     storageKey: 'sb-auth-token',
+    debug: true
   },
   global: {
     headers: {
       'X-Client-Info': 'supabase-js-web',
     },
   },
+});
+
+// Add event listener for auth state changes
+supabase.auth.onAuthStateChange((event, session) => {
+  console.log('[Supabase Client] Auth state changed:', event, 'Session:', session ? 'exists' : 'null');
 });
