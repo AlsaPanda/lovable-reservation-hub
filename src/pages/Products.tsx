@@ -32,6 +32,13 @@ const Products = () => {
     return <ProductsSkeleton />;
   }
 
+  console.log('[Products] Rendering with:', {
+    totalFilteredProducts: filteredProducts.length,
+    searchQuery,
+    userRole,
+    brand
+  });
+
   return (
     <>
       <NavBar />
@@ -42,6 +49,7 @@ const Products = () => {
         <ProductsHeader
           onOpenDialog={() => setOpen(true)}
           onProductsImported={(products) => {
+            console.log('[Products] Importing products:', products.length);
             const productsWithBrand = products.map(product => ({
               ...product,
               brand: userRole === 'superadmin' ? (product.brand || 'schmidt') : brand
@@ -50,7 +58,10 @@ const Products = () => {
               handleAddProduct(product);
             });
           }}
-          onSearch={setSearchQuery}
+          onSearch={(query) => {
+            console.log('[Products] Search triggered with:', query);
+            setSearchQuery(query);
+          }}
           onReserve={handleReserveAll}
           totalQuantity={totalQuantity}
         />

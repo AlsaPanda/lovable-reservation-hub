@@ -5,12 +5,17 @@ export const useProductFilters = (products: Product[], userRole: string | null, 
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredProducts = useMemo(() => {
-    console.log('[Products] Filtering products with query:', searchQuery);
-    console.log('[Products] Total products before filtering:', products.length);
+    console.log('[useProductFilters] Starting filtering with:', {
+      totalProducts: products.length,
+      searchQuery,
+      userRole,
+      brand
+    });
     
     return products.filter(product => {
       // First filter by brand if not superadmin
       if (userRole !== 'superadmin' && product.brand !== brand) {
+        console.log(`[useProductFilters] Product ${product.reference} filtered out due to brand mismatch`);
         return false;
       }
 
@@ -22,10 +27,12 @@ export const useProductFilters = (products: Product[], userRole: string | null, 
       const reference = (product.reference || '').toLowerCase();
       
       const matches = name.includes(query) || reference.includes(query);
-      console.log(`[Products] Product ${product.reference} matches search: ${matches}`);
+      console.log(`[useProductFilters] Product ${product.reference} search match: ${matches}`);
       return matches;
     });
   }, [products, searchQuery, brand, userRole]);
+
+  console.log('[useProductFilters] Filtered products result:', filteredProducts.length);
 
   return {
     searchQuery,
