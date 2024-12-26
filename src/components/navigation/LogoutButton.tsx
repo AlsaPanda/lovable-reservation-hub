@@ -12,7 +12,7 @@ const LogoutButton = () => {
   const handleLogout = async () => {
     try {
       // First clear any existing session
-      localStorage.removeItem('sb-' + supabase.projectId + '-auth-token');
+      localStorage.removeItem('sb-auth-token');
       
       // Then sign out from Supabase
       const { error } = await supabase.auth.signOut();
