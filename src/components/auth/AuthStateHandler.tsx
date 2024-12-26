@@ -9,14 +9,16 @@ export const AuthStateHandler = () => {
   const redirectInProgress = useRef(false);
 
   useEffect(() => {
-    // First check if we have an existing session
+    let mounted = true;
+
     const checkSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         
+        if (!mounted) return;
+
         if (error) {
           console.error("Session check error:", error);
-          // Clear any invalid session data
           await supabase.auth.signOut();
           navigate("/login");
           return;
@@ -35,40 +37,60 @@ export const AuthStateHandler = () => {
         }
       } catch (err) {
         console.error("Session check failed:", err);
-        navigate("/login");
+        if (mounted) {
+          navigate("/login");
+        }
       }
     };
 
+    // Initial session check
     checkSession();
 
+    // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+      
       console.log("Auth state changed:", event, session?.user?.id);
       
-      if (event === 'SIGNED_IN' && session) {
-        console.log("User signed in successfully");
-        if (!redirectInProgress.current) {
-          redirectInProgress.current = true;
-          toast({
-            title: "Connexion réussie",
-            description: "Vous allez être redirigé vers la page des produits",
-          });
-          navigate("/products");
-        }
-      } else if (event === 'SIGNED_OUT') {
-        console.log("User signed out");
-        redirectInProgress.current = false;
-        navigate("/login");
-      } else if (event === 'TOKEN_REFRESHED') {
-        console.log("Token refreshed successfully");
-        if (!session) {
+      switch (event) {
+        case 'SIGNED_IN':
+          if (session && !redirectInProgress.current) {
+            console.log("User signed in successfully");
+            redirectInProgress.current = true;
+            toast({
+              title: "Connexion réussie",
+              description: "Vous allez être redirigé vers la page des produits",
+            });
+            navigate("/products");
+          }
+          break;
+          
+        case 'SIGNED_OUT':
+          console.log("User signed out");
+          redirectInProgress.current = false;
           navigate("/login");
-        }
-      } else if (event === 'USER_UPDATED') {
-        console.log("User data updated");
+          break;
+          
+        case 'TOKEN_REFRESHED':
+          console.log("Token refreshed successfully");
+          if (!session) {
+            navigate("/login");
+          }
+          break;
+          
+        case 'USER_UPDATED':
+          console.log("User data updated");
+          break;
+          
+        default:
+          if (!session) {
+            navigate("/login");
+          }
       }
     });
 
     return () => {
+      mounted = false;
       console.log("Cleaning up auth subscription");
       subscription.unsubscribe();
       redirectInProgress.current = false;
