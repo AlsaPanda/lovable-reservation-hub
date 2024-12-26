@@ -2,15 +2,17 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, FileDown } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import ImportDialog from "./ImportDialog";
 import DeleteCatalogDialog from "./DeleteCatalogDialog";
 import { Product } from "@/utils/types";
 import { useBulkActions } from "./bulk-actions/useBulkActions";
 import * as XLSX from 'xlsx';
+import ImportMenuItem from "./bulk-actions/ImportMenuItem";
+import TemplateMenuItem from "./bulk-actions/TemplateMenuItem";
+import DeleteMenuItem from "./bulk-actions/DeleteMenuItem";
 
 interface BulkActionsMenuProps {
   onProductsImported: (products: Product[]) => void;
@@ -37,7 +39,6 @@ const BulkActionsMenu = ({
   const isSuperAdmin = userRole === 'superadmin';
 
   const downloadTemplate = () => {
-    // Create sample data
     const data = [
       {
         reference: 'REF001',
@@ -63,18 +64,12 @@ const BulkActionsMenu = ({
       }
     ];
 
-    // Create workbook and worksheet
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(data);
-
-    // Add worksheet to workbook
     XLSX.utils.book_append_sheet(wb, ws, "Products");
-
-    // Save file
     XLSX.writeFile(wb, "template_import_produits.xlsx");
   };
 
-  // Prevent menu from closing when loading
   const handleMenuOpenChange = (open: boolean) => {
     if (!isDeleting) {
       return open;
@@ -96,29 +91,19 @@ const BulkActionsMenu = ({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem 
-            onClick={() => !isDeleting && setShowImportDialog(true)}
-            disabled={isDeleting}
-            className="cursor-pointer"
-          >
-            Importer des produits
-          </DropdownMenuItem>
-          <DropdownMenuItem 
-            onClick={downloadTemplate}
-            disabled={isDeleting}
-            className="cursor-pointer"
-          >
-            <FileDown className="mr-2 h-4 w-4" />
-            Télécharger le modèle
-          </DropdownMenuItem>
+          <ImportMenuItem 
+            onImport={() => setShowImportDialog(true)}
+            isDisabled={isDeleting}
+          />
+          <TemplateMenuItem 
+            onDownload={downloadTemplate}
+            isDisabled={isDeleting}
+          />
           {isSuperAdmin && (
-            <DropdownMenuItem 
-              onClick={() => !isDeleting && setShowDeleteDialog(true)}
-              className="text-red-600 focus:text-red-600 cursor-pointer"
-              disabled={isDeleting}
-            >
-              Supprimer le catalogue
-            </DropdownMenuItem>
+            <DeleteMenuItem 
+              onDelete={() => setShowDeleteDialog(true)}
+              isDisabled={isDeleting}
+            />
           )}
         </DropdownMenuContent>
       </DropdownMenu>
