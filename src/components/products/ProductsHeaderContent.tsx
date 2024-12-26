@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useUserRole } from "@/hooks/useUserRole";
@@ -20,8 +21,7 @@ const ProductsHeaderContent = () => {
     },
   });
 
-  // Update editor content and editable state when content or editing state changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (editor && content) {
       editor.commands.setContent(content);
       editor.setEditable(isEditing);
