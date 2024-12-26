@@ -14,7 +14,7 @@ export const useHeaderContent = () => {
       const { data, error } = await supabase
         .from('content_blocks')
         .select('content')
-        .eq('placement', 'products-header')
+        .eq('placement', 'products_header')
         .single();
 
       if (error) {
@@ -31,7 +31,7 @@ export const useHeaderContent = () => {
       const { error } = await supabase
         .from('content_blocks')
         .upsert({
-          placement: 'products-header',
+          placement: 'products_header',
           content: newContent,
         });
 
