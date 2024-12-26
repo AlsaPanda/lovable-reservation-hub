@@ -5,13 +5,12 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    persistSession: true,
     autoRefreshToken: true,
+    persistSession: true,
     detectSessionInUrl: true,
     flowType: 'pkce',
     storage: window.localStorage,
     storageKey: 'sb-auth-token',
-    debug: true
   },
   global: {
     headers: {
@@ -23,4 +22,10 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 // Add event listener for auth state changes
 supabase.auth.onAuthStateChange((event, session) => {
   console.log('[Supabase Client] Auth state changed:', event, 'Session:', session ? 'exists' : 'null');
+  
+  // If the session is invalid, redirect to login
+  if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' && !session) {
+    console.log('[Supabase Client] Invalid session, redirecting to login');
+    window.location.href = '/login';
+  }
 });
