@@ -13,7 +13,16 @@ export const AuthStateHandler = () => {
 
     const checkSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Clear any existing invalid session data
+        const currentSession = await supabase.auth.getSession();
+        if (currentSession.error) {
+          console.error("Invalid session detected, signing out");
+          await supabase.auth.signOut();
+          if (mounted) navigate("/login");
+          return;
+        }
+
+        const { data: { session }, error } = currentSession;
         
         if (!mounted) return;
 
@@ -38,6 +47,7 @@ export const AuthStateHandler = () => {
       } catch (err) {
         console.error("Session check failed:", err);
         if (mounted) {
+          await supabase.auth.signOut();
           navigate("/login");
         }
       }
@@ -68,6 +78,7 @@ export const AuthStateHandler = () => {
         case 'SIGNED_OUT':
           console.log("User signed out");
           redirectInProgress.current = false;
+          localStorage.removeItem('sb-auth-token');
           navigate("/login");
           break;
           
