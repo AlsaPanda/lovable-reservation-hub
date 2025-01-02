@@ -4,6 +4,7 @@ import { useProductState } from "@/hooks/product/useProductState";
 import ProductGrid from "@/components/products/ProductGrid";
 import ProductsSkeleton from "@/components/products/ProductsSkeleton";
 import ProductsHeader from "@/components/products/ProductsHeader";
+import ProductsHeaderContent from "@/components/products/ProductsHeaderContent";
 import { useProductQuantities } from "@/hooks/product/useProductQuantities";
 import { Product } from "@/utils/types";
 import { useProducts } from "@/hooks/useProducts";
@@ -56,6 +57,7 @@ const Products = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <ProductsHeaderContent />
       <ProductsHeader
         onOpenDialog={() => setOpen(true)}
         onProductsImported={() => {}}
