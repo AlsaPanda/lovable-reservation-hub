@@ -29,7 +29,7 @@ supabase.auth.onAuthStateChange((event, session) => {
   console.log('[Supabase Client] Auth state changed:', event, 'Session:', session ? 'exists' : 'null');
   
   // If the session is invalid, redirect to login
-  if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' && !session) {
+  if (!session && (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED')) {
     console.log('[Supabase Client] Invalid session, redirecting to login');
     window.location.href = '/login';
   }

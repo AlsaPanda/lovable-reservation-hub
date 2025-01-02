@@ -32,10 +32,10 @@ const Login = () => {
     });
 
     // Listen for auth errors
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('[Login] Auth state changed:', event, 'Session:', session ? 'exists' : 'null');
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      console.log('[Login] Auth state changed:', event);
       
-      if (event === 'USER_DELETED' || event === 'SIGNED_OUT') {
+      if (event === 'SIGNED_OUT') {
         toast({
           variant: "destructive",
           title: "Session terminée",
