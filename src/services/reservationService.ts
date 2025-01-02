@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Reservation } from "@/utils/types";
 
-export const fetchReservations = async (userId: string, isSuperAdmin: boolean) => {
+export const fetchReservations = async (userId: string | null, isSuperAdmin: boolean) => {
   console.log('Fetching reservations with params:', { userId, isSuperAdmin });
   
   try {
@@ -14,12 +14,12 @@ export const fetchReservations = async (userId: string, isSuperAdmin: boolean) =
       .order('reservation_date', { ascending: false });
 
     // Only filter by store_name if not a superadmin
-    if (!isSuperAdmin) {
+    if (!isSuperAdmin && userId) {
       query = query.eq('store_name', userId);
     }
 
     const { data: reservationsData, error: reservationsError } = await query;
-    
+
     if (reservationsError) {
       console.error('Error fetching reservations:', reservationsError);
       throw reservationsError;
@@ -34,46 +34,25 @@ export const fetchReservations = async (userId: string, isSuperAdmin: boolean) =
 };
 
 export const updateReservationInDb = async (
-  updatedReservation: Partial<Reservation>,
+  reservation: Partial<Reservation>,
   userId: string
 ) => {
-  console.log('Updating reservation:', { updatedReservation, userId });
-  
-  if (!updatedReservation.id) throw new Error('Missing reservation ID');
-
   const { data, error } = await supabase
     .from('reservations')
-    .update({
-      quantity: updatedReservation.quantity,
-      reservation_date: updatedReservation.reservation_date
-    })
-    .eq('id', updatedReservation.id)
-    .eq('store_name', userId)
+    .update(reservation)
+    .eq('id', reservation.id)
     .select()
     .single();
-  
-  if (error) {
-    console.error('Error updating reservation:', error);
-    throw error;
-  }
-  
-  console.log('Updated reservation:', data);
+
+  if (error) throw error;
   return data;
 };
 
 export const deleteReservationFromDb = async (id: string, userId: string) => {
-  console.log('Deleting reservation:', { id, userId });
-  
   const { error } = await supabase
     .from('reservations')
     .delete()
-    .eq('id', id)
-    .eq('store_name', userId);
-  
-  if (error) {
-    console.error('Error deleting reservation:', error);
-    throw error;
-  }
-  
-  console.log('Reservation deleted successfully');
+    .eq('id', id);
+
+  if (error) throw error;
 };

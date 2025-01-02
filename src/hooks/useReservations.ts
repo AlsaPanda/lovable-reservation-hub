@@ -25,11 +25,11 @@ export const useReservations = () => {
       }
       const isSuperAdmin = userRole === 'superadmin';
       console.log('User is superadmin:', isSuperAdmin);
-      const result = await fetchReservations(session.user.id, isSuperAdmin);
+      const result = await fetchReservations(isSuperAdmin ? null : session.user.id, isSuperAdmin);
       console.log('Fetched reservations:', result);
       return result;
     },
-    enabled: !!session?.user?.id
+    enabled: !!session?.user?.id && !!userRole
   });
 
   const updateReservation = useMutation({
