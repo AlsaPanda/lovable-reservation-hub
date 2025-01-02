@@ -21,11 +21,11 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <div className="min-h-screen bg-background text-foreground">
-          <NavBar />
-          <main className="container mx-auto px-4 py-8">
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
+          <BrowserRouter>
+            <NavBar />
+            <main className="container mx-auto px-4 py-8">
+              <Toaster />
+              <Sonner />
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route
@@ -62,8 +62,8 @@ const App = () => (
                 />
                 <Route path="/" element={<Navigate to="/products" />} />
               </Routes>
-            </BrowserRouter>
-          </main>
+            </main>
+          </BrowserRouter>
         </div>
       </TooltipProvider>
     </QueryClientProvider>
