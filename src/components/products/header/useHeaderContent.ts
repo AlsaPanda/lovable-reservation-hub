@@ -11,31 +11,46 @@ export const useHeaderContent = () => {
   const { data: content, isLoading } = useQuery({
     queryKey: ['header-content'],
     queryFn: async () => {
+      console.log('[useHeaderContent] Fetching header content');
       const { data, error } = await supabase
         .from('content_blocks')
         .select('content')
         .eq('placement', 'products_header')
-        .single();
+        .limit(1)
+        .maybeSingle();
 
       if (error) {
-        console.error('Error fetching header content:', error);
+        console.error('[useHeaderContent] Error fetching header content:', error);
         throw error;
       }
 
+      console.log('[useHeaderContent] Content fetched:', data);
       return data?.content || '';
     },
   });
 
   const updateContentMutation = useMutation({
     mutationFn: async (newContent: string) => {
-      const { error } = await supabase
+      console.log('[useHeaderContent] Updating content:', newContent);
+      
+      // First try to update existing record
+      const { error: updateError } = await supabase
         .from('content_blocks')
-        .upsert({
-          placement: 'products_header',
-          content: newContent,
-        });
+        .update({ content: newContent })
+        .eq('placement', 'products_header');
 
-      if (error) throw error;
+      // If no rows were updated, insert a new record
+      if (updateError) {
+        console.log('[useHeaderContent] No existing record found, creating new one');
+        const { error: insertError } = await supabase
+          .from('content_blocks')
+          .insert({
+            placement: 'products_header',
+            content: newContent,
+          });
+
+        if (insertError) throw insertError;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['header-content'] });
@@ -45,7 +60,7 @@ export const useHeaderContent = () => {
       });
     },
     onError: (error) => {
-      console.error('Error updating content:', error);
+      console.error('[useHeaderContent] Error updating content:', error);
       toast({
         variant: "destructive",
         title: "Erreur",
