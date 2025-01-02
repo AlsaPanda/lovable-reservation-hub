@@ -15,27 +15,29 @@ export const useProductFilters = (products: Product[], userRole: string | null, 
     return products.filter(product => {
       // First filter by brand if not superadmin
       if (userRole !== 'superadmin' && product.brand !== brand) {
-        console.log(`[useProductFilters] Product ${product.reference} filtered out due to brand mismatch`);
         return false;
       }
 
       // Then apply search filter if there's a query
       const query = searchQuery.trim().toLowerCase();
       if (!query) {
-        console.log(`[useProductFilters] No search query, showing product ${product.reference}`);
         return true;
       }
       
       const name = (product.name || '').toLowerCase();
       const reference = (product.reference || '').toLowerCase();
+      const description = (product.description || '').toLowerCase();
       
-      const matches = name.includes(query) || reference.includes(query);
-      console.log(`[useProductFilters] Product ${product.reference} search match: ${matches} for query "${query}"`);
+      const matches = name.includes(query) || 
+                     reference.includes(query) || 
+                     description.includes(query);
+                     
+      console.log(`[useProductFilters] Product ${product.reference} matches: ${matches}`);
       return matches;
     });
   }, [products, searchQuery, brand, userRole]);
 
-  console.log('[useProductFilters] Final filtered products:', {
+  console.log('[useProductFilters] Filtered products:', {
     total: filteredProducts.length,
     searchQuery
   });

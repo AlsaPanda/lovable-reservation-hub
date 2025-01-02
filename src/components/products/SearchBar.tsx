@@ -22,12 +22,14 @@ const SearchBar = ({ onSearch }: SearchBarProps) => {
   };
 
   return (
-    <Input
-      type="search"
-      placeholder="Rechercher par titre ou référence..."
-      onChange={handleSearch}
-      className="w-full md:w-96"
-    />
+    <div className="relative w-full md:w-96">
+      <Input
+        type="search"
+        placeholder="Rechercher par titre ou référence..."
+        onChange={handleSearch}
+        className="w-full"
+      />
+    </div>
   );
 };
 

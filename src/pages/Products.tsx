@@ -5,7 +5,7 @@ import ProductsHeader from "@/components/products/ProductsHeader";
 import PageHeader from "@/components/products/PageHeader";
 import ProductsHeaderContent from "@/components/products/ProductsHeaderContent";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import { useProductState } from "@/hooks/useProductState";
+import { useProductState } from "@/hooks/product/useProductState";
 import ProductsSkeleton from "@/components/products/ProductsSkeleton";
 
 const Products = () => {
