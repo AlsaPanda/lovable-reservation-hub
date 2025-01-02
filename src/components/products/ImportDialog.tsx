@@ -1,63 +1,72 @@
 import {
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import { Product } from "@/utils/types";
+import ImportDialogContent from "./import/ImportDialogContent";
+import { useImportDialog } from "./import/useImportDialog";
 
 interface ImportDialogProps {
-  showDialog: boolean;
+  open: boolean;
   onOpenChange: (open: boolean) => void;
-  onImport: () => void;
-  onCancel: () => void;
-  forceImport: boolean;
-  setForceImport: (force: boolean) => void;
-  isSuperAdmin: boolean;
+  onProductsImported: (products: Product[]) => void;
+  products: Product[];
+  userRole: string | null;
 }
 
 const ImportDialog = ({
-  showDialog,
+  open,
   onOpenChange,
-  onImport,
-  onCancel,
-  forceImport,
-  setForceImport,
-  isSuperAdmin,
+  onProductsImported,
+  products,
+  userRole,
 }: ImportDialogProps) => {
+  const isSuperAdmin = userRole === 'superadmin';
+  const {
+    forceImport,
+    setForceImport,
+    isLoading,
+    importCount,
+    handleFileSelect,
+    handleClose
+  } = useImportDialog({ 
+    onProductsImported, 
+    onOpenChange, 
+    open 
+  });
+
+  // Ensure dialog closes properly when not loading
+  const handleDialogClose = (isOpen: boolean) => {
+    if (!isOpen && !isLoading) {
+      handleClose();
+    }
+  };
+
   return (
-    <AlertDialog open={showDialog} onOpenChange={onOpenChange}>
+    <AlertDialog 
+      open={open} 
+      onOpenChange={handleDialogClose}
+    >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Confirmer l'import</AlertDialogTitle>
-          <AlertDialogDescription className="space-y-4">
-            <p>
-              Par défaut, seuls les nouveaux produits seront importés (import différentiel).
-              Les produits existants ne seront pas modifiés.
-            </p>
-            {isSuperAdmin && (
-              <div className="flex items-center space-x-2 border rounded p-2 bg-gray-50">
-                <input
-                  type="checkbox"
-                  id="force-import"
-                  checked={forceImport}
-                  onChange={(e) => setForceImport(e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                />
-                <label htmlFor="force-import" className="text-sm font-medium text-gray-700">
-                  Forcer l'import (supprime le catalogue existant)
-                </label>
-              </div>
-            )}
-          </AlertDialogDescription>
+          <AlertDialogTitle>Importer des produits</AlertDialogTitle>
+          <ImportDialogContent
+            isSuperAdmin={isSuperAdmin}
+            forceImport={forceImport}
+            setForceImport={setForceImport}
+            isLoading={isLoading}
+            importCount={importCount}
+            onFileSelect={handleFileSelect}
+          />
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onCancel}>Annuler</AlertDialogCancel>
-          <AlertDialogAction onClick={onImport}>Continuer</AlertDialogAction>
+          <AlertDialogCancel disabled={isLoading} onClick={handleClose}>
+            Fermer
+          </AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

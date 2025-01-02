@@ -1,12 +1,15 @@
-import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Settings2 } from "lucide-react";
-import { Product } from "@/utils/types";
-import { exportProducts } from "@/utils/productUtils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal } from "lucide-react";
 import ImportDialog from "./ImportDialog";
 import DeleteCatalogDialog from "./DeleteCatalogDialog";
-import { useBulkActions } from "@/hooks/useBulkActions";
-import BulkActionsMenuContent from "./bulk-actions/BulkActionsMenuContent";
+import { Product } from "@/utils/types";
+import { useBulkActions } from "./bulk-actions/useBulkActions";
 
 interface BulkActionsMenuProps {
   onProductsImported: (products: Product[]) => void;
@@ -14,67 +17,78 @@ interface BulkActionsMenuProps {
   userRole: string | null;
 }
 
-const BulkActionsMenu = ({ onProductsImported, products, userRole }: BulkActionsMenuProps) => {
+const BulkActionsMenu = ({ 
+  onProductsImported, 
+  products, 
+  userRole 
+}: BulkActionsMenuProps) => {
   const {
     showImportDialog,
     setShowImportDialog,
     showDeleteDialog,
     setShowDeleteDialog,
-    pendingFile,
-    setPendingFile,
-    forceImport,
-    setForceImport,
-    handleImport,
+    isDeleting,
     handleDeleteCatalog,
-    handleFileSelect,
-  } = useBulkActions(onProductsImported);
-
-  const handleExport = () => {
-    exportProducts(products);
-  };
+    handleCloseDeleteDialog,
+    handleImportDialogClose
+  } = useBulkActions();
 
   const isSuperAdmin = userRole === 'superadmin';
 
+  // Prevent menu from closing when loading
+  const handleMenuOpenChange = (open: boolean) => {
+    if (!isDeleting) {
+      return open;
+    }
+    return true;
+  };
+
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu onOpenChange={handleMenuOpenChange}>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="gap-2">
-            <Settings2 className="h-4 w-4" />
-            Actions en masse
+          <Button 
+            variant="outline" 
+            size="icon"
+            disabled={isDeleting}
+            className="relative"
+          >
+            <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        
-        <BulkActionsMenuContent
-          onImport={() => document.getElementById('import-file')?.click()}
-          onExport={handleExport}
-          onDelete={isSuperAdmin ? () => setShowDeleteDialog(true) : undefined}
-          isSuperAdmin={isSuperAdmin}
-        />
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem 
+            onClick={() => !isDeleting && setShowImportDialog(true)}
+            disabled={isDeleting}
+            className="cursor-pointer"
+          >
+            Importer des produits
+          </DropdownMenuItem>
+          {isSuperAdmin && (
+            <DropdownMenuItem 
+              onClick={() => !isDeleting && setShowDeleteDialog(true)}
+              className="text-red-600 focus:text-red-600 cursor-pointer"
+              disabled={isDeleting}
+            >
+              Supprimer le catalogue
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
       </DropdownMenu>
 
       <ImportDialog
-        showDialog={showImportDialog}
-        onOpenChange={setShowImportDialog}
-        onImport={handleImport}
-        onCancel={() => setPendingFile(null)}
-        forceImport={forceImport}
-        setForceImport={setForceImport}
-        isSuperAdmin={isSuperAdmin}
+        open={showImportDialog}
+        onOpenChange={handleImportDialogClose}
+        onProductsImported={onProductsImported}
+        products={products}
+        userRole={userRole}
       />
 
       <DeleteCatalogDialog
-        showDialog={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
-        onDelete={handleDeleteCatalog}
-      />
-
-      <input
-        id="import-file"
-        type="file"
-        accept=".json,.xlsx"
-        className="hidden"
-        onChange={handleFileSelect}
+        open={showDeleteDialog}
+        onOpenChange={handleCloseDeleteDialog}
+        onConfirm={handleDeleteCatalog}
+        isDeleting={isDeleting}
       />
     </>
   );

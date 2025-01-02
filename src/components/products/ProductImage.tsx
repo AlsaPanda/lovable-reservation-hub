@@ -13,12 +13,12 @@ const ProductImage = ({ imageUrl, altText }: ProductImageProps) => {
   };
 
   return (
-    <div className="relative aspect-video w-full overflow-hidden rounded-md">
+    <div className="relative w-full h-[200px] overflow-hidden rounded-md">
       <img 
         src={imageUrl || DEFAULT_IMAGE}
         alt={altText}
         onError={handleImageError}
-        className="object-cover w-full h-full transition-transform duration-200 group-hover:scale-105"
+        className="w-full h-full object-contain transition-transform duration-200 group-hover:scale-105"
       />
     </div>
   );
