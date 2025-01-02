@@ -1,30 +1,26 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Product, ProductInsert, ProductUpdate } from "@/types/products";
+import { Product } from "@/utils/types";
 import { useToast } from "@/components/ui/use-toast";
-import { InsertProduct, UpdateProduct } from "@/types/supabase";
 
 export const useProductMutations = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const addProductMutation = useMutation({
-    mutationFn: async (product: ProductInsert) => {
-      const insertData: InsertProduct = {
-        reference: product.reference,
-        name: product.name,
-        description: product.description,
-        initial_quantity: product.initial_quantity,
-        image_url: product.image_url,
-        purchase_price_ht: product.purchase_price_ht,
-        sale_price_ttc: product.sale_price_ttc,
-        product_url: product.product_url,
-        brand: product.brand || 'schmidt'
-      };
-
+    mutationFn: async (product: Product) => {
       const { error } = await supabase
         .from('products')
-        .insert(insertData);
+        .insert({
+          reference: product.reference,
+          name: product.name,
+          description: product.description,
+          initial_quantity: product.initial_quantity,
+          image_url: product.image_url,
+          purchase_price_ht: product.purchase_price_ht,
+          sale_price_ttc: product.sale_price_ttc,
+          product_url: product.product_url
+        });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -37,22 +33,19 @@ export const useProductMutations = () => {
   });
 
   const updateProductMutation = useMutation({
-    mutationFn: async (product: ProductUpdate) => {
-      const updateData: UpdateProduct = {
-        reference: product.reference,
-        name: product.name,
-        description: product.description,
-        initial_quantity: product.initial_quantity,
-        image_url: product.image_url,
-        purchase_price_ht: product.purchase_price_ht,
-        sale_price_ttc: product.sale_price_ttc,
-        product_url: product.product_url,
-        brand: product.brand
-      };
-
+    mutationFn: async (product: Product) => {
       const { error } = await supabase
         .from('products')
-        .update(updateData)
+        .update({
+          reference: product.reference,
+          name: product.name,
+          description: product.description,
+          initial_quantity: product.initial_quantity,
+          image_url: product.image_url,
+          purchase_price_ht: product.purchase_price_ht,
+          sale_price_ttc: product.sale_price_ttc,
+          product_url: product.product_url
+        })
         .eq('reference', product.reference);
       if (error) throw error;
     },

@@ -6,11 +6,9 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StoreAuthHandler } from "@/components/auth/StoreAuthHandler";
 import { AuthStateHandler } from "@/components/auth/AuthStateHandler";
-import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
   const location = useLocation();
-  const { toast } = useToast();
   const [urlParams, setUrlParams] = useState<{
     storeId?: string;
     token?: string;
@@ -30,24 +28,7 @@ const Login = () => {
       languageCode: searchParams.get('sg_l') || undefined,
       context: searchParams.get('sg_ct') || undefined,
     });
-
-    // Listen for auth errors
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      console.log('[Login] Auth state changed:', event);
-      
-      if (event === 'SIGNED_OUT') {
-        toast({
-          variant: "destructive",
-          title: "Session terminée",
-          description: "Votre session a expiré. Veuillez vous reconnecter.",
-        });
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [location.search, toast]);
+  }, [location.search]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-secondary p-4">

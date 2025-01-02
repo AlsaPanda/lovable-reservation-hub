@@ -122,7 +122,6 @@ export type Database = {
           created_at: string
           id: string
           product_id: string
-          product_name: string | null
           quantity: number
           reservation_date: string
           store_name: string
@@ -132,7 +131,6 @@ export type Database = {
           created_at?: string
           id?: string
           product_id: string
-          product_name?: string | null
           quantity: number
           reservation_date?: string
           store_name: string
@@ -142,7 +140,6 @@ export type Database = {
           created_at?: string
           id?: string
           product_id?: string
-          product_name?: string | null
           quantity?: number
           reservation_date?: string
           store_name?: string
@@ -163,16 +160,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      delete_all_products: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      product_exists: {
-        Args: {
-          ref: string
-        }
-        Returns: boolean
-      }
       reset_all_quantities: {
         Args: Record<PropertyKey, never>
         Returns: undefined

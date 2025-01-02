@@ -1,3 +1,4 @@
+import NavBar from "@/components/NavBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
 import { ReservationDialog } from "@/components/reservations/ReservationDialog";
@@ -40,32 +41,35 @@ const Reservations = () => {
   if (!session) return null;
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-primary">Mes Réservations</h1>
-      </div>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Liste des réservations</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ReservationTable
-            reservations={reservations}
-            onEdit={handleEdit}
-            onDelete={(id) => deleteReservation.mutate(id)}
-          />
-        </CardContent>
-      </Card>
+    <>
+      <NavBar />
+      <div className="container mx-auto py-8">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-primary">Mes Réservations</h1>
+        </div>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Liste des réservations</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ReservationTable
+              reservations={reservations}
+              onEdit={handleEdit}
+              onDelete={(id) => deleteReservation.mutate(id)}
+            />
+          </CardContent>
+        </Card>
 
-      <ReservationDialog
-        products={products}
-        isOpen={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        onSubmit={handleSubmit}
-        editingReservation={editingReservation}
-      />
-    </div>
+        <ReservationDialog
+          products={products}
+          isOpen={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          onSubmit={handleSubmit}
+          editingReservation={editingReservation}
+        />
+      </div>
+    </>
   );
 };
 

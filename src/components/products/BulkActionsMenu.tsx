@@ -1,126 +1,118 @@
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
-import ImportDialog from "./ImportDialog";
-import DeleteCatalogDialog from "./DeleteCatalogDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Download, Upload, Settings2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 import { Product } from "@/utils/types";
-import { useBulkActions } from "./bulk-actions/useBulkActions";
-import * as XLSX from 'xlsx';
-import ImportMenuItem from "./bulk-actions/ImportMenuItem";
-import TemplateMenuItem from "./bulk-actions/TemplateMenuItem";
-import DeleteMenuItem from "./bulk-actions/DeleteMenuItem";
+import { exportProducts, importProducts } from "@/utils/productUtils";
+import { useState } from "react";
 
 interface BulkActionsMenuProps {
   onProductsImported: (products: Product[]) => void;
   products: Product[];
-  userRole: string | null;
 }
 
-const BulkActionsMenu = ({ 
-  onProductsImported, 
-  products, 
-  userRole 
-}: BulkActionsMenuProps) => {
-  const {
-    showImportDialog,
-    setShowImportDialog,
-    showDeleteDialog,
-    setShowDeleteDialog,
-    isDeleting,
-    handleDeleteCatalog,
-    handleCloseDeleteDialog,
-    handleImportDialogClose
-  } = useBulkActions();
+const BulkActionsMenu = ({ onProductsImported, products }: BulkActionsMenuProps) => {
+  const { toast } = useToast();
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
 
-  const isSuperAdmin = userRole === 'superadmin';
+  const handleImport = async () => {
+    if (!pendingFile) return;
 
-  const downloadTemplate = () => {
-    const data = [
-      {
-        reference: 'REF001',
-        name: 'Exemple Produit 1',
-        description: 'Description du produit 1',
-        initial_quantity: 10,
-        image_url: 'https://example.com/image1.jpg',
-        purchase_price_ht: 15.50,
-        sale_price_ttc: 20.00,
-        product_url: 'https://example.com/produit1',
-        brand: 'schmidt'
-      },
-      {
-        reference: 'REF002',
-        name: 'Exemple Produit 2',
-        description: 'Description du produit 2',
-        initial_quantity: 5,
-        image_url: 'https://example.com/image2.jpg',
-        purchase_price_ht: 25.00,
-        sale_price_ttc: 30.00,
-        product_url: 'https://example.com/produit2',
-        brand: 'cuisinella'
-      }
-    ];
-
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(data);
-    XLSX.utils.book_append_sheet(wb, ws, "Products");
-    XLSX.writeFile(wb, "template_import_produits.xlsx");
+    try {
+      const importedProducts = await importProducts(pendingFile);
+      onProductsImported(importedProducts);
+      toast({
+        title: "Import réussi",
+        description: `${importedProducts.length} produits ont été importés avec succès.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur d'import",
+        description: error instanceof Error ? error.message : "Une erreur est survenue lors de l'import",
+        variant: "destructive",
+      });
+    }
+    
+    setPendingFile(null);
+    setShowImportDialog(false);
   };
 
-  const handleMenuOpenChange = (open: boolean) => {
-    if (!isDeleting) {
-      return open;
-    }
-    return true;
+  const handleExport = () => {
+    exportProducts(products);
+    toast({
+      title: "Export réussi",
+      description: "Les produits ont été exportés avec succès.",
+    });
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    setPendingFile(file);
+    setShowImportDialog(true);
+    event.target.value = '';
   };
 
   return (
     <>
-      <DropdownMenu onOpenChange={handleMenuOpenChange}>
+      <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button 
-            variant="outline" 
-            size="icon"
-            disabled={isDeleting}
-            className="relative"
-          >
-            <MoreHorizontal className="h-4 w-4" />
+          <Button variant="outline" className="gap-2">
+            <Settings2 className="h-4 w-4" />
+            Actions en masse
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
-          <ImportMenuItem 
-            onImport={() => setShowImportDialog(true)}
-            isDisabled={isDeleting}
-          />
-          <TemplateMenuItem 
-            onDownload={downloadTemplate}
-            isDisabled={isDeleting}
-          />
-          {isSuperAdmin && (
-            <DeleteMenuItem 
-              onDelete={() => setShowDeleteDialog(true)}
-              isDisabled={isDeleting}
-            />
-          )}
+        <DropdownMenuContent>
+          <DropdownMenuItem onClick={() => document.getElementById('import-file')?.click()} className="cursor-pointer">
+            <Upload className="h-4 w-4 mr-2" />
+            Importer des produits
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleExport} className="cursor-pointer">
+            <Download className="h-4 w-4 mr-2" />
+            Exporter les produits
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <ImportDialog
-        open={showImportDialog}
-        onOpenChange={handleImportDialogClose}
-        onProductsImported={onProductsImported}
-        products={products}
-        userRole={userRole}
-      />
+      <AlertDialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer l'import</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action va remplacer tous les produits existants. Cette opération ne peut pas être annulée.
+              Les descriptions en français (description-fr_FR) seront ignorées lors de l'import.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingFile(null)}>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleImport}>Continuer</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-      <DeleteCatalogDialog
-        open={showDeleteDialog}
-        onOpenChange={handleCloseDeleteDialog}
-        onConfirm={handleDeleteCatalog}
-        isDeleting={isDeleting}
+      <input
+        id="import-file"
+        type="file"
+        accept=".json,.xlsx"
+        className="hidden cursor-pointer"
+        onChange={handleFileSelect}
       />
     </>
   );

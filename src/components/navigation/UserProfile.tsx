@@ -1,6 +1,5 @@
 import UserProfileInfo from "./UserProfileInfo";
 import LogoutButton from "./LogoutButton";
-import ReleaseVersion from "./ReleaseVersion";
 
 type UserProfileProps = {
   storeName: string;
@@ -18,10 +17,7 @@ const UserProfile = ({ storeName, storeId, userRole, email }: UserProfileProps) 
         userRole={userRole}
         email={email}
       />
-      <div className="flex items-center">
-        <LogoutButton />
-        <ReleaseVersion />
-      </div>
+      <LogoutButton />
     </div>
   );
 };

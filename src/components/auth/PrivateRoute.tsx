@@ -18,105 +18,73 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
   const navigate = useNavigate();
   
   React.useEffect(() => {
-    let isMounted = true;
-    
     const checkSession = async () => {
       try {
-        // First verify we have a valid session
-        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error("Session error:", sessionError);
-          if (isMounted) {
-            await supabase.auth.signOut();
-            navigate('/login');
-            toast({
-              variant: "destructive",
-              title: "Session Error",
-              description: "Please log in again",
-            });
-          }
+        if (!session?.user?.id) {
+          console.log('No session or user ID available');
+          setIsLoading(false);
           return;
         }
 
-        if (!currentSession?.user?.id) {
-          console.log('No active session found');
-          if (isMounted) {
-            setIsLoading(false);
-            navigate('/login');
-          }
-          return;
-        }
-
-        // Then fetch the user role
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('role')
-          .eq('id', currentSession.user.id)
+          .eq('id', session.user.id)
           .single();
         
         if (profileError) {
           console.error("Error fetching user role:", profileError);
           if (profileError.code === 'PGRST301' || profileError.message?.includes('JWT')) {
-            if (isMounted) {
-              toast({
-                variant: "destructive",
-                title: "Session expired",
-                description: "Please log in again",
-              });
-              await supabase.auth.signOut();
-              navigate('/login');
-            }
+            await supabase.auth.signOut();
+            navigate('/login');
+            toast({
+              variant: "destructive",
+              title: "Session expirée",
+              description: "Veuillez vous reconnecter",
+            });
           } else {
-            if (isMounted) {
-              toast({
-                variant: "destructive",
-                title: "Error",
-                description: "Unable to fetch your role",
-              });
-            }
+            toast({
+              variant: "destructive",
+              title: "Erreur",
+              description: "Impossible de récupérer votre rôle",
+            });
           }
           return;
         }
         
-        if (profileData && isMounted) {
+        if (profileData) {
           console.log('Role fetched successfully:', profileData.role);
           setUserRole(profileData.role);
         }
       } catch (error) {
         console.error("Error in checkSession:", error);
-        if (isMounted) {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "An error occurred while checking your session",
-          });
-        }
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la vérification de la session",
+        });
       } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       }
     };
-
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event);
-      if (!session && isMounted) {
-        navigate('/login');
-      }
-    });
 
     checkSession();
 
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT') {
+        navigate('/login');
+      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        checkSession();
+      }
+    });
+
     return () => {
-      isMounted = false;
       subscription.unsubscribe();
     };
-  }, [navigate, toast]);
+  }, [session, navigate, toast]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>Chargement...</div>;
   }
   
   if (!session) {
