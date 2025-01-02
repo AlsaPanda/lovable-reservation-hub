@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/utils/types";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useSession } from "@supabase/auth-helpers-react";
 
 export const useReservationMutation = () => {
@@ -22,6 +22,7 @@ export const useReservationMutation = () => {
         .filter(product => product.initial_quantity > 0)
         .map(product => ({
           product_id: product.id,
+          product_name: product.name, // Add product name to reservation
           quantity: product.initial_quantity,
           store_name: session.user.id,
           reservation_date: new Date().toISOString()
