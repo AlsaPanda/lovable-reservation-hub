@@ -9,7 +9,7 @@ interface SearchBarProps {
 const SearchBar = ({ onSearch }: SearchBarProps) => {
   const debouncedSearch = useCallback(
     debounce((value: string) => {
-      console.log('[SearchBar] Debounced search with value:', value);
+      console.log('[SearchBar] Triggering search with value:', value);
       onSearch(value);
     }, 300),
     [onSearch]
@@ -17,7 +17,7 @@ const SearchBar = ({ onSearch }: SearchBarProps) => {
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    console.log('[SearchBar] Search input changed:', value);
+    console.log('[SearchBar] Input changed:', value);
     debouncedSearch(value);
   };
 

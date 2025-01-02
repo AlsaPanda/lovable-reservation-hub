@@ -21,18 +21,24 @@ export const useProductFilters = (products: Product[], userRole: string | null, 
 
       // Then apply search filter if there's a query
       const query = searchQuery.trim().toLowerCase();
-      if (!query) return true;
+      if (!query) {
+        console.log(`[useProductFilters] No search query, showing product ${product.reference}`);
+        return true;
+      }
       
       const name = (product.name || '').toLowerCase();
       const reference = (product.reference || '').toLowerCase();
       
       const matches = name.includes(query) || reference.includes(query);
-      console.log(`[useProductFilters] Product ${product.reference} search match: ${matches}`);
+      console.log(`[useProductFilters] Product ${product.reference} search match: ${matches} for query "${query}"`);
       return matches;
     });
   }, [products, searchQuery, brand, userRole]);
 
-  console.log('[useProductFilters] Filtered products result:', filteredProducts.length);
+  console.log('[useProductFilters] Final filtered products:', {
+    total: filteredProducts.length,
+    searchQuery
+  });
 
   return {
     searchQuery,
