@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 import { useStoreAuth } from "@/hooks/useStoreAuth";
 
 interface StoreAuthHandlerProps {
@@ -13,19 +13,36 @@ interface StoreAuthHandlerProps {
 export const StoreAuthHandler = ({
   storeId,
   token,
-  brand = 'cuisinella',
-  countryCode = 'fr-FR',
-  languageCode = 'fr',
-  context = '0'
+  brand,
+  countryCode,
+  languageCode,
+  context,
 }: StoreAuthHandlerProps) => {
   const { handleStoreAuth } = useStoreAuth();
 
   useEffect(() => {
-    if (storeId && token) {
-      console.log('Attempting store authentication:', { storeId, brand });
-      handleStoreAuth(storeId, token, brand, countryCode, languageCode, context);
-    }
+    console.log('StoreAuthHandler: Attempting authentication with:', { 
+      storeId, 
+      tokenLength: token?.length,
+      brand,
+      countryCode,
+      languageCode,
+      context
+    });
+    
+    handleStoreAuth(
+      storeId,
+      token,
+      brand,
+      countryCode,
+      languageCode,
+      context
+    );
   }, [storeId, token, brand, countryCode, languageCode, context, handleStoreAuth]);
 
-  return null;
+  return (
+    <div className="text-center">
+      <p className="text-sm text-muted-foreground">Authentification en cours...</p>
+    </div>
+  );
 };
