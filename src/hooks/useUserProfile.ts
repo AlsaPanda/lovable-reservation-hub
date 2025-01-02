@@ -18,17 +18,12 @@ export const useUserProfile = () => {
 
     const fetchUserProfile = async () => {
       try {
-        // First check if we have a valid session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
           console.error("Session error:", sessionError);
           if (mounted) {
-            toast({
-              variant: "destructive",
-              title: "Erreur de session",
-              description: "Veuillez vous reconnecter",
-            });
+            setIsLoading(false);
             navigate('/login');
           }
           return;
@@ -37,15 +32,16 @@ export const useUserProfile = () => {
         if (!session) {
           console.log("No active session found");
           if (mounted) {
+            setIsLoading(false);
             navigate('/login');
           }
           return;
         }
 
-        // Set email from session
-        setEmail(session.user.email);
+        if (mounted) {
+          setEmail(session.user.email);
+        }
 
-        // Then fetch the profile data
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('role, store_name, brand, store_id')
@@ -55,20 +51,15 @@ export const useUserProfile = () => {
         if (profileError) {
           console.error("Error fetching profile:", profileError);
           if (mounted) {
-            toast({
-              variant: "destructive",
-              title: "Erreur",
-              description: "Impossible de récupérer votre profil",
-            });
             if (profileError.code === 'PGRST301') {
               navigate('/login');
             }
+            setIsLoading(false);
           }
           return;
         }
 
         if (profileData && mounted) {
-          console.log("User profile data:", profileData);
           setUserRole(profileData.role);
           setStoreName(profileData.store_name);
           setStoreId(profileData.store_id);
@@ -78,13 +69,6 @@ export const useUserProfile = () => {
         }
       } catch (error) {
         console.error("Error in fetchUserProfile:", error);
-        if (mounted) {
-          toast({
-            variant: "destructive",
-            title: "Erreur",
-            description: "Une erreur est survenue lors de la récupération de votre profil",
-          });
-        }
       } finally {
         if (mounted) {
           setIsLoading(false);
@@ -93,20 +77,28 @@ export const useUserProfile = () => {
     };
 
     // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session && mounted) {
+        setUserRole(null);
+        setStoreName("");
+        setStoreId(null);
+        setEmail(null);
+        setBrand('schmidt');
         navigate('/login');
+      } else if (session && mounted) {
+        fetchUserProfile();
       }
     });
 
     fetchUserProfile();
 
-    // Cleanup
     return () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [toast, navigate]);
+  }, [navigate, toast]);
 
   return { userRole, storeName, storeId, email, brand, isLoading };
 };
