@@ -12,6 +12,3 @@ export type Product = {
   product_url: string | null;
   brand: 'schmidt' | 'cuisinella';
 };
-
-export type ProductInsert = Omit<Product, 'id' | 'created_at' | 'updated_at'>;
-export type ProductUpdate = Partial<ProductInsert>;

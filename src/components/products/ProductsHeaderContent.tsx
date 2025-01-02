@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useUserRole } from "@/hooks/useUserRole";
+import { useState, useEffect } from "react";
 import { useHeaderContent } from './header/useHeaderContent';
 import ProductsHeaderEditor from './header/EditorContent';
 import EditorActions from './header/EditorActions';
@@ -9,7 +9,8 @@ import EditorActions from './header/EditorActions';
 const ProductsHeaderContent = () => {
   const { userRole } = useUserRole();
   const isSuperAdmin = userRole === 'superadmin';
-  const { content, isLoading, updateContentMutation, isEditing, setIsEditing } = useHeaderContent();
+  const [isEditing, setIsEditing] = useState(false);
+  const { content, isLoading, updateContentMutation } = useHeaderContent();
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -22,9 +23,11 @@ const ProductsHeaderContent = () => {
   });
 
   useEffect(() => {
-    if (editor && content) {
-      editor.commands.setContent(content);
+    if (editor) {
       editor.setEditable(isEditing);
+      if (content) {
+        editor.commands.setContent(content);
+      }
     }
   }, [editor, content, isEditing]);
 
@@ -36,9 +39,9 @@ const ProductsHeaderContent = () => {
   };
 
   const handleCancel = () => {
+    setIsEditing(false);
     if (editor && content) {
       editor.commands.setContent(content);
-      setIsEditing(false);
     }
   };
 

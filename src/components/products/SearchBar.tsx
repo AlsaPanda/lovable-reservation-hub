@@ -1,36 +1,34 @@
-import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import { useDebounce } from "@/hooks/use-debounce";
+import { useCallback } from "react";
+import { debounce } from "lodash";
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
 }
 
 const SearchBar = ({ onSearch }: SearchBarProps) => {
-  const [value, setValue] = useState("");
-  const debouncedValue = useDebounce(value, 300);
+  // Debounce the search to avoid too many updates
+  const debouncedSearch = useCallback(
+    debounce((value: string) => {
+      console.log('Searching for:', value);
+      onSearch(value);
+    }, 300),
+    [onSearch]
+  );
 
-  useEffect(() => {
-    console.log("[SearchBar] Debounced value changed:", debouncedValue);
-    onSearch(debouncedValue);
-  }, [debouncedValue, onSearch]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    console.log("[SearchBar] Input changed:", newValue);
-    setValue(newValue);
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    console.log('Search input changed:', value);
+    debouncedSearch(value);
   };
 
   return (
-    <div className="relative w-full md:w-96">
-      <Input
-        type="search"
-        value={value}
-        placeholder="Rechercher par titre, référence ou description..."
-        onChange={handleChange}
-        className="w-full"
-      />
-    </div>
+    <Input
+      type="text"
+      placeholder="Rechercher par titre ou référence..."
+      onChange={handleSearch}
+      className="w-full md:w-96"
+    />
   );
 };
 

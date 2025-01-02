@@ -1,18 +1,12 @@
+import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
+import { Settings2 } from "lucide-react";
+import { Product } from "@/utils/types";
+import { exportProducts } from "@/utils/productUtils";
 import ImportDialog from "./ImportDialog";
 import DeleteCatalogDialog from "./DeleteCatalogDialog";
-import { Product } from "@/utils/types";
-import { useBulkActions } from "./bulk-actions/useBulkActions";
-import * as XLSX from 'xlsx';
-import ImportMenuItem from "./bulk-actions/ImportMenuItem";
-import TemplateMenuItem from "./bulk-actions/TemplateMenuItem";
-import DeleteMenuItem from "./bulk-actions/DeleteMenuItem";
+import { useBulkActions } from "@/hooks/useBulkActions";
+import BulkActionsMenuContent from "./bulk-actions/BulkActionsMenuContent";
 
 interface BulkActionsMenuProps {
   onProductsImported: (products: Product[]) => void;
@@ -20,107 +14,67 @@ interface BulkActionsMenuProps {
   userRole: string | null;
 }
 
-const BulkActionsMenu = ({ 
-  onProductsImported, 
-  products, 
-  userRole 
-}: BulkActionsMenuProps) => {
+const BulkActionsMenu = ({ onProductsImported, products, userRole }: BulkActionsMenuProps) => {
   const {
     showImportDialog,
     setShowImportDialog,
     showDeleteDialog,
     setShowDeleteDialog,
-    isDeleting,
+    pendingFile,
+    setPendingFile,
+    forceImport,
+    setForceImport,
+    handleImport,
     handleDeleteCatalog,
-    handleCloseDeleteDialog,
-    handleImportDialogClose
-  } = useBulkActions();
+    handleFileSelect,
+  } = useBulkActions(onProductsImported);
+
+  const handleExport = () => {
+    exportProducts(products);
+  };
 
   const isSuperAdmin = userRole === 'superadmin';
 
-  const downloadTemplate = () => {
-    const data = [
-      {
-        reference: 'REF001',
-        name: 'Exemple Produit 1',
-        description: 'Description du produit 1',
-        initial_quantity: 10,
-        image_url: 'https://example.com/image1.jpg',
-        purchase_price_ht: 15.50,
-        sale_price_ttc: 20.00,
-        product_url: 'https://example.com/produit1',
-        brand: 'schmidt'
-      },
-      {
-        reference: 'REF002',
-        name: 'Exemple Produit 2',
-        description: 'Description du produit 2',
-        initial_quantity: 5,
-        image_url: 'https://example.com/image2.jpg',
-        purchase_price_ht: 25.00,
-        sale_price_ttc: 30.00,
-        product_url: 'https://example.com/produit2',
-        brand: 'cuisinella'
-      }
-    ];
-
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(data);
-    XLSX.utils.book_append_sheet(wb, ws, "Products");
-    XLSX.writeFile(wb, "template_import_produits.xlsx");
-  };
-
-  const handleMenuOpenChange = (open: boolean) => {
-    if (!isDeleting) {
-      return open;
-    }
-    return true;
-  };
-
   return (
     <>
-      <DropdownMenu onOpenChange={handleMenuOpenChange}>
+      <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button 
-            variant="outline" 
-            size="icon"
-            disabled={isDeleting}
-            className="relative"
-          >
-            <MoreHorizontal className="h-4 w-4" />
+          <Button variant="outline" className="gap-2">
+            <Settings2 className="h-4 w-4" />
+            Actions en masse
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
-          <ImportMenuItem 
-            onImport={() => setShowImportDialog(true)}
-            isDisabled={isDeleting}
-          />
-          <TemplateMenuItem 
-            onDownload={downloadTemplate}
-            isDisabled={isDeleting}
-          />
-          {isSuperAdmin && (
-            <DeleteMenuItem 
-              onDelete={() => setShowDeleteDialog(true)}
-              isDisabled={isDeleting}
-            />
-          )}
-        </DropdownMenuContent>
+        
+        <BulkActionsMenuContent
+          onImport={() => document.getElementById('import-file')?.click()}
+          onExport={handleExport}
+          onDelete={isSuperAdmin ? () => setShowDeleteDialog(true) : undefined}
+          isSuperAdmin={isSuperAdmin}
+        />
       </DropdownMenu>
 
       <ImportDialog
-        open={showImportDialog}
-        onOpenChange={handleImportDialogClose}
-        onProductsImported={onProductsImported}
-        products={products}
-        userRole={userRole}
+        showDialog={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        onImport={handleImport}
+        onCancel={() => setPendingFile(null)}
+        forceImport={forceImport}
+        setForceImport={setForceImport}
+        isSuperAdmin={isSuperAdmin}
       />
 
       <DeleteCatalogDialog
-        open={showDeleteDialog}
-        onOpenChange={handleCloseDeleteDialog}
-        onConfirm={handleDeleteCatalog}
-        isDeleting={isDeleting}
+        showDialog={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onDelete={handleDeleteCatalog}
+      />
+
+      <input
+        id="import-file"
+        type="file"
+        accept=".json,.xlsx"
+        className="hidden"
+        onChange={handleFileSelect}
       />
     </>
   );

@@ -15,9 +15,6 @@ const BulkActionsMenuContent = ({
   onDelete, 
   isSuperAdmin 
 }: BulkActionsMenuContentProps) => {
-  console.log('BulkActionsMenuContent - isSuperAdmin:', isSuperAdmin);
-  console.log('BulkActionsMenuContent - onDelete:', onDelete);
-
   return (
     <DropdownMenuContent align="end" className="w-56">
       <BulkActionMenuItem

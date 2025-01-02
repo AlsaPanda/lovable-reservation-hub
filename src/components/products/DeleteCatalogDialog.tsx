@@ -10,37 +10,33 @@ import {
 } from "@/components/ui/alert-dialog";
 
 interface DeleteCatalogDialogProps {
-  open: boolean;
+  showDialog: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
-  isDeleting: boolean;
+  onDelete: () => void;
 }
 
-const DeleteCatalogDialog = ({ 
-  open, 
-  onOpenChange, 
-  onConfirm,
-  isDeleting 
+const DeleteCatalogDialog = ({
+  showDialog,
+  onOpenChange,
+  onDelete,
 }: DeleteCatalogDialogProps) => {
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={showDialog} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer le catalogue ?</AlertDialogTitle>
+          <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
           <AlertDialogDescription>
-            Cette action est irréversible. Tous les produits et leurs réservations seront supprimés.
+            Cette action va supprimer définitivement tous les produits du catalogue.
+            Cette opération ne peut pas être annulée.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>
-            {isDeleting ? "Suppression en cours..." : "Annuler"}
-          </AlertDialogCancel>
+          <AlertDialogCancel>Annuler</AlertDialogCancel>
           <AlertDialogAction 
-            onClick={onConfirm}
+            onClick={onDelete}
             className="bg-red-600 hover:bg-red-700"
-            disabled={isDeleting}
           >
-            {isDeleting ? "Suppression en cours..." : "Supprimer"}
+            Supprimer
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
