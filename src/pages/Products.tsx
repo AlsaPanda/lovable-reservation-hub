@@ -6,25 +6,26 @@ import ProductsSkeleton from "@/components/products/ProductsSkeleton";
 import ProductsHeader from "@/components/products/ProductsHeader";
 import { useProductQuantities } from "@/hooks/product/useProductQuantities";
 import { Product } from "@/utils/types";
+import { useProducts } from "@/hooks/useProducts";
 
 const Products = () => {
   const { userRole, brand, isLoading: isProfileLoading } = useUserProfile();
+  const { data: products, isLoading: isProductsLoading } = useProducts();
   
   const {
     editingProduct,
     setEditingProduct,
     open,
     setOpen,
-    filteredProducts,
-    isProductsLoading,
-    deleteProductMutation,
-    handleReserveAll
+    handleReserveAll,
+    deleteProductMutation
   } = useProductState(userRole, brand);
 
   const {
     searchQuery,
     setSearchQuery,
-  } = useProductFilters(filteredProducts, userRole, brand);
+    filteredProducts
+  } = useProductFilters(products, userRole, brand);
 
   const {
     quantities,

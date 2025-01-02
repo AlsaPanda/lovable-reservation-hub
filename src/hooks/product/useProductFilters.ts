@@ -1,14 +1,23 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Product } from "@/utils/types";
 
 export const useProductFilters = (products: Product[] | undefined, userRole: string | null, brand: string) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   
-  const filteredProducts = useMemo(() => {
-    if (!products) return [];
-    
-    console.log("[useProductFilters] Starting filtering with:", { products: products.length, searchQuery, userRole, brand });
-    
+  useEffect(() => {
+    console.log("[useProductFilters] Filtering with:", { 
+      productsCount: products?.length, 
+      searchQuery, 
+      userRole, 
+      brand 
+    });
+
+    if (!products) {
+      setFilteredProducts([]);
+      return;
+    }
+
     // First filter by brand if not superadmin
     let results = userRole === 'superadmin' 
       ? products 
@@ -25,7 +34,7 @@ export const useProductFilters = (products: Product[] | undefined, userRole: str
     }
 
     console.log("[useProductFilters] Filtered results:", results.length);
-    return results;
+    setFilteredProducts(results);
   }, [products, searchQuery, userRole, brand]);
 
   return {
