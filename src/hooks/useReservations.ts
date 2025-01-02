@@ -15,12 +15,19 @@ export const useReservations = () => {
   const session = useSession();
   const { userRole } = useUserProfile();
 
-  const { data: reservations = [], isLoading } = useQuery({
+  const { data: reservations = [], isLoading, error } = useQuery({
     queryKey: ['reservations', userRole, session?.user?.id],
     queryFn: async () => {
-      if (!session?.user?.id) return [];
+      console.log('Fetching reservations for user:', session?.user?.id);
+      if (!session?.user?.id) {
+        console.log('No user session found');
+        return [];
+      }
       const isSuperAdmin = userRole === 'superadmin';
-      return fetchReservations(session.user.id, isSuperAdmin);
+      console.log('User is superadmin:', isSuperAdmin);
+      const result = await fetchReservations(session.user.id, isSuperAdmin);
+      console.log('Fetched reservations:', result);
+      return result;
     },
     enabled: !!session?.user?.id
   });
@@ -37,11 +44,11 @@ export const useReservations = () => {
         description: "La réservation a été mise à jour avec succès.",
       });
     },
-    onError: (error) => {
-      console.error("Mutation error:", error);
+    onError: (error: any) => {
+      console.error("Update reservation error:", error);
       toast({
         title: "Erreur",
-        description: error.message,
+        description: error.message || "Une erreur est survenue lors de la mise à jour.",
         variant: "destructive"
       });
     }
@@ -59,18 +66,24 @@ export const useReservations = () => {
         description: "La réservation a été supprimée avec succès.",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error("Delete reservation error:", error);
       toast({
         title: "Erreur",
-        description: error.message,
+        description: error.message || "Une erreur est survenue lors de la suppression.",
         variant: "destructive"
       });
     }
   });
 
+  if (error) {
+    console.error("Reservations query error:", error);
+  }
+
   return {
     reservations,
     isLoading,
+    error,
     updateReservation,
     deleteReservation
   };
