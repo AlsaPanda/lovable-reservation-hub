@@ -1,37 +1,32 @@
 import { useState, useMemo } from "react";
 import { Product } from "@/utils/types";
 
-export const useProductFilters = (products: Product[], userRole: string | null, brand: string) => {
+export const useProductFilters = (products: Product[] | undefined, userRole: string | null, brand: string) => {
   const [searchQuery, setSearchQuery] = useState("");
   
   const filteredProducts = useMemo(() => {
-    console.log("[useProductFilters] Starting filtering with:", { products, searchQuery, userRole, brand });
+    if (!products) return [];
+    
+    console.log("[useProductFilters] Starting filtering with:", { products: products.length, searchQuery, userRole, brand });
     
     // First filter by brand if not superadmin
     let results = userRole === 'superadmin' 
       ? products 
       : products.filter(product => product.brand === brand);
 
-    // Then apply search if there's a query
-    const query = searchQuery.toLowerCase().trim();
-    if (query) {
-      results = results.filter(product => {
-        const name = (product.name || '').toLowerCase();
-        const reference = (product.reference || '').toLowerCase();
-        const description = (product.description || '').toLowerCase();
-        
-        const matches = name.includes(query) || 
-                       reference.includes(query) || 
-                       description.includes(query);
-        
-        console.log(`[useProductFilters] Product ${product.reference} matches:`, matches);
-        return matches;
-      });
+    // Then apply search filter if there's a query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      results = results.filter(product => 
+        product.name.toLowerCase().includes(query) ||
+        product.reference.toLowerCase().includes(query) ||
+        (product.description?.toLowerCase() || '').includes(query)
+      );
     }
 
-    console.log("[useProductFilters] Filtered products:", results);
+    console.log("[useProductFilters] Filtered results:", results.length);
     return results;
-  }, [products, searchQuery, brand, userRole]);
+  }, [products, searchQuery, userRole, brand]);
 
   return {
     searchQuery,

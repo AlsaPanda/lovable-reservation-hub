@@ -1,5 +1,5 @@
+import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import { useEffect, useState } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 
 interface SearchBarProps {
@@ -11,7 +11,7 @@ const SearchBar = ({ onSearch }: SearchBarProps) => {
   const debouncedValue = useDebounce(value, 300);
 
   useEffect(() => {
-    console.log("[SearchBar] Triggering search with value:", debouncedValue);
+    console.log("[SearchBar] Debounced value changed:", debouncedValue);
     onSearch(debouncedValue);
   }, [debouncedValue, onSearch]);
 
