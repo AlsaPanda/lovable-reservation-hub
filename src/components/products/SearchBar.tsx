@@ -15,7 +15,11 @@ const SearchBar = ({ onSearch }: SearchBarProps) => {
     onSearch(debouncedValue);
   }, [debouncedValue, onSearch]);
 
-  console.log("[SearchBar] Input changed:", value);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    console.log("[SearchBar] Input changed:", newValue);
+    setValue(newValue);
+  };
 
   return (
     <div className="relative w-full md:w-96">
@@ -23,7 +27,7 @@ const SearchBar = ({ onSearch }: SearchBarProps) => {
         type="search"
         value={value}
         placeholder="Rechercher par titre, référence ou description..."
-        onChange={(e) => setValue(e.target.value)}
+        onChange={handleChange}
         className="w-full"
       />
     </div>

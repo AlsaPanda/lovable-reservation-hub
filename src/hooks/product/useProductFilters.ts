@@ -5,7 +5,7 @@ export const useProductFilters = (products: Product[], userRole: string | null, 
   const [searchQuery, setSearchQuery] = useState("");
   
   const filteredProducts = useMemo(() => {
-    console.log("[useProductFilters] Filtering products with query:", searchQuery);
+    console.log("[useProductFilters] Starting filtering with:", { products, searchQuery, userRole, brand });
     
     // First filter by brand if not superadmin
     let results = userRole === 'superadmin' 
