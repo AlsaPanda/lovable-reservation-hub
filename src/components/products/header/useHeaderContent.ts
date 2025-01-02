@@ -1,65 +1,71 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
 
 export const useHeaderContent = () => {
+  const [isEditing, setIsEditing] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: content, isLoading } = useQuery({
     queryKey: ['header-content'],
     queryFn: async () => {
+      console.log('[useHeaderContent] Fetching header content');
       const { data, error } = await supabase
         .from('content_blocks')
         .select('content')
         .eq('placement', 'products_header')
-        .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (error) {
-        console.error('Error fetching header content:', error);
-        return 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
+        console.error('[useHeaderContent] Error fetching header content:', error);
+        throw error;
       }
 
-      return data?.content;
+      console.log('[useHeaderContent] Content fetched:', data);
+      return data?.content || '';
     },
   });
 
   const updateContentMutation = useMutation({
     mutationFn: async (newContent: string) => {
-      const { data: existingContent } = await supabase
+      console.log('[useHeaderContent] Updating content:', newContent);
+      
+      // First try to update existing record
+      const { error: updateError } = await supabase
         .from('content_blocks')
-        .select('id')
-        .eq('placement', 'products_header')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
+        .update({ content: newContent })
+        .eq('placement', 'products_header');
 
-      const { error } = await supabase
-        .from('content_blocks')
-        .upsert({
-          id: existingContent?.id,
-          placement: 'products_header',
-          content: newContent,
-        });
+      // If no rows were updated, insert a new record
+      if (updateError) {
+        console.log('[useHeaderContent] No existing record found, creating new one');
+        const { error: insertError } = await supabase
+          .from('content_blocks')
+          .insert({
+            placement: 'products_header',
+            content: newContent,
+          });
 
-      if (error) throw error;
+        if (insertError) throw insertError;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['header-content'] });
       toast({
         title: "Contenu mis à jour",
-        description: "Le contenu de l'en-tête a été mis à jour avec succès.",
+        description: "Le contenu a été sauvegardé avec succès.",
       });
     },
     onError: (error) => {
+      console.error('[useHeaderContent] Error updating content:', error);
       toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la mise à jour du contenu.",
         variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de mettre à jour le contenu.",
       });
-      console.error('Error updating content:', error);
     },
   });
 
@@ -67,5 +73,7 @@ export const useHeaderContent = () => {
     content,
     isLoading,
     updateContentMutation,
+    isEditing,
+    setIsEditing,
   };
 };

@@ -18,11 +18,15 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
   const navigate = useNavigate();
   
   React.useEffect(() => {
+    let isMounted = true;
+    
     const checkSession = async () => {
       try {
         if (!session?.user?.id) {
           console.log('No session or user ID available');
-          setIsLoading(false);
+          if (isMounted) {
+            setIsLoading(false);
+          }
           return;
         }
 
@@ -52,7 +56,7 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
           return;
         }
         
-        if (profileData) {
+        if (profileData && isMounted) {
           console.log('Role fetched successfully:', profileData.role);
           setUserRole(profileData.role);
         }
@@ -64,22 +68,16 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
           description: "Une erreur est survenue lors de la vérification de la session",
         });
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT') {
-        navigate('/login');
-      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        checkSession();
-      }
-    });
-
     return () => {
-      subscription.unsubscribe();
+      isMounted = false;
     };
   }, [session, navigate, toast]);
 

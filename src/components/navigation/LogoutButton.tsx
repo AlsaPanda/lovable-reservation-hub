@@ -11,6 +11,10 @@ const LogoutButton = () => {
 
   const handleLogout = async () => {
     try {
+      // First clear any existing session
+      localStorage.removeItem('sb-auth-token');
+      
+      // Then sign out from Supabase
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error("Logout error:", error);
@@ -22,7 +26,8 @@ const LogoutButton = () => {
         title: "Déconnexion réussie",
         description: "Vous avez été déconnecté avec succès",
       });
-      // Force navigation to login after successful logout
+
+      // Force a hard redirect to the login page
       window.location.href = '/login';
     } catch (error) {
       console.error("Logout error:", error);
