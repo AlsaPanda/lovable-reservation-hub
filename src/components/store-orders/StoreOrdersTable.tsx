@@ -16,6 +16,14 @@ interface StoreOrdersTableProps {
 }
 
 export function StoreOrdersTable({ storeOrders, onViewDetails }: StoreOrdersTableProps) {
+  if (!storeOrders || storeOrders.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        Aucune commande trouvée
+      </div>
+    );
+  }
+
   return (
     <Table>
       <TableHeader>

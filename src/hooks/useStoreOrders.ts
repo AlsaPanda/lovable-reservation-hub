@@ -17,10 +17,23 @@ export const useStoreOrders = () => {
     queryKey: ['store-orders'],
     queryFn: async () => {
       try {
-        // First, get all profiles to map store_ids
+        // First, get all reservations
+        const { data: reservations, error: reservationsError } = await supabase
+          .from('reservations')
+          .select(`
+            store_name,
+            quantity,
+            reservation_date
+          `)
+          .order('reservation_date', { ascending: false });
+
+        if (reservationsError) throw reservationsError;
+
+        // Get all profiles to map store IDs
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
-          .select('store_name, store_id');
+          .select('store_name, store_id')
+          .not('store_id', 'is', null);
 
         if (profilesError) throw profilesError;
 
@@ -32,19 +45,8 @@ export const useStoreOrders = () => {
           return acc;
         }, {});
 
-        const { data, error } = await supabase
-          .from('reservations')
-          .select(`
-            store_name,
-            quantity,
-            reservation_date
-          `)
-          .order('reservation_date', { ascending: false });
-
-        if (error) throw error;
-
-        // Process the data to include store_id from profiles
-        const ordersByStore = data.reduce((acc: { [key: string]: StoreOrder }, curr) => {
+        // Process reservations to create store orders
+        const ordersByStore = reservations.reduce((acc: { [key: string]: StoreOrder }, curr) => {
           if (!acc[curr.store_name]) {
             acc[curr.store_name] = {
               store_name: curr.store_name,
