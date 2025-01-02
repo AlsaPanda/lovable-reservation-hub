@@ -27,15 +27,31 @@ export const useStoreOrders = () => {
           `)
           .order('reservation_date', { ascending: false });
 
-        if (reservationsError) throw reservationsError;
+        if (reservationsError) {
+          console.error('Error fetching reservations:', reservationsError);
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Impossible de charger les réservations"
+          });
+          throw reservationsError;
+        }
 
-        // Get all profiles to map store IDs, using correct filter syntax
+        // Get all profiles to map store IDs
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('store_name, store_id')
           .not('store_id', 'is', null);
 
-        if (profilesError) throw profilesError;
+        if (profilesError) {
+          console.error('Error fetching profiles:', profilesError);
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Impossible de charger les informations des magasins"
+          });
+          throw profilesError;
+        }
 
         // Create a mapping of store_name to store_id
         const storeIdMap = profiles.reduce((acc: { [key: string]: string }, profile) => {
@@ -63,12 +79,8 @@ export const useStoreOrders = () => {
 
         return Object.values(ordersByStore);
       } catch (error) {
-        console.error('Error fetching store orders:', error);
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Impossible de charger les commandes des magasins"
-        });
+        // Only log the error here, don't show another toast as we've already shown specific error messages
+        console.error('Error in store orders query:', error);
         throw error;
       }
     }
