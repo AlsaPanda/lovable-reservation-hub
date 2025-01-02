@@ -7,7 +7,6 @@ interface SearchBarProps {
 }
 
 const SearchBar = ({ onSearch }: SearchBarProps) => {
-  // Debounce the search to avoid too many updates
   const debouncedSearch = useCallback(
     debounce((value: string) => {
       console.log('Searching for:', value);
@@ -24,7 +23,7 @@ const SearchBar = ({ onSearch }: SearchBarProps) => {
 
   return (
     <Input
-      type="text"
+      type="search"
       placeholder="Rechercher par titre ou référence..."
       onChange={handleSearch}
       className="w-full md:w-96"

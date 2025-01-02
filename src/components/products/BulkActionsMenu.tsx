@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
@@ -10,6 +9,10 @@ import ImportDialog from "./ImportDialog";
 import DeleteCatalogDialog from "./DeleteCatalogDialog";
 import { Product } from "@/utils/types";
 import { useBulkActions } from "./bulk-actions/useBulkActions";
+import * as XLSX from 'xlsx';
+import ImportMenuItem from "./bulk-actions/ImportMenuItem";
+import TemplateMenuItem from "./bulk-actions/TemplateMenuItem";
+import DeleteMenuItem from "./bulk-actions/DeleteMenuItem";
 
 interface BulkActionsMenuProps {
   onProductsImported: (products: Product[]) => void;
@@ -35,7 +38,38 @@ const BulkActionsMenu = ({
 
   const isSuperAdmin = userRole === 'superadmin';
 
-  // Prevent menu from closing when loading
+  const downloadTemplate = () => {
+    const data = [
+      {
+        reference: 'REF001',
+        name: 'Exemple Produit 1',
+        description: 'Description du produit 1',
+        initial_quantity: 10,
+        image_url: 'https://example.com/image1.jpg',
+        purchase_price_ht: 15.50,
+        sale_price_ttc: 20.00,
+        product_url: 'https://example.com/produit1',
+        brand: 'schmidt'
+      },
+      {
+        reference: 'REF002',
+        name: 'Exemple Produit 2',
+        description: 'Description du produit 2',
+        initial_quantity: 5,
+        image_url: 'https://example.com/image2.jpg',
+        purchase_price_ht: 25.00,
+        sale_price_ttc: 30.00,
+        product_url: 'https://example.com/produit2',
+        brand: 'cuisinella'
+      }
+    ];
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(data);
+    XLSX.utils.book_append_sheet(wb, ws, "Products");
+    XLSX.writeFile(wb, "template_import_produits.xlsx");
+  };
+
   const handleMenuOpenChange = (open: boolean) => {
     if (!isDeleting) {
       return open;
@@ -57,21 +91,19 @@ const BulkActionsMenu = ({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem 
-            onClick={() => !isDeleting && setShowImportDialog(true)}
-            disabled={isDeleting}
-            className="cursor-pointer"
-          >
-            Importer des produits
-          </DropdownMenuItem>
+          <ImportMenuItem 
+            onImport={() => setShowImportDialog(true)}
+            isDisabled={isDeleting}
+          />
+          <TemplateMenuItem 
+            onDownload={downloadTemplate}
+            isDisabled={isDeleting}
+          />
           {isSuperAdmin && (
-            <DropdownMenuItem 
-              onClick={() => !isDeleting && setShowDeleteDialog(true)}
-              className="text-red-600 focus:text-red-600 cursor-pointer"
-              disabled={isDeleting}
-            >
-              Supprimer le catalogue
-            </DropdownMenuItem>
+            <DeleteMenuItem 
+              onDelete={() => setShowDeleteDialog(true)}
+              isDisabled={isDeleting}
+            />
           )}
         </DropdownMenuContent>
       </DropdownMenu>
