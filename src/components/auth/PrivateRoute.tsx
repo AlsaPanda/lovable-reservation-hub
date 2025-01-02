@@ -22,36 +22,59 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
     
     const checkSession = async () => {
       try {
-        if (!session?.user?.id) {
-          console.log('No session or user ID available');
+        // First verify we have a valid session
+        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error("Session error:", sessionError);
           if (isMounted) {
-            setIsLoading(false);
+            await supabase.auth.signOut();
+            navigate('/login');
+            toast({
+              variant: "destructive",
+              title: "Session Error",
+              description: "Please log in again",
+            });
           }
           return;
         }
 
+        if (!currentSession?.user?.id) {
+          console.log('No active session found');
+          if (isMounted) {
+            setIsLoading(false);
+            navigate('/login');
+          }
+          return;
+        }
+
+        // Then fetch the user role
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('role')
-          .eq('id', session.user.id)
+          .eq('id', currentSession.user.id)
           .single();
         
         if (profileError) {
           console.error("Error fetching user role:", profileError);
           if (profileError.code === 'PGRST301' || profileError.message?.includes('JWT')) {
-            await supabase.auth.signOut();
-            navigate('/login');
-            toast({
-              variant: "destructive",
-              title: "Session expirée",
-              description: "Veuillez vous reconnecter",
-            });
+            if (isMounted) {
+              toast({
+                variant: "destructive",
+                title: "Session expired",
+                description: "Please log in again",
+              });
+              await supabase.auth.signOut();
+              navigate('/login');
+            }
           } else {
-            toast({
-              variant: "destructive",
-              title: "Erreur",
-              description: "Impossible de récupérer votre rôle",
-            });
+            if (isMounted) {
+              toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Unable to fetch your role",
+              });
+            }
           }
           return;
         }
@@ -62,11 +85,13 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
         }
       } catch (error) {
         console.error("Error in checkSession:", error);
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la vérification de la session",
-        });
+        if (isMounted) {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "An error occurred while checking your session",
+          });
+        }
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -74,15 +99,24 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
       }
     };
 
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event);
+      if (!session && isMounted) {
+        navigate('/login');
+      }
+    });
+
     checkSession();
 
     return () => {
       isMounted = false;
+      subscription.unsubscribe();
     };
-  }, [session, navigate, toast]);
+  }, [navigate, toast]);
 
   if (isLoading) {
-    return <div>Chargement...</div>;
+    return <div>Loading...</div>;
   }
   
   if (!session) {
