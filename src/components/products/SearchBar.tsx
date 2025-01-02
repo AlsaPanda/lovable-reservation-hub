@@ -5,16 +5,17 @@ interface SearchBarProps {
 }
 
 const SearchBar = ({ onSearch }: SearchBarProps) => {
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onSearch(e.target.value);
-  };
-
+  console.log("[SearchBar] Rendering");
+  
   return (
     <div className="relative w-full md:w-96">
       <Input
         type="search"
         placeholder="Rechercher par titre ou référence..."
-        onChange={handleSearch}
+        onChange={(e) => {
+          console.log("[SearchBar] Search value:", e.target.value);
+          onSearch(e.target.value);
+        }}
         className="w-full"
       />
     </div>

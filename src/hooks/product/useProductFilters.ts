@@ -3,29 +3,34 @@ import { Product } from "@/utils/types";
 
 export const useProductFilters = (products: Product[], userRole: string | null, brand: string) => {
   const [searchQuery, setSearchQuery] = useState("");
+  console.log("[useProductFilters] Current state:", { searchQuery, totalProducts: products.length });
 
   const filteredProducts = useMemo(() => {
-    // Basic brand filtering
-    const brandFiltered = userRole === 'superadmin' 
-      ? products 
-      : products.filter(product => product.brand === brand);
+    console.log("[useProductFilters] Filtering products:", {
+      totalProducts: products.length,
+      searchQuery,
+      userRole,
+      brand
+    });
 
-    // If no search query, return brand filtered results
-    if (!searchQuery.trim()) {
-      return brandFiltered;
+    // First filter by brand
+    let results = products;
+    if (userRole !== 'superadmin') {
+      results = products.filter(product => product.brand === brand);
+      console.log("[useProductFilters] After brand filtering:", results.length);
     }
 
-    // Simple search implementation
-    const query = searchQuery.trim().toLowerCase();
-    return brandFiltered.filter(product => {
-      const searchableFields = [
-        product.name,
-        product.reference,
-        product.description
-      ].filter(Boolean).map(field => field?.toLowerCase());
+    // Then apply search if there's a query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      results = results.filter(product => 
+        product.name.toLowerCase().includes(query) ||
+        product.reference.toLowerCase().includes(query)
+      );
+      console.log("[useProductFilters] After search filtering:", results.length);
+    }
 
-      return searchableFields.some(field => field?.includes(query));
-    });
+    return results;
   }, [products, searchQuery, brand, userRole]);
 
   return {

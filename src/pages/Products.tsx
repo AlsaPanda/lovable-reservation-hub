@@ -28,16 +28,16 @@ const Products = () => {
     deleteProductMutation
   } = useProductState(userRole, brand);
 
-  if (isProfileLoading || isProductsLoading) {
-    return <ProductsSkeleton />;
-  }
-
-  console.log('[Products] Rendering with:', {
+  console.log("[Products] Rendering with:", {
     totalFilteredProducts: filteredProducts.length,
     searchQuery,
     userRole,
     brand
   });
+
+  if (isProfileLoading || isProductsLoading) {
+    return <ProductsSkeleton />;
+  }
 
   return (
     <>
