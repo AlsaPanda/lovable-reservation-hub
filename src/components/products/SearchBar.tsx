@@ -11,8 +11,11 @@ const SearchBar = ({ onSearch }: SearchBarProps) => {
   const debouncedValue = useDebounce(value, 300);
 
   useEffect(() => {
+    console.log("[SearchBar] Triggering search with value:", debouncedValue);
     onSearch(debouncedValue);
   }, [debouncedValue, onSearch]);
+
+  console.log("[SearchBar] Input changed:", value);
 
   return (
     <div className="relative w-full md:w-96">

@@ -28,6 +28,9 @@ const Products = () => {
     deleteProductMutation
   } = useProductState(userRole, brand);
 
+  console.log("[Products] Search triggered with:", searchQuery);
+  console.log("[Products] Rendering with:", filteredProducts);
+
   if (isProfileLoading || isProductsLoading) {
     return <ProductsSkeleton />;
   }
