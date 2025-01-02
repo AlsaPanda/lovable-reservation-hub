@@ -7,10 +7,12 @@ import ProductsHeader from "@/components/products/ProductsHeader";
 import { useProductQuantities } from "@/hooks/product/useProductQuantities";
 import { Product } from "@/utils/types";
 import { useProducts } from "@/hooks/useProducts";
+import { useState } from "react";
 
 const Products = () => {
   const { userRole, brand, isLoading: isProfileLoading } = useUserProfile();
   const { data: products, isLoading: isProductsLoading } = useProducts();
+  const [searchQuery, setSearchQuery] = useState("");
   
   const {
     editingProduct,
@@ -22,10 +24,8 @@ const Products = () => {
   } = useProductState(userRole, brand);
 
   const {
-    searchQuery,
-    setSearchQuery,
     filteredProducts
-  } = useProductFilters(products, userRole, brand);
+  } = useProductFilters(products, userRole, brand, searchQuery);
 
   const {
     quantities,
@@ -42,6 +42,11 @@ const Products = () => {
     deleteProductMutation.mutate(reference);
   };
 
+  const handleSearch = (value: string) => {
+    console.log("[Products] Search query updated:", value);
+    setSearchQuery(value);
+  };
+
   console.log("[Products] Current search query:", searchQuery);
   console.log("[Products] Filtered products count:", filteredProducts?.length);
 
@@ -54,8 +59,8 @@ const Products = () => {
       <ProductsHeader
         onOpenDialog={() => setOpen(true)}
         onProductsImported={() => {}}
-        onSearch={setSearchQuery}
-        onReserve={handleReserveAll}
+        onSearch={handleSearch}
+        onReserve={() => handleReserveAll(filteredProducts, quantities)}
         totalQuantity={totalQuantity}
       />
       <ProductGrid

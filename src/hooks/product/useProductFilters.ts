@@ -1,8 +1,12 @@
 import { useState, useEffect } from "react";
 import { Product } from "@/utils/types";
 
-export const useProductFilters = (products: Product[] | undefined, userRole: string | null, brand: string) => {
-  const [searchQuery, setSearchQuery] = useState("");
+export const useProductFilters = (
+  products: Product[] | undefined, 
+  userRole: string | null, 
+  brand: string,
+  searchQuery: string
+) => {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   
   useEffect(() => {
@@ -38,8 +42,6 @@ export const useProductFilters = (products: Product[] | undefined, userRole: str
   }, [products, searchQuery, userRole, brand]);
 
   return {
-    searchQuery,
-    setSearchQuery,
     filteredProducts
   };
 };
