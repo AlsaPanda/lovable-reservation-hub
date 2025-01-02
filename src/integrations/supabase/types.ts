@@ -160,16 +160,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      delete_all_products: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      product_exists: {
-        Args: {
-          ref: string
-        }
-        Returns: boolean
-      }
       reset_all_quantities: {
         Args: Record<PropertyKey, never>
         Returns: undefined

@@ -8,7 +8,6 @@ import { FileDown } from "lucide-react";
 import * as XLSX from 'xlsx';
 import { StoreOrdersTable } from "@/components/store-orders/StoreOrdersTable";
 import { StoreOrderDetails } from "@/components/store-orders/StoreOrderDetails";
-import { Database } from "@/integrations/supabase/types";
 
 interface StoreOrder {
   store_name: string;
@@ -25,10 +24,6 @@ interface DetailedReservation {
   reservation_date: string;
 }
 
-type ReservationWithProduct = Database['public']['Tables']['reservations']['Row'] & {
-  products: Database['public']['Tables']['products']['Row'];
-};
-
 const StoreOrders = () => {
   const [storeOrders, setStoreOrders] = useState<StoreOrder[]>([]);
   const [selectedStore, setSelectedStore] = useState<string | null>(null);
@@ -42,13 +37,15 @@ const StoreOrders = () => {
 
   const fetchStoreOrders = async () => {
     try {
+      // First, get all profiles to map store_ids
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('store_name, store_id');
 
       if (profilesError) throw profilesError;
 
-      const storeIdMap = profiles?.reduce((acc: { [key: string]: string }, profile) => {
+      // Create a mapping of store_name to store_id
+      const storeIdMap = profiles.reduce((acc: { [key: string]: string }, profile) => {
         if (profile.store_name && profile.store_id) {
           acc[profile.store_name] = profile.store_id;
         }
@@ -61,15 +58,17 @@ const StoreOrders = () => {
           store_name,
           quantity,
           reservation_date
-        `);
+        `)
+        .order('reservation_date', { ascending: false });
 
       if (error) throw error;
 
-      const ordersByStore = data?.reduce((acc: { [key: string]: StoreOrder }, curr) => {
+      // Process the data to include store_id from profiles
+      const ordersByStore = data.reduce((acc: { [key: string]: StoreOrder }, curr) => {
         if (!acc[curr.store_name]) {
           acc[curr.store_name] = {
             store_name: curr.store_name,
-            store_id: storeIdMap?.[curr.store_name] || 'N/A',
+            store_id: storeIdMap[curr.store_name] || 'N/A',
             total_reservations: 0,
             total_products: 0,
             last_reservation: curr.reservation_date
@@ -80,7 +79,7 @@ const StoreOrders = () => {
         return acc;
       }, {});
 
-      setStoreOrders(Object.values(ordersByStore || {}));
+      setStoreOrders(Object.values(ordersByStore));
     } catch (error) {
       console.error('Error fetching store orders:', error);
       toast({
@@ -95,7 +94,7 @@ const StoreOrders = () => {
     try {
       const { data, error } = await supabase
         .from('reservations')
-        .select<string, ReservationWithProduct>(`
+        .select(`
           id,
           quantity,
           reservation_date,
@@ -108,14 +107,14 @@ const StoreOrders = () => {
 
       if (error) throw error;
 
-      const formattedData = data?.map(item => ({
+      const formattedData = data.map(item => ({
         id: item.id,
-        product_name: item.products?.name || 'Unknown Product',
+        product_name: item.products.name,
         quantity: item.quantity,
         reservation_date: item.reservation_date,
       }));
 
-      setStoreDetails(formattedData || []);
+      setStoreDetails(formattedData);
       setSelectedStore(storeName);
       setIsDetailOpen(true);
     } catch (error) {
@@ -132,7 +131,7 @@ const StoreOrders = () => {
     try {
       const { data, error } = await supabase
         .from('reservations')
-        .select<string, ReservationWithProduct>(`
+        .select(`
           store_name,
           quantity,
           reservation_date,
@@ -145,13 +144,13 @@ const StoreOrders = () => {
 
       if (error) throw error;
 
-      const exportData = data?.map(item => ({
+      const exportData = data.map(item => ({
         'Magasin': item.store_name,
-        'Produit': item.products?.name || 'Unknown Product',
-        'Référence': item.products?.reference || 'N/A',
+        'Produit': item.products.name,
+        'Référence': item.products.reference,
         'Quantité': item.quantity,
         'Date de réservation': new Date(item.reservation_date).toLocaleDateString('fr-FR'),
-      })) || [];
+      }));
 
       const ws = XLSX.utils.json_to_sheet(exportData);
       const wb = XLSX.utils.book_new();

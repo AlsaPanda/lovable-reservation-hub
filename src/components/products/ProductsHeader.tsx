@@ -7,7 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import SearchBar from "./SearchBar";
 import ReservationActions from "./ReservationActions";
-import BulkActionsMenu from "./BulkActionsMenu";
+import ImportExportActions from "./ImportExportActions";
 import { importProducts } from "@/utils/productUtils";
 
 interface ProductsHeaderProps {
@@ -104,6 +104,23 @@ const ProductsHeader = ({
     }
   };
 
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const importedProducts = await importProducts(file);
+      onProductsImported(importedProducts);
+    } catch (error) {
+      console.error("Error importing products:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible d'importer les produits.",
+      });
+    }
+  };
+
   if (isLoading) {
     return <div>Chargement...</div>;
   }
@@ -128,11 +145,7 @@ const ProductsHeader = ({
         {isAdmin && (
           <div className="flex gap-2">
             <Button onClick={onOpenDialog}>Ajouter un produit</Button>
-            <BulkActionsMenu 
-              onProductsImported={onProductsImported} 
-              products={[]} 
-              userRole={userRole}
-            />
+            <ImportExportActions onFileChange={handleFileChange} />
           </div>
         )}
       </div>

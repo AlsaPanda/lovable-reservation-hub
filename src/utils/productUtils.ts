@@ -1,12 +1,11 @@
 import * as XLSX from 'xlsx';
 import { Product } from '@/types/products';
-import { supabase } from '@/integrations/supabase/client';
 
-export const importProducts = async (file: File, differential: boolean = true): Promise<Product[]> => {
+export const importProducts = async (file: File): Promise<Product[]> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     
-    reader.onload = async (e) => {
+    reader.onload = (e) => {
       try {
         const data = e.target?.result;
         const workbook = XLSX.read(data, { type: 'binary' });
@@ -29,20 +28,7 @@ export const importProducts = async (file: File, differential: boolean = true): 
           updated_at: new Date().toISOString()
         }));
 
-        if (differential) {
-          const productsToImport = [];
-          for (const product of products) {
-            const { data: exists } = await supabase.rpc('product_exists', {
-              ref: product.reference
-            });
-            if (!exists) {
-              productsToImport.push(product);
-            }
-          }
-          resolve(productsToImport);
-        } else {
-          resolve(products);
-        }
+        resolve(products);
       } catch (error) {
         reject(error);
       }
