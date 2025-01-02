@@ -12,53 +12,60 @@ export const useUserRole = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    let mounted = true;
-
     const fetchUserRole = async () => {
       try {
-        if (!session?.user?.id) {
-          console.log('[useUserRole] No user ID in session');
-          if (mounted) {
-            setIsLoading(false);
-            navigate('/login');
-          }
+        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error("[useUserRole] Session error:", sessionError);
+          toast({
+            variant: "destructive",
+            title: "Erreur de session",
+            description: "Veuillez vous reconnecter",
+          });
+          await supabase.auth.signOut();
+          navigate('/login');
           return;
         }
 
-        console.log('[useUserRole] Fetching role for user:', session.user.id);
+        if (!currentSession?.user?.id) {
+          console.log('[useUserRole] No user ID in session');
+          setIsLoading(false);
+          return;
+        }
+
+        console.log('[useUserRole] Fetching role for user:', currentSession.user.id);
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('role')
-          .eq('id', session.user.id)
+          .eq('id', currentSession.user.id)
           .maybeSingle();
         
         if (profileError) {
           console.error("[useUserRole] Error fetching user role:", profileError);
-          if (mounted) {
-            if (profileError.code === 'PGRST301' || profileError.message?.includes('JWT')) {
-              console.log('[useUserRole] Invalid JWT, signing out');
-              await supabase.auth.signOut();
-              navigate('/login');
-              toast({
-                variant: "destructive",
-                title: "Session expirée",
-                description: "Veuillez vous reconnecter",
-              });
-            } else {
-              toast({
-                variant: "destructive",
-                title: "Erreur",
-                description: "Impossible de récupérer votre rôle",
-              });
-            }
+          if (profileError.code === 'PGRST301' || profileError.message?.includes('JWT')) {
+            console.log('[useUserRole] Invalid JWT, signing out');
+            await supabase.auth.signOut();
+            navigate('/login');
+            toast({
+              variant: "destructive",
+              title: "Session expirée",
+              description: "Veuillez vous reconnecter",
+            });
+          } else {
+            toast({
+              variant: "destructive",
+              title: "Erreur",
+              description: "Impossible de récupérer votre rôle",
+            });
           }
           return;
         }
         
-        if (profileData && mounted) {
+        if (profileData) {
           console.log('[useUserRole] Role fetched successfully:', profileData.role);
           setUserRole(profileData.role);
-        } else if (mounted) {
+        } else {
           console.log('[useUserRole] No profile data found');
           toast({
             variant: "destructive",
@@ -70,17 +77,13 @@ export const useUserRole = () => {
         }
       } catch (error) {
         console.error("[useUserRole] Error in fetchUserRole:", error);
-        if (mounted) {
-          toast({
-            variant: "destructive",
-            title: "Erreur",
-            description: "Une erreur est survenue",
-          });
-        }
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Une erreur est survenue",
+        });
       } finally {
-        if (mounted) {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       }
     };
 
@@ -92,8 +95,18 @@ export const useUserRole = () => {
       setIsLoading(false);
     }
 
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('[useUserRole] Auth state changed:', event);
+      if (event === 'SIGNED_OUT') {
+        setUserRole(null);
+        navigate('/login');
+      } else if (event === 'SIGNED_IN' && session?.user?.id) {
+        fetchUserRole();
+      }
+    });
+
     return () => {
-      mounted = false;
+      subscription.unsubscribe();
     };
   }, [session, toast, navigate]);
 

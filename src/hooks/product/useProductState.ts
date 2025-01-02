@@ -1,20 +1,56 @@
 import { useState } from "react";
 import { Product } from "@/utils/types";
+import { useProducts } from "@/hooks/useProducts";
 import { useProductMutations } from "@/hooks/useProductMutations";
 import { useReservationMutation } from "@/hooks/useReservationMutation";
 import { useToast } from "@/hooks/use-toast";
+import { useProductQuantities } from "./useProductQuantities";
+import { useProductFilters } from "./useProductFilters";
 
 export const useProductState = (userRole: string | null, brand: string) => {
   const { toast } = useToast();
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [open, setOpen] = useState(false);
-  
+
+  const { data: products = [], isLoading: isProductsLoading } = useProducts();
   const { addProductMutation, updateProductMutation, deleteProductMutation } = useProductMutations();
   const { addReservationMutation } = useReservationMutation();
+  
+  const { quantities, handleQuantityChange, totalQuantity } = useProductQuantities();
+  const { searchQuery, setSearchQuery, filteredProducts } = useProductFilters(products, userRole, brand);
 
-  const handleReserveAll = (products: Product[], quantities: Record<string, number>) => {
+  const handleAddProduct = async (product: Product) => {
+    try {
+      await addProductMutation.mutateAsync(product);
+      setOpen(false);
+    } catch (error) {
+      console.error('Error adding product:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible d'ajouter le produit.",
+      });
+    }
+  };
+
+  const handleUpdateProduct = async (product: Product) => {
+    try {
+      await updateProductMutation.mutateAsync(product);
+      setEditingProduct(null);
+      setOpen(false);
+    } catch (error) {
+      console.error('Error updating product:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de mettre à jour le produit.",
+      });
+    }
+  };
+
+  const handleReserveAll = () => {
     console.log('[Products] Starting reservation process');
-    const productsToReserve = products
+    const productsToReserve = filteredProducts
       .filter(product => quantities[product.reference] > 0)
       .map(product => ({
         ...product,
@@ -40,7 +76,16 @@ export const useProductState = (userRole: string | null, brand: string) => {
     setEditingProduct,
     open,
     setOpen,
+    searchQuery,
+    setSearchQuery,
+    quantities,
+    handleQuantityChange,
+    handleAddProduct,
+    handleUpdateProduct,
+    filteredProducts,
+    totalQuantity,
     handleReserveAll,
+    isProductsLoading,
     deleteProductMutation
   };
 };
