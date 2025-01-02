@@ -29,7 +29,7 @@ export const useStoreOrders = () => {
 
         if (reservationsError) throw reservationsError;
 
-        // Get all profiles to map store IDs
+        // Get all profiles to map store IDs, using correct filter syntax
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('store_name, store_id')
