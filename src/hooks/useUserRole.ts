@@ -12,25 +12,19 @@ export const useUserRole = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    let mounted = true;
+
     const fetchUserRole = async () => {
       try {
-        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+        // First verify we have a valid session
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
         
-        if (sessionError) {
-          console.error("[useUserRole] Session error:", sessionError);
-          toast({
-            variant: "destructive",
-            title: "Erreur de session",
-            description: "Veuillez vous reconnecter",
-          });
-          await supabase.auth.signOut();
-          navigate('/login');
-          return;
-        }
-
         if (!currentSession?.user?.id) {
-          console.log('[useUserRole] No user ID in session');
-          setIsLoading(false);
+          console.log('[useUserRole] No active session');
+          if (mounted) {
+            setIsLoading(false);
+            navigate('/login');
+          }
           return;
         }
 
@@ -39,76 +33,71 @@ export const useUserRole = () => {
           .from('profiles')
           .select('role')
           .eq('id', currentSession.user.id)
-          .maybeSingle();
-        
+          .single();
+
         if (profileError) {
-          console.error("[useUserRole] Error fetching user role:", profileError);
+          console.error('[useUserRole] Profile fetch error:', profileError);
           if (profileError.code === 'PGRST301' || profileError.message?.includes('JWT')) {
-            console.log('[useUserRole] Invalid JWT, signing out');
-            await supabase.auth.signOut();
-            navigate('/login');
-            toast({
-              variant: "destructive",
-              title: "Session expirée",
-              description: "Veuillez vous reconnecter",
-            });
+            if (mounted) {
+              toast({
+                variant: "destructive",
+                title: "Session expirée",
+                description: "Veuillez vous reconnecter",
+              });
+              await supabase.auth.signOut();
+              navigate('/login');
+            }
           } else {
-            toast({
-              variant: "destructive",
-              title: "Erreur",
-              description: "Impossible de récupérer votre rôle",
-            });
+            if (mounted) {
+              toast({
+                variant: "destructive",
+                title: "Erreur",
+                description: "Impossible de récupérer votre rôle",
+              });
+            }
           }
           return;
         }
-        
-        if (profileData) {
-          console.log('[useUserRole] Role fetched successfully:', profileData.role);
+
+        if (profileData && mounted) {
+          console.log('[useUserRole] Role fetched:', profileData.role);
           setUserRole(profileData.role);
-        } else {
-          console.log('[useUserRole] No profile data found');
+        }
+      } catch (error) {
+        console.error('[useUserRole] Fetch error:', error);
+        if (mounted) {
           toast({
             variant: "destructive",
             title: "Erreur",
-            description: "Profil non trouvé",
+            description: "Une erreur est survenue lors de la récupération de votre rôle",
           });
-          await supabase.auth.signOut();
-          navigate('/login');
         }
-      } catch (error) {
-        console.error("[useUserRole] Error in fetchUserRole:", error);
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Une erreur est survenue",
-        });
       } finally {
-        setIsLoading(false);
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     };
 
-    if (session?.user?.id) {
-      console.log('[useUserRole] Session exists, fetching role');
-      fetchUserRole();
-    } else {
-      console.log('[useUserRole] No session, skipping role fetch');
-      setIsLoading(false);
-    }
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('[useUserRole] Auth state changed:', event);
-      if (event === 'SIGNED_OUT') {
-        setUserRole(null);
+      if (!session && mounted) {
         navigate('/login');
-      } else if (event === 'SIGNED_IN' && session?.user?.id) {
+      } else if (session) {
         fetchUserRole();
       }
     });
 
+    // Initial fetch
+    fetchUserRole();
+
+    // Cleanup
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
-  }, [session, toast, navigate]);
+  }, [navigate, toast]);
 
   return { userRole, isLoading };
 };
