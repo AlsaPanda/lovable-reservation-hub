@@ -3,33 +3,33 @@ import { Product } from "@/utils/types";
 
 export const useProductFilters = (products: Product[], userRole: string | null, brand: string) => {
   const [searchQuery, setSearchQuery] = useState("");
-  console.log("[useProductFilters] Current state:", { searchQuery, totalProducts: products.length });
-
+  
   const filteredProducts = useMemo(() => {
-    console.log("[useProductFilters] Filtering products:", {
+    console.log("[useProductFilters] Starting filtering with:", {
       totalProducts: products.length,
       searchQuery,
       userRole,
       brand
     });
 
-    // First filter by brand
-    let results = products;
-    if (userRole !== 'superadmin') {
-      results = products.filter(product => product.brand === brand);
-      console.log("[useProductFilters] After brand filtering:", results.length);
-    }
+    // First filter by brand if not superadmin
+    let results = userRole === 'superadmin' 
+      ? products 
+      : products.filter(product => product.brand === brand);
 
     // Then apply search if there's a query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
-      results = results.filter(product => 
-        product.name.toLowerCase().includes(query) ||
-        product.reference.toLowerCase().includes(query)
-      );
-      console.log("[useProductFilters] After search filtering:", results.length);
+      results = results.filter(product => {
+        const nameMatch = product.name.toLowerCase().includes(query);
+        const referenceMatch = product.reference.toLowerCase().includes(query);
+        const descriptionMatch = product.description?.toLowerCase().includes(query) || false;
+        
+        return nameMatch || referenceMatch || descriptionMatch;
+      });
     }
 
+    console.log("[useProductFilters] Filtered results:", results.length);
     return results;
   }, [products, searchQuery, brand, userRole]);
 
