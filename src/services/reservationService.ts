@@ -5,7 +5,6 @@ export const fetchReservations = async (userId: string, isSuperAdmin: boolean) =
   console.log('Fetching reservations with params:', { userId, isSuperAdmin });
   
   try {
-    // First fetch reservations with products
     let query = supabase
       .from('reservations')
       .select(`
@@ -27,30 +26,7 @@ export const fetchReservations = async (userId: string, isSuperAdmin: boolean) =
     }
 
     console.log('Fetched reservations data:', reservationsData);
-
-    // Then fetch profiles separately
-    const { data: profilesData, error: profilesError } = await supabase
-      .from('profiles')
-      .select('*');
-
-    if (profilesError) {
-      console.error('Error fetching profiles:', profilesError);
-      throw profilesError;
-    }
-
-    console.log('Fetched profiles data:', profilesData);
-
-    // Create a map of profiles for easy lookup
-    const profilesMap = new Map(profilesData.map(profile => [profile.id, profile]));
-
-    // Combine the data
-    const transformedData = reservationsData.map(reservation => ({
-      ...reservation,
-      store: profilesMap.get(reservation.store_name)
-    }));
-
-    console.log('Transformed reservations data:', transformedData);
-    return transformedData as Reservation[];
+    return reservationsData as Reservation[];
   } catch (error) {
     console.error('Error in fetchReservations:', error);
     throw error;
