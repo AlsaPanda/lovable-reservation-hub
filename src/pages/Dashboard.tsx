@@ -45,6 +45,7 @@ const Dashboard = () => {
         if (profileData) {
           console.log("Profile loaded:", profileData);
           console.log("User role:", profileData.role);
+          // Ensure brand is either 'schmidt' or 'cuisinella'
           const validatedProfile: Profile = {
             ...profileData,
             brand: profileData.brand === 'cuisinella' ? 'cuisinella' : 'schmidt'
@@ -100,9 +101,9 @@ const Dashboard = () => {
   }, [toast, navigate]);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <>
       <NavBar />
-      <div className="flex-1 px-4 py-8 md:container md:mx-auto">
+      <div className="container mx-auto py-8">
         <h1 className="text-3xl font-bold text-primary mb-8">Tableau de bord</h1>
         
         {profile?.role === 'superadmin' && (
@@ -124,7 +125,7 @@ const Dashboard = () => {
           </Card>
         )}
         
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid md:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
               <CardTitle>Gestion des produits</CardTitle>
@@ -150,7 +151,7 @@ const Dashboard = () => {
           </Card>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

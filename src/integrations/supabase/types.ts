@@ -122,7 +122,6 @@ export type Database = {
           created_at: string
           id: string
           product_id: string
-          product_name: string | null
           quantity: number
           reservation_date: string
           store_name: string
@@ -132,7 +131,6 @@ export type Database = {
           created_at?: string
           id?: string
           product_id: string
-          product_name?: string | null
           quantity: number
           reservation_date?: string
           store_name: string
@@ -142,7 +140,6 @@ export type Database = {
           created_at?: string
           id?: string
           product_id?: string
-          product_name?: string | null
           quantity?: number
           reservation_date?: string
           store_name?: string
