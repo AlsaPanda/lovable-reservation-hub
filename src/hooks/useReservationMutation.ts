@@ -37,8 +37,11 @@ export const useReservationMutation = () => {
       }
 
       if (!profileData?.store_name) {
+        console.error('No store_name found in profile');
         throw new Error('Impossible de trouver le nom du magasin');
       }
+
+      console.log('Retrieved store_name from profile:', profileData.store_name);
 
       const reservations = productsToReserve
         .filter(product => product.initial_quantity > 0)
