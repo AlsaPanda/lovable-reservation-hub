@@ -14,8 +14,8 @@ export const generateStoreToken = async (storeId: string): Promise<{
   const date = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
   console.log('Date utilisée:', date);
 
-  // Utilisation de la même phrase secrète
-  const secretPhrase = 'CbDH4/fMT14EMpvSJMT79Wc1VzKA63gmS+GSMAroPvTEADqd8SJbTg==';
+  // Utilisation de la nouvelle phrase secrète
+  const secretPhrase = 'yewYowrOh7ZWuOWA3bd6Y3c1xoHKTEvePnwJzOfy6+kNMwG9VpYPmw==';
   console.log('Phrase secrète utilisée:', secretPhrase);
 
   // Préparation de la chaîne à hacher
