@@ -30,17 +30,17 @@ export const useStoreAuth = () => {
 
       console.log('Attempting store authentication with:', { storeId, brand });
       
-      // Check if store exists
+      // Check if store exists using the correct query builder pattern
       const { data: existingProfile, error: profileError } = await supabase
         .from('profiles')
         .select('store_id')
         .eq('store_id', storeId)
-        .headers({
+        .set({
           Accept: 'application/json',
           'Content-Type': 'application/json',
           'x-store-token': token
         })
-        .single();
+        .maybeSingle();
 
       if (profileError && profileError.code !== 'PGRST116') {
         console.error('Error checking store profile:', profileError);
