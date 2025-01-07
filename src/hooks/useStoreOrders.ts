@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export const useStoreOrders = () => {
   const { toast } = useToast();
@@ -9,7 +9,7 @@ export const useStoreOrders = () => {
     queryKey: ['store-orders'],
     queryFn: async () => {
       try {
-        // First fetch reservations
+        // First fetch reservations with product details
         const { data: reservations, error: reservationsError } = await supabase
           .from('reservations')
           .select(`
@@ -32,49 +32,30 @@ export const useStoreOrders = () => {
           throw reservationsError;
         }
 
-        // Get all profiles with store_id
-        const { data: profiles, error: profilesError } = await supabase
-          .from('profiles')
-          .select('store_name, store_id')
-          .neq('store_id', null); // Using neq instead of not is null
-
-        if (profilesError) {
-          console.error('Error fetching profiles:', profilesError);
-          toast({
-            variant: "destructive",
-            title: "Erreur",
-            description: "Impossible de charger les informations des magasins"
-          });
-          throw profilesError;
-        }
-
-        // Create a mapping of store_name to store_id
-        const storeIdMap = (profiles || []).reduce((acc: { [key: string]: string }, profile) => {
-          if (profile.store_name && profile.store_id) {
-            acc[profile.store_name] = profile.store_id;
-          }
-          return acc;
-        }, {});
-
         // Group reservations by store
-        const ordersByStore = (reservations || []).reduce((acc: { [key: string]: any }, reservation) => {
-          const storeId = storeIdMap[reservation.store_name];
-          if (!acc[reservation.store_name]) {
-            acc[reservation.store_name] = {
+        const ordersByStore = (reservations || []).reduce((acc: any[], reservation) => {
+          const existingStore = acc.find(store => store.store_name === reservation.store_name);
+          
+          if (existingStore) {
+            existingStore.total_reservations++;
+            existingStore.total_products += reservation.quantity;
+            if (new Date(reservation.reservation_date) > new Date(existingStore.last_reservation)) {
+              existingStore.last_reservation = reservation.reservation_date;
+            }
+          } else {
+            acc.push({
               store_name: reservation.store_name,
-              store_id: storeId,
-              reservations: [],
-              total_quantity: 0
-            };
+              store_id: reservation.store_name, // Using store_name as store_id for now
+              total_reservations: 1,
+              total_products: reservation.quantity,
+              last_reservation: reservation.reservation_date
+            });
           }
           
-          acc[reservation.store_name].reservations.push(reservation);
-          acc[reservation.store_name].total_quantity += reservation.quantity;
-          
           return acc;
-        }, {});
+        }, []);
 
-        return Object.values(ordersByStore);
+        return ordersByStore;
       } catch (error: any) {
         console.error('Error in store orders query:', error);
         throw error;
