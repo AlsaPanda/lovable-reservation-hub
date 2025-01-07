@@ -35,12 +35,25 @@ export const useStoreAuth = () => {
         .from('profiles')
         .select('store_id')
         .eq('store_id', storeId)
-        .set({
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          'x-store-token': token
-        })
         .maybeSingle();
+
+      // Validate store token in a separate query if needed
+      const { data: validToken } = await supabase.rpc('validate_store_token', {
+        store_id: storeId,
+        token: token,
+        secret_phrase: null
+      });
+
+      if (!validToken) {
+        console.error('Invalid token for store:', storeId);
+        toast({
+          variant: "destructive",
+          title: "Erreur d'authentification",
+          description: "Token invalide",
+        });
+        navigate('/login');
+        return;
+      }
 
       if (profileError && profileError.code !== 'PGRST116') {
         console.error('Error checking store profile:', profileError);
