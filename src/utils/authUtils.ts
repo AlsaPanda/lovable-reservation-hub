@@ -15,16 +15,19 @@ export const signInStore = async (email: string, password: string) => {
   });
 };
 
+type StoreMetadata = {
+  store_id: string;
+  brand: string;
+  country_code: string;
+  language_code: string;
+  context: string;
+  store_name: string;
+};
+
 export const signUpStore = async (
   email: string, 
   password: string, 
-  metadata: {
-    store_id: string;
-    brand: string;
-    country_code: string;
-    language_code: string;
-    context: string;
-  }
+  metadata: StoreMetadata
 ) => {
   return await supabase.auth.signUp({
     email,

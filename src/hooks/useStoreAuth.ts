@@ -30,14 +30,14 @@ export const useStoreAuth = () => {
 
       console.log('Attempting store authentication with:', { storeId, brand });
       
-      // Check if store exists with proper headers
+      // Check if store exists
       const { data: existingProfile, error: profileError } = await supabase
         .from('profiles')
         .select('store_id')
         .eq('store_id', storeId)
         .single()
         .headers({
-          'Accept': 'application/json',
+          Accept: 'application/json',
           'Content-Type': 'application/json',
           'x-store-token': token
         });
