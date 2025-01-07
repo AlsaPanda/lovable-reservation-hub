@@ -14,8 +14,8 @@ export const generateStoreToken = async (storeId: string): Promise<{
   const yyyy = today.getUTCFullYear();
   const dateStr = `${dd}/${mm}/${yyyy}`;
 
-  // Utilisation d'une phrase secrète par défaut pour la démo
-  const secretPhrase = 'demo_secret_phrase';
+  // Utilisation de la phrase secrète spécifiée
+  const secretPhrase = 'CbDH4/fMT14EMpvSJMT79Wc1VzKA63gmS+GSMAroPvTEADqd8SJbTg==';
 
   // Generate token using native crypto
   const input = `${storeId}-${dateStr}-${secretPhrase}`;
