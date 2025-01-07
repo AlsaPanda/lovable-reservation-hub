@@ -3,11 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/utils/types";
 import { useToast } from "@/hooks/use-toast";
 import { useSession } from "@supabase/auth-helpers-react";
+import { useNavigate } from "react-router-dom";
 
 export const useReservationMutation = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const session = useSession();
+  const navigate = useNavigate();
 
   const addReservationMutation = useMutation({
     mutationFn: async (productsToReserve: Product[]) => {
@@ -18,13 +20,33 @@ export const useReservationMutation = () => {
         throw new Error('Vous devez être connecté pour effectuer une réservation');
       }
 
+      // First, get the user's store_name from their profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('store_name')
+        .eq('id', session.user.id)
+        .single();
+
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+        if (profileError.message?.includes('JWT')) {
+          navigate('/login');
+          throw new Error('Votre session a expiré. Veuillez vous reconnecter.');
+        }
+        throw new Error('Erreur lors de la récupération du profil');
+      }
+
+      if (!profileData?.store_name) {
+        throw new Error('Impossible de trouver le nom du magasin');
+      }
+
       const reservations = productsToReserve
         .filter(product => product.initial_quantity > 0)
         .map(product => ({
           product_id: product.id,
-          product_name: product.name, // Add product name to reservation
+          product_name: product.name,
           quantity: product.initial_quantity,
-          store_name: session.user.id,
+          store_name: profileData.store_name,
           reservation_date: new Date().toISOString()
         }));
 
@@ -56,8 +78,12 @@ export const useReservationMutation = () => {
         }
         console.log('Quantities reset successfully');
 
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error in reservation process:', error);
+        if (error.message?.includes('JWT')) {
+          navigate('/login');
+          throw new Error('Votre session a expiré. Veuillez vous reconnecter.');
+        }
         throw error;
       }
     },
