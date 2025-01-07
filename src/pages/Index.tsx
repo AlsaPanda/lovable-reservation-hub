@@ -8,7 +8,18 @@ const Index = () => {
   const handleGenerateToken = async () => {
     try {
       const token = await getTokenForStore('007');
-      const loginUrl = `${window.location.origin}/login?sg_m=007&sg_p=${token}`;
+      const params = new URLSearchParams({
+        sg_m: '007',
+        sg_p: token,
+        sg_cp: 'fr-FR',
+        sg_l: 'fr',
+        sg_ct: '1',
+        sg_fn: 'Régis',
+        sg_ln: 'WANNER',
+        brand: 'cui'
+      });
+      
+      const loginUrl = `${window.location.origin}/login?${params.toString()}`;
       
       await navigator.clipboard.writeText(loginUrl);
       
@@ -35,7 +46,7 @@ const Index = () => {
         Générer un token pour le magasin 007
       </Button>
       <p className="mt-4 text-sm text-gray-600">
-        Cliquez sur le bouton pour générer une URL d&apos;authentification. 
+        Cliquez sur le bouton pour générer une URL d&apos;authentification complète. 
         L&apos;URL sera automatiquement copiée dans votre presse-papier.
       </p>
     </div>
