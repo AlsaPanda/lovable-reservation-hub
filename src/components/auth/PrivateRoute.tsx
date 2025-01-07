@@ -30,11 +30,12 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
           return;
         }
 
+        console.log('Fetching profile for user:', session.user.id);
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', session.user.id)
-          .single();
+          .maybeSingle();
         
         if (profileError) {
           console.error("Error fetching user role:", profileError);
@@ -58,6 +59,18 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
           return;
         }
         
+        if (!profileData && mounted) {
+          console.log('No profile data found');
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Impossible de récupérer votre profil",
+          });
+          await supabase.auth.signOut();
+          navigate('/login');
+          return;
+        }
+        
         if (profileData && mounted) {
           console.log('Role fetched successfully:', profileData.role);
           setUserRole(profileData.role);
@@ -78,7 +91,6 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
       }
     };
 
-    // Only check session if we have a session
     if (session) {
       checkSession();
     } else {
@@ -86,6 +98,7 @@ const PrivateRoute = ({ children, allowedRoles, excludedRoles }: PrivateRoutePro
     }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event);
       if (event === 'SIGNED_OUT' && mounted) {
         setUserRole(null);
         navigate('/login');
