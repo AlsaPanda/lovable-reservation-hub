@@ -16,11 +16,11 @@ export const generateStoreToken = async (storeId: string): Promise<{
   const secretPhrase = 'CbDH4/fMT14EMpvSJMT79Wc1VzKA63gmS+GSMAroPvTEADqd8SJbTg==';
   console.log('Phrase secrète utilisée:', secretPhrase);
 
-  // Préparation de la chaîne à hacher (même format que l'original)
+  // Préparation de la chaîne à hacher
   const dataToHash = `${storeId}-${date}-${secretPhrase}`;
   console.log('Chaîne à hacher:', dataToHash);
 
-  // Generate token using native crypto (équivalent à CryptoJS.SHA256)
+  // Generate token using SHA-256
   const encoder = new TextEncoder();
   const data = encoder.encode(dataToHash);
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
