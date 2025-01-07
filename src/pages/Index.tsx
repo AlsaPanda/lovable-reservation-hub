@@ -10,7 +10,6 @@ const Index = () => {
       const token = await getTokenForStore('007');
       const loginUrl = `${window.location.origin}/login?sg_m=007&sg_p=${token}`;
       
-      // Copy to clipboard
       await navigator.clipboard.writeText(loginUrl);
       
       toast({

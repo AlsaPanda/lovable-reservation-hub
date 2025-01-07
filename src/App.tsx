@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
 import Reservations from "./pages/Reservations";
 import StoreOrders from "./pages/StoreOrders";
+import Index from "./pages/Index";
 import { supabase } from "./integrations/supabase/client";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/index" element={<Index />} />
             <Route
               path="/dashboard"
               element={
@@ -56,7 +58,7 @@ const App = () => (
                 </PrivateRoute>
               }
             />
-            <Route path="/" element={<Navigate to="/products" />} />
+            <Route path="/" element={<Navigate to="/index" />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
