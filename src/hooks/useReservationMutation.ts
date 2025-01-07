@@ -43,14 +43,18 @@ export const useReservationMutation = () => {
 
       console.log('Retrieved store_name from profile:', profileData.store_name);
 
-      // Create reservations array with the store_name from the profile
+      // Ensure we're using the exact store_name string from the profile
+      const storeName = String(profileData.store_name).trim();
+      console.log('Formatted store_name for reservations:', storeName);
+
+      // Create reservations array with the validated store_name
       const reservations = productsToReserve
         .filter(product => product.initial_quantity > 0)
         .map(product => ({
           product_id: product.id,
           product_name: product.name,
           quantity: product.initial_quantity,
-          store_name: profileData.store_name, // Using the store_name from profile
+          store_name: storeName,
           reservation_date: new Date().toISOString()
         }));
 
