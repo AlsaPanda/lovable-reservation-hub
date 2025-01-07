@@ -10,6 +10,7 @@ export const generateStoreToken = async (storeId: string): Promise<{
   // Get today's date in the same format as the original script (DD/MM/YYYY)
   const now = new Date();
   const date = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+  console.log('Date utilisée:', date);
 
   // Utilisation de la même phrase secrète
   const secretPhrase = 'CbDH4/fMT14EMpvSJMT79Wc1VzKA63gmS+GSMAroPvTEADqd8SJbTg==';
@@ -26,12 +27,15 @@ export const generateStoreToken = async (storeId: string): Promise<{
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const token = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
+  console.log('Token attendu:', '8755efadd5f9069fb9cf457c9e1e231a64d4d4089357bb94431019cc86e1dd10');
+  console.log('Token généré:', token);
+  
+  if (token !== '8755efadd5f9069fb9cf457c9e1e231a64d4d4089357bb94431019cc86e1dd10') {
+    console.log('ATTENTION: Le token généré ne correspond pas au token attendu!');
+  }
+
   // Set expiration to end of UTC day
   const expiresAt = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999));
-
-  console.log('Token généré pour le magasin:', storeId);
-  console.log('Date utilisée:', date);
-  console.log('Token généré:', token);
 
   return {
     token,
