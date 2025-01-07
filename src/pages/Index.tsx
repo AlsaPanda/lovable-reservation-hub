@@ -1,17 +1,19 @@
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { getTokenForStore } from "@/utils/getStoreTokenDemo";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 const Index = () => {
   const { toast } = useToast();
+  const [storeId, setStoreId] = useState('007');
 
   const handleGenerateToken = async () => {
     try {
-      const token = await getTokenForStore('007');
+      const token = await getTokenForStore(storeId);
       
-      // Création des paramètres d'URL avec les mêmes valeurs que l'exemple
       const params = new URLSearchParams({
-        sg_m: '007',
+        sg_m: storeId,
         sg_p: token,
         sg_cp: 'fr-FR',
         sg_l: 'fr',
@@ -43,13 +45,30 @@ const Index = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Générateur de token pour le magasin 007</h1>
-      <Button onClick={handleGenerateToken}>
-        Générer un token pour le magasin 007
-      </Button>
+      <h1 className="text-2xl font-bold mb-4">Générateur de token</h1>
+      
+      <div className="space-y-4 max-w-md">
+        <div className="space-y-2">
+          <label htmlFor="storeId" className="text-sm font-medium">
+            ID du magasin
+          </label>
+          <Input
+            id="storeId"
+            type="text"
+            value={storeId}
+            onChange={(e) => setStoreId(e.target.value)}
+            placeholder="Entrez l'ID du magasin"
+          />
+        </div>
+
+        <Button onClick={handleGenerateToken} className="w-full">
+          Générer un token pour le magasin {storeId}
+        </Button>
+      </div>
+
       <p className="mt-4 text-sm text-gray-600">
-        Cliquez sur le bouton pour générer une URL d&apos;authentification complète. 
-        L&apos;URL sera automatiquement copiée dans votre presse-papier.
+        Entrez l'ID du magasin et cliquez sur le bouton pour générer une URL d'authentification complète. 
+        L'URL sera automatiquement copiée dans votre presse-papier.
       </p>
     </div>
   );
