@@ -29,90 +29,74 @@ export const useStoreAuth = () => {
       }
 
       console.log('Attempting store authentication with:', { storeId, brand });
-      
-      // Check if store exists using the correct query builder pattern
-      const { data: existingProfile, error: profileError } = await supabase
-        .from('profiles')
-        .select('store_id')
-        .eq('store_id', storeId)
-        .maybeSingle();
 
-      if (profileError && profileError.code !== 'PGRST116') {
-        console.error('Error checking store profile:', profileError);
-        toast({
-          variant: "destructive",
-          title: "Erreur d'authentification",
-          description: "Impossible de vérifier le magasin",
-        });
-        navigate('/login');
-        return;
-      }
-
-      const normalizedBrand = normalizeBrand(brand);
-      const storeEmail = generateStoreEmail(storeId);
-
-      // Try to sign in
+      // First try to sign in
       const { data: { session }, error: signInError } = await signInStore(storeEmail, token);
 
       if (signInError) {
         console.log('Sign in failed:', signInError);
         
         // Create new account if store doesn't exist
-        if (!existingProfile) {
-          console.log('Creating new store account for:', storeId);
-          const { error: signUpError } = await signUpStore(
-            storeEmail,
-            token,
-            {
-              store_id: storeId,
-              brand: normalizedBrand,
-              country_code: countryCode,
-              language_code: languageCode,
-              context,
-              store_name: `Store ${storeId}`
-            }
-          );
-
-          if (signUpError) {
-            console.error('Sign up error:', signUpError);
-            toast({
-              variant: "destructive",
-              title: "Erreur de création",
-              description: "Impossible de créer le compte magasin",
-            });
-            navigate('/login');
-            return;
+        console.log('Creating new store account for:', storeId);
+        const { error: signUpError } = await signUpStore(
+          storeEmail,
+          token,
+          {
+            store_id: storeId,
+            brand: normalizedBrand,
+            country_code: countryCode,
+            language_code: languageCode,
+            context,
+            store_name: `Store ${storeId}`
           }
+        );
 
-          // Sign in after successful signup
-          const { error: finalSignInError } = await signInStore(storeEmail, token);
-
-          if (finalSignInError) {
-            console.error('Final sign in error:', finalSignInError);
-            toast({
-              variant: "destructive",
-              title: "Erreur de connexion",
-              description: "Impossible de connecter le magasin après création",
-            });
-            navigate('/login');
-            return;
-          }
-        } else {
+        if (signUpError) {
+          console.error('Sign up error:', signUpError);
           toast({
             variant: "destructive",
-            title: "Erreur d'authentification",
-            description: "Token invalide pour ce magasin",
+            title: "Erreur de création",
+            description: "Impossible de créer le compte magasin",
           });
           navigate('/login');
           return;
         }
-      }
 
-      // Update store metadata if signed in
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      if (currentSession?.user?.id) {
+        // Sign in after successful signup
+        const { data: { session: newSession }, error: finalSignInError } = await signInStore(storeEmail, token);
+
+        if (finalSignInError) {
+          console.error('Final sign in error:', finalSignInError);
+          toast({
+            variant: "destructive",
+            title: "Erreur de connexion",
+            description: "Impossible de connecter le magasin après création",
+          });
+          navigate('/login');
+          return;
+        }
+
+        if (newSession?.user?.id) {
+          const normalizedBrand = normalizeBrand(brand);
+          const { error: updateError } = await updateStoreProfile(
+            newSession.user.id,
+            {
+              brand: normalizedBrand,
+              country_code: countryCode,
+              language_code: languageCode,
+              context
+            }
+          );
+
+          if (updateError) {
+            console.error('Error updating profile:', updateError);
+          }
+        }
+      } else if (session?.user?.id) {
+        // Update existing store metadata
+        const normalizedBrand = normalizeBrand(brand);
         const { error: updateError } = await updateStoreProfile(
-          currentSession.user.id,
+          session.user.id,
           {
             brand: normalizedBrand,
             country_code: countryCode,
