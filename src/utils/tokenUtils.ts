@@ -1,3 +1,5 @@
+import CryptoJS from 'crypto-js';
+
 /**
  * Génère un token pour un magasin donné en utilisant la même logique que le script original
  */
@@ -20,11 +22,8 @@ export const generateStoreToken = async (storeId: string): Promise<{
   const dataToHash = `${storeId}-${date}-${secretPhrase}`;
   console.log('Chaîne à hacher:', dataToHash);
 
-  // Utilisation de l'API crypto pour générer le hash SHA-256
-  const msgBuffer = new TextEncoder().encode(dataToHash);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const token = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  // Utilisation de CryptoJS pour générer le hash SHA-256
+  const token = CryptoJS.SHA256(dataToHash).toString();
 
   console.log('Token attendu:', '8755efadd5f9069fb9cf457c9e1e231a64d4d4089357bb94431019cc86e1dd10');
   console.log('Token généré:', token);
