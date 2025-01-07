@@ -12,6 +12,3 @@ export const getTokenForStore = async (storeId: string) => {
     throw error;
   }
 };
-
-// Exemple d'utilisation
-getTokenForStore('007');

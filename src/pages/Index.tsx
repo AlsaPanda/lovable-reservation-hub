@@ -36,8 +36,8 @@ const Index = () => {
         Générer un token pour le magasin 007
       </Button>
       <p className="mt-4 text-sm text-gray-600">
-        Cliquez sur le bouton pour générer une URL d'authentification. 
-        L'URL sera automatiquement copiée dans votre presse-papier.
+        Cliquez sur le bouton pour générer une URL d&apos;authentification. 
+        L&apos;URL sera automatiquement copiée dans votre presse-papier.
       </p>
     </div>
   );
