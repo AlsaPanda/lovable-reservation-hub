@@ -30,12 +30,17 @@ export const useStoreAuth = () => {
 
       console.log('Attempting store authentication with:', { storeId, brand });
       
-      // Check if store exists
+      // Check if store exists with proper headers
       const { data: existingProfile, error: profileError } = await supabase
         .from('profiles')
         .select('store_id')
         .eq('store_id', storeId)
-        .single();
+        .single()
+        .headers({
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'x-store-token': token
+        });
 
       if (profileError && profileError.code !== 'PGRST116') {
         console.error('Error checking store profile:', profileError);
@@ -57,18 +62,9 @@ export const useStoreAuth = () => {
       if (signInError) {
         console.log('Sign in failed:', signInError);
         
-        if (signInError.message.includes('Invalid login credentials')) {
-          toast({
-            variant: "destructive",
-            title: "Erreur d'authentification",
-            description: "Identifiants invalides",
-          });
-          navigate('/login');
-          return;
-        }
-
         // Create new account if store doesn't exist
         if (!existingProfile) {
+          console.log('Creating new store account for:', storeId);
           const { error: signUpError } = await signUpStore(
             storeEmail,
             token,
@@ -78,6 +74,7 @@ export const useStoreAuth = () => {
               country_code: countryCode,
               language_code: languageCode,
               context,
+              store_name: `Store ${storeId}`
             }
           );
 
