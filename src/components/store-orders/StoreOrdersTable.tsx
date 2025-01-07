@@ -39,7 +39,7 @@ export function StoreOrdersTable({ storeOrders, onViewDetails }: StoreOrdersTabl
       <TableBody>
         {storeOrders.map((order) => (
           <TableRow key={order.store_id}>
-            <TableCell className="font-medium">{order.store_name}</TableCell>
+            <TableCell>{order.store_name}</TableCell>
             <TableCell>{order.store_id}</TableCell>
             <TableCell>{order.total_reservations}</TableCell>
             <TableCell>{order.total_products}</TableCell>
