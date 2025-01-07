@@ -37,24 +37,6 @@ export const useStoreAuth = () => {
         .eq('store_id', storeId)
         .maybeSingle();
 
-      // Validate store token in a separate query if needed
-      const { data: validToken } = await supabase.rpc('validate_store_token', {
-        store_id: storeId,
-        token: token,
-        secret_phrase: null
-      });
-
-      if (!validToken) {
-        console.error('Invalid token for store:', storeId);
-        toast({
-          variant: "destructive",
-          title: "Erreur d'authentification",
-          description: "Token invalide",
-        });
-        navigate('/login');
-        return;
-      }
-
       if (profileError && profileError.code !== 'PGRST116') {
         console.error('Error checking store profile:', profileError);
         toast({
@@ -70,7 +52,7 @@ export const useStoreAuth = () => {
       const storeEmail = generateStoreEmail(storeId);
 
       // Try to sign in
-      const { error: signInError } = await signInStore(storeEmail, token);
+      const { data: { session }, error: signInError } = await signInStore(storeEmail, token);
 
       if (signInError) {
         console.log('Sign in failed:', signInError);
@@ -127,10 +109,10 @@ export const useStoreAuth = () => {
       }
 
       // Update store metadata if signed in
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (currentSession?.user?.id) {
         const { error: updateError } = await updateStoreProfile(
-          session.user.id,
+          currentSession.user.id,
           {
             brand: normalizedBrand,
             country_code: countryCode,
