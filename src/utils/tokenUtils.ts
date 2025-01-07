@@ -1,5 +1,5 @@
 /**
- * Génère un token pour un magasin donné
+ * Génère un token pour un magasin donné en utilisant la même logique que le script original
  */
 export const generateStoreToken = async (storeId: string): Promise<{
   token: string;
@@ -7,31 +7,34 @@ export const generateStoreToken = async (storeId: string): Promise<{
   date: string;
   expiresAt: string;
 }> => {
-  // Get today's date in UTC
-  const today = new Date();
-  const dd = String(today.getUTCDate()).padStart(2, '0');
-  const mm = String(today.getUTCMonth() + 1).padStart(2, '0');
-  const yyyy = today.getUTCFullYear();
-  const dateStr = `${dd}/${mm}/${yyyy}`;
+  // Get today's date in the same format as the original script (DD/MM/YYYY)
+  const now = new Date();
+  const date = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
 
-  // Utilisation de la phrase secrète spécifiée
+  // Utilisation de la même phrase secrète
   const secretPhrase = 'CbDH4/fMT14EMpvSJMT79Wc1VzKA63gmS+GSMAroPvTEADqd8SJbTg==';
 
-  // Generate token using native crypto
-  const input = `${storeId}-${dateStr}-${secretPhrase}`;
+  // Préparation de la chaîne à hacher (même format que l'original)
+  const dataToHash = `${storeId}-${date}-${secretPhrase}`;
+
+  // Generate token using native crypto (équivalent à CryptoJS.SHA256)
   const encoder = new TextEncoder();
-  const data = encoder.encode(input);
+  const data = encoder.encode(dataToHash);
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const token = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
   // Set expiration to end of UTC day
-  const expiresAt = new Date(Date.UTC(yyyy, today.getUTCMonth(), today.getUTCDate(), 23, 59, 59, 999));
+  const expiresAt = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999));
+
+  console.log('Token généré pour le magasin:', storeId);
+  console.log('Date utilisée:', date);
+  console.log('Token généré:', token);
 
   return {
     token,
     store_id: storeId,
-    date: dateStr,
+    date,
     expiresAt: expiresAt.toISOString()
   };
 };

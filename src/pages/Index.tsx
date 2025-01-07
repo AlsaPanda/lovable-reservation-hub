@@ -8,6 +8,8 @@ const Index = () => {
   const handleGenerateToken = async () => {
     try {
       const token = await getTokenForStore('007');
+      
+      // Création des paramètres d'URL avec les mêmes valeurs que l'exemple
       const params = new URLSearchParams({
         sg_m: '007',
         sg_p: token,
@@ -28,7 +30,7 @@ const Index = () => {
         description: "L'URL d'authentification a été copiée dans le presse-papier",
       });
       
-      console.log('URL de connexion :', loginUrl);
+      console.log('URL de connexion générée:', loginUrl);
     } catch (error) {
       console.error('Erreur lors de la génération du token:', error);
       toast({
