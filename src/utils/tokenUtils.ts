@@ -7,11 +7,11 @@ export const generateStoreToken = async (storeId: string): Promise<{
   date: string;
   expiresAt: string;
 }> => {
-  // Get today's date in DD/MM/YYYY format
+  // Get today's date in UTC
   const today = new Date();
-  const dd = String(today.getDate()).padStart(2, '0');
-  const mm = String(today.getMonth() + 1).padStart(2, '0');
-  const yyyy = today.getFullYear();
+  const dd = String(today.getUTCDate()).padStart(2, '0');
+  const mm = String(today.getUTCMonth() + 1).padStart(2, '0');
+  const yyyy = today.getUTCFullYear();
   const dateStr = `${dd}/${mm}/${yyyy}`;
 
   // Utilisation d'une phrase secrète par défaut pour la démo
@@ -25,11 +25,14 @@ export const generateStoreToken = async (storeId: string): Promise<{
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const token = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
+  // Set expiration to end of UTC day
+  const expiresAt = new Date(Date.UTC(yyyy, today.getUTCMonth(), today.getUTCDate(), 23, 59, 59, 999));
+
   return {
     token,
     store_id: storeId,
     date: dateStr,
-    expiresAt: new Date(today.setHours(23, 59, 59, 999)).toISOString()
+    expiresAt: expiresAt.toISOString()
   };
 };
 
