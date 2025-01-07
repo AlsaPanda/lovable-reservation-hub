@@ -9,7 +9,7 @@ export const useStoreOrders = () => {
     queryKey: ['store-orders'],
     queryFn: async () => {
       try {
-        // First fetch reservations with product details
+        // First fetch reservations with product details and join with profiles
         const { data: reservations, error: reservationsError } = await supabase
           .from('reservations')
           .select(`
@@ -18,7 +18,10 @@ export const useStoreOrders = () => {
             store_name,
             quantity,
             reservation_date,
-            product_name
+            product_name,
+            profiles!inner (
+              store_name
+            )
           `)
           .order('reservation_date', { ascending: false });
 
@@ -44,7 +47,7 @@ export const useStoreOrders = () => {
             }
           } else {
             acc.push({
-              store_name: reservation.store_name,
+              store_name: reservation.profiles.store_name,
               store_id: reservation.store_name, // Using store_name as store_id for now
               total_reservations: 1,
               total_products: reservation.quantity,
