@@ -19,7 +19,7 @@ export const useStoreOrders = () => {
             quantity,
             reservation_date,
             product_name,
-            profiles!inner (
+            profiles!reservations_store_name_fkey (
               store_name
             )
           `)
@@ -47,7 +47,7 @@ export const useStoreOrders = () => {
             }
           } else {
             acc.push({
-              store_name: reservation.profiles.store_name,
+              store_name: reservation.store_name,
               store_id: reservation.store_name, // Using store_name as store_id for now
               total_reservations: 1,
               total_products: reservation.quantity,
