@@ -14,7 +14,7 @@ export const generateStoreToken = async (storeId: string): Promise<{
   const date = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
   console.log('Date utilisée:', date);
 
-  // Utilisation de la nouvelle phrase secrète
+  // Utilisation de la phrase secrète
   const secretPhrase = 'Dfglkvds554qsfgsd654dgcJu1m';
   console.log('Phrase secrète utilisée:', secretPhrase);
 
@@ -24,13 +24,7 @@ export const generateStoreToken = async (storeId: string): Promise<{
 
   // Utilisation de CryptoJS pour générer le hash SHA-256
   const token = CryptoJS.SHA256(dataToHash).toString();
-
-  console.log('Token attendu:', '8755efadd5f9069fb9cf457c9e1e231a64d4d4089357bb94431019cc86e1dd10');
   console.log('Token généré:', token);
-  
-  if (token !== '8755efadd5f9069fb9cf457c9e1e231a64d4d4089357bb94431019cc86e1dd10') {
-    console.log('ATTENTION: Le token généré ne correspond pas au token attendu!');
-  }
 
   // Set expiration to end of UTC day
   const expiresAt = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999));
