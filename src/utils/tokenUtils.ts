@@ -20,10 +20,9 @@ export const generateStoreToken = async (storeId: string): Promise<{
   const dataToHash = `${storeId}-${date}-${secretPhrase}`;
   console.log('Chaîne à hacher:', dataToHash);
 
-  // Generate token using SHA-256
-  const encoder = new TextEncoder();
-  const data = encoder.encode(dataToHash);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  // Utilisation de l'API crypto pour générer le hash SHA-256
+  const msgBuffer = new TextEncoder().encode(dataToHash);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const token = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
