@@ -35,13 +35,12 @@ export const useStoreAuth = () => {
         .from('profiles')
         .select('store_id')
         .eq('store_id', storeId)
-        .single({
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            'x-store-token': token
-          }
-        });
+        .headers({
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'x-store-token': token
+        })
+        .single();
 
       if (profileError && profileError.code !== 'PGRST116') {
         console.error('Error checking store profile:', profileError);
