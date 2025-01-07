@@ -30,6 +30,10 @@ export const useStoreAuth = () => {
 
       console.log('Attempting store authentication with:', { storeId, brand });
 
+      // Generate store email and normalize brand before using them
+      const storeEmail = generateStoreEmail(storeId);
+      const normalizedBrand = normalizeBrand(brand);
+
       // First try to sign in
       const { data: { session }, error: signInError } = await signInStore(storeEmail, token);
 
@@ -77,7 +81,6 @@ export const useStoreAuth = () => {
         }
 
         if (newSession?.user?.id) {
-          const normalizedBrand = normalizeBrand(brand);
           const { error: updateError } = await updateStoreProfile(
             newSession.user.id,
             {
@@ -94,7 +97,6 @@ export const useStoreAuth = () => {
         }
       } else if (session?.user?.id) {
         // Update existing store metadata
-        const normalizedBrand = normalizeBrand(brand);
         const { error: updateError } = await updateStoreProfile(
           session.user.id,
           {
