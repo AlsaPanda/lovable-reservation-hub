@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useStoreAuth } from "@/hooks/useStoreAuth";
+import { generateStoreToken } from "@/utils/tokenUtils";
 
 interface StoreAuthHandlerProps {
   storeId: string;
@@ -21,10 +22,19 @@ export const StoreAuthHandler = ({
   const { handleStoreAuth } = useStoreAuth();
 
   useEffect(() => {
-    if (storeId && token) {
-      handleStoreAuth(storeId, token, brand, countryCode, languageCode, context);
-    }
-  }, [storeId, token, brand, countryCode, languageCode, context]);
+    const validateAndHandleAuth = async () => {
+      if (storeId && token) {
+        const { token: expectedToken } = await generateStoreToken(storeId);
+        if (token === expectedToken) {
+          handleStoreAuth(storeId, token, brand, countryCode, languageCode, context);
+        } else {
+          console.error('Invalid token for store:', storeId);
+        }
+      }
+    };
+
+    validateAndHandleAuth();
+  }, [storeId, token, brand, countryCode, languageCode, context, handleStoreAuth]);
 
   return null;
 };
