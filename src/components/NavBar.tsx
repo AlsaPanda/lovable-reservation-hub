@@ -6,21 +6,14 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 const NavBar = () => {
   const { userRole, storeName, storeId, email, brand } = useUserProfile();
 
-  const getLogoPath = (brand: string) => {
-    if (brand === 'schmidt') {
-      return '/lovable-uploads/f58f58b1-e042-4e92-aa8a-2fccb9247087.png';
-    }
-    return `/${brand}-logo.png`;
-  };
-
   return (
     <nav className="border-b">
       <div className="flex h-16 items-center px-4 container mx-auto">
         <Link to="/" className="mr-6">
           <img 
-            src={getLogoPath(brand)}
+            src={`/${brand}-logo.png`}
             alt={`${brand} logo`}
-            className="h-8 w-auto object-contain"
+            className="h-8 w-auto"
           />
         </Link>
         <NavigationLinks userRole={userRole} />
