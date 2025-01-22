@@ -25,7 +25,8 @@ const Products = () => {
     totalQuantity,
     handleReserveAll,
     isProductsLoading,
-    deleteProductMutation
+    deleteProductMutation,
+    isReservationLoading
   } = useProductState(userRole, brand);
 
   if (isProfileLoading || isProductsLoading) {
@@ -53,6 +54,7 @@ const Products = () => {
           onSearch={setSearchQuery}
           onReserve={handleReserveAll}
           totalQuantity={totalQuantity}
+          isLoading={isReservationLoading}
         />
 
         <ProductGrid

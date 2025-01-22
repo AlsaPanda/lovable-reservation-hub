@@ -11,12 +11,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useState } from "react";
 
 interface ReservationActionsProps {
   onReserve: () => void;
   onReset: () => void;
   totalQuantity: number;
   canResetQuantities: boolean;
+  isLoading?: boolean;
 }
 
 const ReservationActions = ({
@@ -24,17 +26,27 @@ const ReservationActions = ({
   onReset,
   totalQuantity,
   canResetQuantities,
+  isLoading = false,
 }: ReservationActionsProps) => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  
   console.log('ReservationActions rendered with totalQuantity:', totalQuantity);
   console.log('canResetQuantities:', canResetQuantities);
+  console.log('isLoading:', isLoading);
   
+  const handleReserve = () => {
+    if (isLoading) return;
+    onReserve();
+    setIsDialogOpen(false);
+  };
+
   return (
     <div className="flex gap-2">
-      <AlertDialog>
+      <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <AlertDialogTrigger asChild>
           <Button
             size="default"
-            disabled={totalQuantity === 0}
+            disabled={totalQuantity === 0 || isLoading}
             className="whitespace-nowrap"
           >
             <Calendar className="mr-2 h-4 w-4" />
@@ -50,7 +62,7 @@ const ReservationActions = ({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={onReserve}>
+            <AlertDialogAction onClick={handleReserve} disabled={isLoading}>
               Confirmer
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -63,6 +75,7 @@ const ReservationActions = ({
           console.log('Reset button clicked');
           onReset();
         }}
+        disabled={isLoading}
         className="whitespace-nowrap"
       >
         <RotateCcw className="mr-2 h-4 w-4" />

@@ -82,8 +82,13 @@ export const useProductState = (userRole: string | null, brand: string) => {
     return total;
   }, [quantities]);
 
-  const handleReserveAll = () => {
+  const handleReserveAll = useCallback(() => {
     console.log('[Products] Starting reservation process');
+    if (addReservationMutation.isPending) {
+      console.log('[Products] Reservation already in progress, skipping');
+      return;
+    }
+
     const productsToReserve = filteredProducts
       .filter(product => quantities[product.reference] > 0)
       .map(product => ({
@@ -104,11 +109,10 @@ export const useProductState = (userRole: string | null, brand: string) => {
 
     addReservationMutation.mutate(productsToReserve, {
       onSuccess: () => {
-        // Reset quantities immediately after successful reservation
         setQuantities({});
       }
     });
-  };
+  }, [addReservationMutation, filteredProducts, quantities, toast]);
 
   return {
     editingProduct,
@@ -125,6 +129,7 @@ export const useProductState = (userRole: string | null, brand: string) => {
     totalQuantity,
     handleReserveAll,
     isProductsLoading,
-    deleteProductMutation
+    deleteProductMutation,
+    isReservationLoading: addReservationMutation.isPending
   };
 };
