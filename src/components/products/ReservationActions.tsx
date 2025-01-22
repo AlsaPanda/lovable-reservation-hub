@@ -1,5 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Calendar, RotateCcw } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface ReservationActionsProps {
   onReserve: () => void;
@@ -19,18 +30,32 @@ const ReservationActions = ({
   
   return (
     <div className="flex gap-2">
-      <Button
-        size="default"
-        onClick={() => {
-          console.log('Reserve button clicked with totalQuantity:', totalQuantity);
-          onReserve();
-        }}
-        disabled={totalQuantity === 0}
-        className="whitespace-nowrap"
-      >
-        <Calendar className="mr-2 h-4 w-4" />
-        Je réserve ({totalQuantity} produits)
-      </Button>
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button
+            size="default"
+            disabled={totalQuantity === 0}
+            className="whitespace-nowrap"
+          >
+            <Calendar className="mr-2 h-4 w-4" />
+            Je réserve ({totalQuantity} produits)
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer la réservation</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir réserver ces {totalQuantity} produits ?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={onReserve}>
+              Confirmer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <Button
         variant="outline"
         size="default"

@@ -102,7 +102,12 @@ export const useProductState = (userRole: string | null, brand: string) => {
       return;
     }
 
-    addReservationMutation.mutate(productsToReserve);
+    addReservationMutation.mutate(productsToReserve, {
+      onSuccess: () => {
+        // Reset quantities immediately after successful reservation
+        setQuantities({});
+      }
+    });
   };
 
   return {
