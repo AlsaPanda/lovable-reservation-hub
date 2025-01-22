@@ -16,6 +16,7 @@ interface ProductsHeaderProps {
   onSearch: (query: string) => void;
   onReserve: () => void;
   totalQuantity: number;
+  isLoading?: boolean;
 }
 
 const ProductsHeader = ({ 
@@ -23,11 +24,12 @@ const ProductsHeader = ({
   onProductsImported, 
   onSearch, 
   onReserve,
-  totalQuantity 
+  totalQuantity,
+  isLoading = false
 }: ProductsHeaderProps) => {
   const session = useSession();
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingRole, setIsLoadingRole] = useState(true);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -35,7 +37,7 @@ const ProductsHeader = ({
     const fetchUserRole = async () => {
       if (!session?.user?.id) {
         console.log('No session or user ID available');
-        setIsLoading(false);
+        setIsLoadingRole(false);
         return;
       }
 
@@ -66,7 +68,7 @@ const ProductsHeader = ({
           description: "Une erreur est survenue lors de la récupération du rôle.",
         });
       } finally {
-        setIsLoading(false);
+        setIsLoadingRole(false);
       }
     };
 
@@ -121,7 +123,7 @@ const ProductsHeader = ({
     }
   };
 
-  if (isLoading) {
+  if (isLoadingRole) {
     return <div>Chargement...</div>;
   }
 
@@ -139,6 +141,7 @@ const ProductsHeader = ({
               onReset={handleResetQuantities}
               totalQuantity={totalQuantity}
               canResetQuantities={canResetQuantities}
+              isLoading={isLoading}
             />
           )}
         </div>
