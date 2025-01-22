@@ -15,6 +15,7 @@ const ReservationActions = ({
   canResetQuantities,
 }: ReservationActionsProps) => {
   console.log('ReservationActions rendered with totalQuantity:', totalQuantity);
+  console.log('canResetQuantities:', canResetQuantities);
   
   return (
     <div className="flex gap-2">
@@ -30,20 +31,18 @@ const ReservationActions = ({
         <Calendar className="mr-2 h-4 w-4" />
         Je réserve ({totalQuantity} produits)
       </Button>
-      {canResetQuantities && (
-        <Button
-          variant="outline"
-          size="default"
-          onClick={() => {
-            console.log('Reset button clicked');
-            onReset();
-          }}
-          className="whitespace-nowrap"
-        >
-          <RotateCcw className="mr-2 h-4 w-4" />
-          Réinitialiser
-        </Button>
-      )}
+      <Button
+        variant="outline"
+        size="default"
+        onClick={() => {
+          console.log('Reset button clicked');
+          onReset();
+        }}
+        className="whitespace-nowrap"
+      >
+        <RotateCcw className="mr-2 h-4 w-4" />
+        Réinitialiser
+      </Button>
     </div>
   );
 };
