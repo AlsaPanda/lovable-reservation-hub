@@ -6,20 +6,9 @@ import { useState } from "react";
 
 const Index = () => {
   const { toast } = useToast();
-  const [storeId, setStoreId] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [storeId, setStoreId] = useState('007');
 
   const handleGenerateToken = async () => {
-    if (!storeId.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Veuillez entrer un ID de magasin",
-      });
-      return;
-    }
-
-    setIsGenerating(true);
     try {
       const token = await getTokenForStore(storeId);
       
@@ -28,8 +17,10 @@ const Index = () => {
         sg_p: token,
         sg_cp: 'fr-FR',
         sg_l: 'fr',
-        sg_ct: '0',
-        brand: 'cuisinella'
+        sg_ct: '1',
+        sg_fn: 'Régis',
+        sg_ln: 'WANNER',
+        brand: 'cui'
       });
       
       const loginUrl = `${window.location.origin}/login?${params.toString()}`;
@@ -49,8 +40,6 @@ const Index = () => {
         title: "Erreur",
         description: "Impossible de générer le token",
       });
-    } finally {
-      setIsGenerating(false);
     }
   };
 
@@ -72,12 +61,8 @@ const Index = () => {
           />
         </div>
 
-        <Button 
-          onClick={handleGenerateToken} 
-          className="w-full"
-          disabled={isGenerating}
-        >
-          {isGenerating ? 'Génération...' : `Générer un token pour le magasin ${storeId || ''}`}
+        <Button onClick={handleGenerateToken} className="w-full">
+          Générer un token pour le magasin {storeId}
         </Button>
       </div>
 
