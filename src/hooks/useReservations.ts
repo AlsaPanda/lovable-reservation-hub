@@ -30,11 +30,11 @@ export const useReservations = () => {
         const { data: reservationsData, error: reservationsError } = await query;
         if (reservationsError) throw reservationsError;
 
-        // Then, get the product details separately
+        // Then, get the product details separately with all required fields
         const productIds = reservationsData.map(r => r.product_id);
         const { data: productsData, error: productsError } = await supabase
           .from('products')
-          .select('id, name, image_url')
+          .select('id, name, image_url, reference, description, initial_quantity, created_at, updated_at, purchase_price_ht, sale_price_ttc, product_url, brand')
           .in('id', productIds);
 
         if (productsError) throw productsError;
@@ -52,6 +52,40 @@ export const useReservations = () => {
       }
     },
     enabled: !!session?.user?.id && !!userRole && !!storeName
+  });
+
+  const updateReservation = useMutation({
+    mutationFn: async (updatedReservation: Partial<Reservation>) => {
+      if (!session?.user?.id) throw new Error('User not authenticated');
+      
+      const { data, error } = await supabase
+        .from('reservations')
+        .update({
+          quantity: updatedReservation.quantity,
+          reservation_date: updatedReservation.reservation_date
+        })
+        .eq('id', updatedReservation.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reservations'] });
+      toast({
+        title: "Réservation mise à jour",
+        description: "La réservation a été mise à jour avec succès.",
+      });
+    },
+    onError: (error: any) => {
+      console.error("Update reservation error:", error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Une erreur est survenue lors de la mise à jour.",
+        variant: "destructive"
+      });
+    }
   });
 
   const deleteReservation = useMutation({
@@ -88,6 +122,7 @@ export const useReservations = () => {
     reservations,
     isLoading,
     error,
+    updateReservation,
     deleteReservation
   };
 };
