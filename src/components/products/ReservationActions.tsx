@@ -6,7 +6,7 @@
  */
 
 import { Button } from "@/components/ui/button";
-import { Calendar, RotateCcw } from "lucide-react";
+import { Calendar, RotateCcw, Plus, Minus, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,6 +32,7 @@ interface ReservationActionsProps {
   canResetQuantities: boolean;
   isLoading?: boolean;
   productsToReserve: Product[];
+  onQuantityChange: (reference: string, quantity: string) => void;
 }
 
 const ReservationActions = ({
@@ -41,6 +42,7 @@ const ReservationActions = ({
   canResetQuantities,
   isLoading = false,
   productsToReserve,
+  onQuantityChange,
 }: ReservationActionsProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [existingReservations, setExistingReservations] = useState<string[]>([]);
@@ -81,6 +83,19 @@ const ReservationActions = ({
 
   const truncateText = (text: string, maxLength: number = 35) => {
     return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+  };
+
+  const handleQuantityChange = (reference: string, change: number) => {
+    const product = productsToReserve.find(p => p.reference === reference);
+    if (!product) return;
+    
+    const currentQuantity = product.initial_quantity;
+    const newQuantity = Math.max(0, currentQuantity + change);
+    onQuantityChange(reference, newQuantity.toString());
+  };
+
+  const handleDeleteItem = (reference: string) => {
+    onQuantityChange(reference, "0");
   };
 
   // Remove duplicate products based on reference
@@ -139,9 +154,35 @@ const ReservationActions = ({
                       </p>
                     )}
                   </div>
-                  <span className="font-medium whitespace-nowrap">
-                    Qté: {product.initial_quantity}
-                  </span>
+                  <div className="flex flex-col items-end gap-2">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleQuantityChange(product.reference, -1)}
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <span className="font-medium min-w-[3ch] text-center">
+                        {product.initial_quantity}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleQuantityChange(product.reference, 1)}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => handleDeleteItem(product.reference)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -159,7 +200,7 @@ const ReservationActions = ({
         variant="outline"
         size="default"
         onClick={onReset}
-        disabled={isLoading}
+        disabled={!canResetQuantities || isLoading}
         className="whitespace-nowrap"
       >
         <RotateCcw className="mr-2 h-4 w-4" />
