@@ -52,6 +52,15 @@ const ReservationActions = ({
     return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
   };
 
+  // Remove duplicate products based on reference
+  const uniqueProductsToReserve = productsToReserve.reduce((acc: Product[], current) => {
+    const exists = acc.find(item => item.reference === current.reference);
+    if (!exists) {
+      acc.push(current);
+    }
+    return acc;
+  }, []);
+
   return (
     <div className="flex gap-2">
       <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -75,7 +84,7 @@ const ReservationActions = ({
 
           <ScrollArea className="h-[400px] rounded-md border p-4">
             <div className="space-y-4">
-              {productsToReserve.map((product) => (
+              {uniqueProductsToReserve.map((product) => (
                 <div 
                   key={product.reference}
                   className="flex items-center gap-4 py-3 border-b last:border-0"
