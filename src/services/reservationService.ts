@@ -75,8 +75,7 @@ export const updateReservationInDb = async (
     .from('reservations')
     .update(reservation)
     .eq('id', reservation.id)
-    .select()
-    .single();
+    .select();
 
   if (error) {
     console.error('Error updating reservation:', error);
@@ -87,15 +86,20 @@ export const updateReservationInDb = async (
 
 export const deleteReservationFromDb = async (id: string, userId: string) => {
   console.log('Deleting reservation:', id);
-  const { error } = await supabase
-    .from('reservations')
-    .delete()
-    .eq('id', id);
+  try {
+    const { error } = await supabase
+      .from('reservations')
+      .delete()
+      .eq('id', id);
 
-  if (error) {
-    console.error('Error deleting reservation:', error);
+    if (error) {
+      console.error('Error deleting reservation:', error);
+      throw error;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in deleteReservationFromDb:', error);
     throw error;
   }
-  
-  return true;
 };
