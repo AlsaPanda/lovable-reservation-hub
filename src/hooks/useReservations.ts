@@ -56,8 +56,11 @@ export const useReservations = () => {
 
   const deleteReservation = useMutation({
     mutationFn: async (id: string) => {
+      console.log('Attempting to delete reservation:', id);
       if (!session?.user?.id) throw new Error('User not authenticated');
-      return deleteReservationFromDb(id, session.user.id);
+      const result = await deleteReservationFromDb(id, session.user.id);
+      console.log('Delete result:', result);
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reservations'] });

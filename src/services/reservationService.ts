@@ -70,6 +70,7 @@ export const updateReservationInDb = async (
   reservation: Partial<Reservation>,
   userId: string
 ) => {
+  console.log('Updating reservation:', reservation);
   const { data, error } = await supabase
     .from('reservations')
     .update(reservation)
@@ -77,15 +78,24 @@ export const updateReservationInDb = async (
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error('Error updating reservation:', error);
+    throw error;
+  }
   return data;
 };
 
 export const deleteReservationFromDb = async (id: string, userId: string) => {
+  console.log('Deleting reservation:', id);
   const { error } = await supabase
     .from('reservations')
     .delete()
     .eq('id', id);
 
-  if (error) throw error;
+  if (error) {
+    console.error('Error deleting reservation:', error);
+    throw error;
+  }
+  
+  return true;
 };
