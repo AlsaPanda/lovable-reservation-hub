@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Reservation } from "@/utils/types";
+import { Reservation } from "@/types/reservations";
 import { useToast } from "@/hooks/use-toast";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useUserProfile } from "@/hooks/useUserProfile";

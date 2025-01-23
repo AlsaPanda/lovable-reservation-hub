@@ -1,5 +1,6 @@
 import { Product } from './products';
-import { Profile } from './auth';
+
+export type ReservationProduct = Pick<Product, 'id' | 'name' | 'image_url'>;
 
 export type Reservation = {
   id: string;
@@ -9,6 +10,6 @@ export type Reservation = {
   reservation_date: string;
   created_at: string;
   updated_at: string;
-  product?: Product;
-  store?: Profile;
+  product_name: string | null;
+  product?: ReservationProduct;
 };
