@@ -8,6 +8,7 @@ import {
   updateReservationInDb, 
   deleteReservationFromDb 
 } from "@/services/reservationService";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useReservations = () => {
   const { toast } = useToast();
@@ -18,16 +19,27 @@ export const useReservations = () => {
   const { data: reservations = [], isLoading, error } = useQuery({
     queryKey: ['reservations', userRole, session?.user?.id],
     queryFn: async () => {
-      console.log('Fetching reservations for user:', session?.user?.id);
-      if (!session?.user?.id) {
-        console.log('No user session found');
-        return [];
-      }
+      if (!session?.user?.id) return [];
+      
       const isSuperAdmin = userRole === 'superadmin';
-      console.log('User is superadmin:', isSuperAdmin);
-      const result = await fetchReservations(session.user.id, isSuperAdmin);
-      console.log('Fetched reservations:', result);
-      return result;
+      const reservationsData = await fetchReservations(session.user.id, isSuperAdmin);
+      
+      // Fetch product details separately to avoid nested queries
+      if (reservationsData && reservationsData.length > 0) {
+        const productIds = [...new Set(reservationsData.map(r => r.product_id))];
+        const { data: products } = await supabase
+          .from('products')
+          .select('*')
+          .in('id', productIds);
+
+        // Merge product data with reservations
+        return reservationsData.map(reservation => ({
+          ...reservation,
+          product: products?.find(p => p.id === reservation.product_id)
+        }));
+      }
+      
+      return reservationsData;
     },
     enabled: !!session?.user?.id && !!userRole
   });
@@ -56,11 +68,8 @@ export const useReservations = () => {
 
   const deleteReservation = useMutation({
     mutationFn: async (id: string) => {
-      console.log('Attempting to delete reservation:', id);
       if (!session?.user?.id) throw new Error('User not authenticated');
-      const result = await deleteReservationFromDb(id, session.user.id);
-      console.log('Delete result:', result);
-      return result;
+      return deleteReservationFromDb(id, session.user.id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reservations'] });
@@ -78,10 +87,6 @@ export const useReservations = () => {
       });
     }
   });
-
-  if (error) {
-    console.error("Reservations query error:", error);
-  }
 
   return {
     reservations,
