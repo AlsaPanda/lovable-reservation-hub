@@ -9,43 +9,34 @@ export const useReservations = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const session = useSession();
-  const { userRole } = useUserProfile();
+  const { userRole, storeName } = useUserProfile();
 
   const { data: reservations = [], isLoading, error } = useQuery({
-    queryKey: ['reservations', userRole, session?.user?.id],
+    queryKey: ['reservations', userRole, session?.user?.id, storeName],
     queryFn: async () => {
       if (!session?.user?.id) return [];
       
       try {
-        // First, fetch reservations with all required fields
-        const { data: reservationsData, error: reservationsError } = await supabase
+        let query = supabase
           .from('reservations')
-          .select('id, product_id, store_name, quantity, reservation_date, created_at, updated_at')
+          .select('id, product_id, store_name, quantity, reservation_date, created_at, updated_at, product:products(id, name, image_url)')
           .order('reservation_date', { ascending: false });
 
-        if (reservationsError) throw reservationsError;
-        if (!reservationsData) return [];
+        // If not superadmin, only fetch reservations for the user's store
+        if (userRole !== 'superadmin') {
+          query = query.eq('store_name', storeName);
+        }
 
-        // Then, fetch all related products in a single query
-        const productIds = [...new Set(reservationsData.map(r => r.product_id))];
-        const { data: products, error: productsError } = await supabase
-          .from('products')
-          .select('id, name, image_url')
-          .in('id', productIds);
+        const { data, error } = await query;
 
-        if (productsError) throw productsError;
-
-        // Merge product data with reservations
-        return reservationsData.map(reservation => ({
-          ...reservation,
-          product: products?.find(p => p.id === reservation.product_id) || null
-        })) as Reservation[];
-      } catch (error: any) {
+        if (error) throw error;
+        return data as Reservation[];
+      } catch (error) {
         console.error('Error fetching reservations:', error);
         throw error;
       }
     },
-    enabled: !!session?.user?.id && !!userRole
+    enabled: !!session?.user?.id && !!userRole && !!storeName
   });
 
   const updateReservation = useMutation({
