@@ -17,22 +17,10 @@ export const useReservations = () => {
       if (!session?.user?.id) return [];
       
       try {
+        // First, fetch reservations without the nested product query
         let query = supabase
           .from('reservations')
-          .select(`
-            id,
-            product_id,
-            store_name,
-            quantity,
-            reservation_date,
-            created_at,
-            updated_at,
-            product:products(
-              id,
-              name,
-              image_url
-            )
-          `)
+          .select('id, product_id, store_name, quantity, reservation_date, created_at, updated_at')
           .order('reservation_date', { ascending: false });
 
         // If not superadmin, only fetch reservations for the user's store
@@ -40,10 +28,28 @@ export const useReservations = () => {
           query = query.eq('store_name', storeName);
         }
 
-        const { data, error } = await query;
+        const { data: reservationsData, error: reservationsError } = await query;
 
-        if (error) throw error;
-        return data as Reservation[];
+        if (reservationsError) throw reservationsError;
+        if (!reservationsData) return [];
+
+        // Then, fetch all related products in a single query
+        const productIds = [...new Set(reservationsData.map(r => r.product_id))];
+        
+        const { data: productsData, error: productsError } = await supabase
+          .from('products')
+          .select('id, name, image_url')
+          .in('id', productIds);
+
+        if (productsError) throw productsError;
+
+        // Combine the data
+        const reservationsWithProducts = reservationsData.map(reservation => ({
+          ...reservation,
+          product: productsData?.find(p => p.id === reservation.product_id) || null
+        }));
+
+        return reservationsWithProducts as Reservation[];
       } catch (error) {
         console.error('Error fetching reservations:', error);
         throw error;
