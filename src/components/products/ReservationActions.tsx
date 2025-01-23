@@ -6,7 +6,7 @@
  */
 
 import { Button } from "@/components/ui/button";
-import { Calendar, RotateCcw, AlertTriangle } from "lucide-react";
+import { Calendar, RotateCcw } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,7 +19,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useState } from "react";
 import { Product } from "@/utils/types";
 
@@ -48,9 +47,6 @@ const ReservationActions = ({
     setIsDialogOpen(false);
   };
 
-  // Check for duplicate reservations
-  const hasDuplicates = productsToReserve.some(product => product.reserved);
-
   return (
     <div className="flex gap-2">
       <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -71,15 +67,6 @@ const ReservationActions = ({
               Vous allez réserver les produits suivants :
             </AlertDialogDescription>
           </AlertDialogHeader>
-
-          {hasDuplicates && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
-                Attention : Certains produits ont déjà été réservés
-              </AlertDescription>
-            </Alert>
-          )}
 
           <ScrollArea className="h-[200px] rounded-md border p-4">
             <div className="space-y-2">

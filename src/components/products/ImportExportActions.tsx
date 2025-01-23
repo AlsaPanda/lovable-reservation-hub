@@ -1,12 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { UploadCloud, FileDown } from "lucide-react";
 import * as XLSX from 'xlsx';
+import { Product } from "@/utils/types";
 
 interface ImportExportActionsProps {
   onFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onOpenDialog: () => void;
+  onProductsImported: (products: Product[]) => void;
 }
 
-const ImportExportActions = ({ onFileChange }: ImportExportActionsProps) => {
+const ImportExportActions = ({ onFileChange, onOpenDialog, onProductsImported }: ImportExportActionsProps) => {
   const downloadTemplate = () => {
     // Create sample data
     const data = [
