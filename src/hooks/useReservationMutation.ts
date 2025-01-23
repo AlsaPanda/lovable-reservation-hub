@@ -75,10 +75,28 @@ export const useReservationMutation = () => {
       }
 
       try {
-        console.log('Attempting to insert reservations:', reservations);
+        // First, check for existing reservations for these products from this store
+        const { data: existingReservations } = await supabase
+          .from('reservations')
+          .select('product_id')
+          .eq('store_name', storeName)
+          .in('product_id', reservations.map(r => r.product_id));
+
+        // Filter out products that already have reservations
+        const newReservations = reservations.filter(reservation => 
+          !existingReservations?.some(existing => 
+            existing.product_id === reservation.product_id
+          )
+        );
+
+        if (newReservations.length === 0) {
+          throw new Error('Ces produits ont déjà été réservés');
+        }
+
+        console.log('Attempting to insert reservations:', newReservations);
         const { error: insertError } = await supabase
           .from('reservations')
-          .insert(reservations);
+          .insert(newReservations);
         
         if (insertError) {
           console.error('Error inserting reservations:', insertError);
