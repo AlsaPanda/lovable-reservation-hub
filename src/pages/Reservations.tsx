@@ -5,7 +5,7 @@ import { ReservationDialog } from "@/components/reservations/ReservationDialog";
 import { ReservationTable } from "@/components/reservations/ReservationTable";
 import { useReservations } from "@/hooks/useReservations";
 import { useProducts } from "@/hooks/useProducts";
-import { Reservation } from "@/utils/types";
+import { Reservation } from "@/types/reservations";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
