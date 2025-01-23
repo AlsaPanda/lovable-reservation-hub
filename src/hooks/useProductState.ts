@@ -1,3 +1,12 @@
+/**
+ * useProductState Hook
+ * 
+ * Central state management hook for the products page.
+ * Handles product CRUD operations, search functionality,
+ * quantity management, and reservation logic.
+ * Integrates with Supabase for data persistence.
+ */
+
 import { useState, useMemo, useCallback } from "react";
 import { Product } from "@/utils/types";
 import { useProducts } from "@/hooks/useProducts";

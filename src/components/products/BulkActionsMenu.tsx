@@ -1,3 +1,11 @@
+/**
+ * BulkActionsMenu Component
+ * 
+ * Provides bulk import/export functionality for products management.
+ * Includes a dropdown menu with options to import products from JSON/XLSX files
+ * and export current products to XLSX format.
+ */
+
 import {
   DropdownMenu,
   DropdownMenuContent,

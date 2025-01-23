@@ -1,6 +1,14 @@
 import * as XLSX from 'xlsx';
 import { Product } from '@/types/products';
 
+/**
+ * Product Utilities
+ * 
+ * Helper functions for product management.
+ * Includes functions for importing/exporting products via XLSX,
+ * data transformation, and validation utilities.
+ */
+
 export const importProducts = async (file: File): Promise<Product[]> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

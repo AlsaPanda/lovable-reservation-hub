@@ -1,3 +1,11 @@
+/**
+ * ProductDetails Component
+ * 
+ * Renders detailed product information including description, reference number,
+ * pricing details (PA HT and PV TTC), and quantity selector for non-admin users.
+ * Also provides a link to more product information.
+ */
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

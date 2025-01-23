@@ -1,6 +1,14 @@
 import { Product } from "@/utils/types";
 import ProductCard from "./ProductCard";
 
+/**
+ * ProductGrid Component
+ * 
+ * Displays a responsive grid of ProductCard components.
+ * Handles the layout and spacing of product cards.
+ * Passes necessary props for product management and interaction.
+ */
+
 interface ProductGridProps {
   products: Product[];
   quantities: Record<string, number>;

@@ -1,3 +1,11 @@
+/**
+ * ProductsHeader Component
+ * 
+ * Main header component for the products page.
+ * Contains search functionality, bulk actions, and reservation controls.
+ * Adapts its interface based on user role (admin/non-admin).
+ */
+
 import { Button } from "@/components/ui/button";
 import { Product } from "@/utils/types";
 import { useSession } from "@supabase/auth-helpers-react";

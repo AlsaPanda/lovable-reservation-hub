@@ -1,3 +1,11 @@
+/**
+ * ProductCard Component
+ * 
+ * Displays individual product information in a card format.
+ * Shows product image, details, and admin actions if user has appropriate permissions.
+ * Handles quantity updates for non-admin users.
+ */
+
 import React, { memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Product } from "@/utils/types";

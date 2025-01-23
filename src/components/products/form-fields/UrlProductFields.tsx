@@ -1,3 +1,11 @@
+/**
+ * UrlProductFields Component
+ * 
+ * Form fields for URL-based product information.
+ * Manages image URL and product URL inputs.
+ * Part of the product creation/editing form.
+ */
+
 import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";

@@ -3,9 +3,13 @@ import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { Product } from "@/types/products";
 
-interface NumericProductFieldsProps {
-  form: UseFormReturn<Product>;
-}
+/**
+ * NumericProductFields Component
+ * 
+ * Form fields for numeric product information.
+ * Handles initial quantity, purchase price (HT), and sale price (TTC).
+ * Includes proper number formatting and validation.
+ */
 
 const NumericProductFields = ({ form }: NumericProductFieldsProps) => {
   return (

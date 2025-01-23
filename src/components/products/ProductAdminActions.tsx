@@ -1,3 +1,11 @@
+/**
+ * ProductAdminActions Component
+ * 
+ * Provides administrative actions (edit/delete) for products.
+ * Only visible to users with admin privileges.
+ * Actions appear on hover over the product card.
+ */
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";

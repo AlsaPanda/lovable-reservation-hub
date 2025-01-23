@@ -4,9 +4,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { UseFormReturn } from "react-hook-form";
 import { Product } from "@/types/products";
 
-interface BasicProductFieldsProps {
-  form: UseFormReturn<Product>;
-}
+/**
+ * BasicProductFields Component
+ * 
+ * Form fields for basic product information.
+ * Includes fields for reference, name, and description.
+ * Used within the product creation/editing form.
+ */
 
 const BasicProductFields = ({ form }: BasicProductFieldsProps) => {
   return (
