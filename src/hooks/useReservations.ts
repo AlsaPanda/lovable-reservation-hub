@@ -20,14 +20,21 @@ export const useReservations = () => {
         let query = supabase
           .from('reservations')
           .select(`
-            *,
-            product:products(*)
+            id,
+            product_id,
+            store_name,
+            quantity,
+            reservation_date,
+            created_at,
+            updated_at,
+            product_name,
+            product:products (
+              id,
+              name,
+              image_url
+            )
           `)
           .order('reservation_date', { ascending: false });
-
-        if (userRole !== 'superadmin') {
-          query = query.eq('store_name', storeName);
-        }
 
         const { data, error } = await query;
 

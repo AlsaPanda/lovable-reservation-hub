@@ -23,7 +23,16 @@ export const fetchReservations = async (userId: string | null, isSuperAdmin: boo
 
       const { data, error } = await supabase
         .from('reservations')
-        .select('id, product_id, store_name, quantity, reservation_date, created_at, updated_at, product_name')
+        .select(`
+          id,
+          product_id,
+          store_name,
+          quantity,
+          reservation_date,
+          created_at,
+          updated_at,
+          product_name
+        `)
         .eq('store_name', profile.store_name)
         .order('reservation_date', { ascending: false });
 
@@ -34,7 +43,16 @@ export const fetchReservations = async (userId: string | null, isSuperAdmin: boo
     // For superadmin, fetch all reservations
     const { data, error } = await supabase
       .from('reservations')
-      .select('id, product_id, store_name, quantity, reservation_date, created_at, updated_at, product_name')
+      .select(`
+        id,
+        product_id,
+        store_name,
+        quantity,
+        reservation_date,
+        created_at,
+        updated_at,
+        product_name
+      `)
       .order('reservation_date', { ascending: false });
 
     if (error) throw error;
@@ -52,9 +70,12 @@ export const updateReservationInDb = async (
   console.log('Updating reservation:', reservation);
   const { data, error } = await supabase
     .from('reservations')
-    .update(reservation)
+    .update({
+      quantity: reservation.quantity,
+      reservation_date: reservation.reservation_date
+    })
     .eq('id', reservation.id)
-    .select('id')
+    .select()
     .maybeSingle();
 
   if (error) {
@@ -64,7 +85,7 @@ export const updateReservationInDb = async (
   return data;
 };
 
-export const deleteReservationFromDb = async (id: string, userId: string) => {
+export const deleteReservationFromDb = async (id: string) => {
   console.log('Deleting reservation:', id);
   const { error } = await supabase
     .from('reservations')
