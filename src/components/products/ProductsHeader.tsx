@@ -10,6 +10,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import ImportExportActions from "./ImportExportActions";
 import ReservationActions from "./ReservationActions";
 import SearchBar from "./SearchBar";
+import { importProducts } from "@/utils/productUtils";
 
 interface ProductsHeaderProps {
   onOpenDialog: () => void;
@@ -33,6 +34,18 @@ const ProductsHeader = ({
   const { userRole } = useUserProfile();
   const isAdmin = userRole === "superadmin";
 
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      try {
+        const products = await importProducts(file);
+        onProductsImported(products);
+      } catch (error) {
+        console.error('Error importing products:', error);
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       <SearchBar onSearch={onSearch} />
@@ -41,6 +54,7 @@ const ProductsHeader = ({
           <ImportExportActions
             onOpenDialog={onOpenDialog}
             onProductsImported={onProductsImported}
+            onFileChange={handleFileChange}
           />
         )}
         {!isAdmin && (
