@@ -59,7 +59,7 @@ export const useReservations = () => {
         throw error;
       }
     },
-    enabled: !!session?.user?.id && !!userRole && !!storeName
+    enabled: !!session?.user?.id && !!userRole && !!storeName && window.location.pathname === '/reservations'
   });
 
   const updateReservation = useMutation({
