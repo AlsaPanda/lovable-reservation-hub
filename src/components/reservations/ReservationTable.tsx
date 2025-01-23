@@ -23,14 +23,6 @@ export function ReservationTable({ reservations, onEdit, onDelete }: Reservation
     e.currentTarget.src = DEFAULT_IMAGE;
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      await onDelete(id);
-    } catch (error) {
-      console.error('Error deleting reservation:', error);
-    }
-  };
-
   // Group reservations by store_name and sort by date
   const groupedReservations = reservations.reduce((acc, reservation) => {
     const storeName = reservation.store_name;
@@ -99,7 +91,7 @@ export function ReservationTable({ reservations, onEdit, onDelete }: Reservation
                   <TableCell>{new Date(reservation.reservation_date).toLocaleDateString()}</TableCell>
                   {isSuperAdmin && (
                     <TableCell>
-                      {reservation.store_name}
+                      {reservation.store?.store_name || 'N/A'}
                     </TableCell>
                   )}
                   <TableCell>
@@ -134,7 +126,7 @@ export function ReservationTable({ reservations, onEdit, onDelete }: Reservation
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDelete(reservation.id)}
+                        onClick={() => onDelete(reservation.id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

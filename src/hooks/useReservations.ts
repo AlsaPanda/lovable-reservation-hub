@@ -17,44 +17,20 @@ export const useReservations = () => {
       if (!session?.user?.id) return [];
       
       try {
-        // First, get the basic reservation data
         let query = supabase
           .from('reservations')
-          .select(`
-            id,
-            product_id,
-            store_name,
-            quantity,
-            reservation_date,
-            created_at,
-            updated_at,
-            product_name
-          `)
+          .select('id, product_id, store_name, quantity, reservation_date, created_at, updated_at, product:products(id, name, image_url)')
           .order('reservation_date', { ascending: false });
 
+        // If not superadmin, only fetch reservations for the user's store
         if (userRole !== 'superadmin') {
           query = query.eq('store_name', storeName);
         }
 
-        const { data: reservationsData, error: reservationsError } = await query;
-        if (reservationsError) throw reservationsError;
+        const { data, error } = await query;
 
-        // Then, get the product details separately
-        const productIds = [...new Set(reservationsData.map(r => r.product_id))];
-        const { data: productsData, error: productsError } = await supabase
-          .from('products')
-          .select('*')
-          .in('id', productIds);
-
-        if (productsError) throw productsError;
-
-        // Map products to reservations
-        const reservationsWithProducts = reservationsData.map(reservation => ({
-          ...reservation,
-          product: productsData.find(p => p.id === reservation.product_id) || null
-        }));
-
-        return reservationsWithProducts as Reservation[];
+        if (error) throw error;
+        return data as Reservation[];
       } catch (error) {
         console.error('Error fetching reservations:', error);
         throw error;
@@ -74,7 +50,7 @@ export const useReservations = () => {
           reservation_date: updatedReservation.reservation_date
         })
         .eq('id', updatedReservation.id)
-        .select()
+        .select('id')
         .maybeSingle();
 
       if (error) throw error;
@@ -107,7 +83,7 @@ export const useReservations = () => {
         .eq('id', id);
 
       if (error) throw error;
-      return id;
+      return true;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reservations'] });
