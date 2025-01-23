@@ -5,8 +5,13 @@ export const fetchReservations = async (userId: string | null, isSuperAdmin: boo
   console.log('Fetching reservations with params:', { userId, isSuperAdmin });
   
   try {
+    if (!userId) {
+      console.error('No userId provided');
+      throw new Error('User not authenticated');
+    }
+
     // First get the user's store_name from their profile
-    if (!isSuperAdmin && userId) {
+    if (!isSuperAdmin) {
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('store_name')
@@ -20,20 +25,35 @@ export const fetchReservations = async (userId: string | null, isSuperAdmin: boo
 
       console.log('User profile data:', profileData);
 
-      let query = supabase
+      // Fetch reservations with a single query
+      const { data: reservationsData, error: reservationsError } = await supabase
         .from('reservations')
         .select(`
-          *,
-          product:products(*)
+          id,
+          product_id,
+          store_name,
+          quantity,
+          reservation_date,
+          created_at,
+          updated_at,
+          product_name,
+          product:products (
+            id,
+            name,
+            brand,
+            image_url,
+            reference,
+            created_at,
+            updated_at,
+            description,
+            product_url,
+            sale_price_ttc,
+            initial_quantity,
+            purchase_price_ht
+          )
         `)
+        .eq('store_name', profileData.store_name)
         .order('reservation_date', { ascending: false });
-
-      // Only filter by store_name if not a superadmin
-      if (!isSuperAdmin && profileData?.store_name) {
-        query = query.eq('store_name', profileData.store_name);
-      }
-
-      const { data: reservationsData, error: reservationsError } = await query;
 
       if (reservationsError) {
         console.error('Error fetching reservations:', reservationsError);
@@ -48,8 +68,28 @@ export const fetchReservations = async (userId: string | null, isSuperAdmin: boo
     const { data: reservationsData, error: reservationsError } = await supabase
       .from('reservations')
       .select(`
-        *,
-        product:products(*)
+        id,
+        product_id,
+        store_name,
+        quantity,
+        reservation_date,
+        created_at,
+        updated_at,
+        product_name,
+        product:products (
+          id,
+          name,
+          brand,
+          image_url,
+          reference,
+          created_at,
+          updated_at,
+          description,
+          product_url,
+          sale_price_ttc,
+          initial_quantity,
+          purchase_price_ht
+        )
       `)
       .order('reservation_date', { ascending: false });
 
@@ -75,7 +115,8 @@ export const updateReservationInDb = async (
     .from('reservations')
     .update(reservation)
     .eq('id', reservation.id)
-    .select();
+    .select('*')
+    .single();
 
   if (error) {
     console.error('Error updating reservation:', error);
