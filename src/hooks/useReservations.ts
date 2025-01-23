@@ -22,19 +22,13 @@ export const useReservations = () => {
         let query = supabase
           .from('reservations')
           .select(`
-            id,
-            product_id,
-            store_name,
-            quantity,
-            reservation_date,
-            created_at,
-            updated_at,
-            product:products (
-              id,
+            *,
+            product:products!inner (
               name,
               image_url
             )
-          `);
+          `)
+          .order('reservation_date', { ascending: false });
 
         // If not superadmin, only fetch reservations for the user's store
         if (userRole !== 'superadmin') {
