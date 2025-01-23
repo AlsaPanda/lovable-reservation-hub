@@ -48,7 +48,7 @@ const ReservationActions = ({
     setIsDialogOpen(false);
   };
 
-  const truncateText = (text: string, maxLength: number = 20) => {
+  const truncateText = (text: string, maxLength: number = 35) => {
     return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
   };
 
@@ -93,6 +93,11 @@ const ReservationActions = ({
                     <p className="text-sm text-muted-foreground">
                       Réf: {product.reference}
                     </p>
+                    {product.initial_quantity > (product.available_quantity || 0) && (
+                      <p className="text-sm text-destructive font-medium mt-1">
+                        ⚠️ Ce produit a déjà été réservé
+                      </p>
+                    )}
                   </div>
                   <span className="font-medium whitespace-nowrap">
                     Qté: {product.initial_quantity}
