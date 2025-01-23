@@ -50,23 +50,41 @@ const ReservationActions = ({
     const fetchExistingReservations = async () => {
       if (!session?.user?.id) return;
 
-      // Get user's store_name
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('store_name')
-        .eq('id', session.user.id)
-        .single();
+      try {
+        // Get user's store_name
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('store_name')
+          .eq('id', session.user.id)
+          .maybeSingle();
 
-      if (!profileData?.store_name) return;
+        if (profileError) {
+          console.error('Error fetching profile:', profileError);
+          return;
+        }
 
-      // Get existing reservations for this store
-      const { data: reservations } = await supabase
-        .from('reservations')
-        .select('product_id')
-        .eq('store_name', profileData.store_name);
+        if (!profileData?.store_name) {
+          console.error('No store_name found');
+          return;
+        }
 
-      if (reservations) {
-        setExistingReservations(reservations.map(r => r.product_id));
+        // Optimized query to get existing reservations
+        const { data: reservations, error: reservationsError } = await supabase
+          .from('reservations')
+          .select('product_id')
+          .eq('store_name', profileData.store_name)
+          .is('product', null); // Only get reservations without product JSON to avoid recursion
+
+        if (reservationsError) {
+          console.error('Error fetching reservations:', reservationsError);
+          return;
+        }
+
+        if (reservations) {
+          setExistingReservations(reservations.map(r => r.product_id));
+        }
+      } catch (error) {
+        console.error('Error in fetchExistingReservations:', error);
       }
     };
 
