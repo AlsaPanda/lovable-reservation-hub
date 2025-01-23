@@ -31,7 +31,6 @@ export const useReservations = () => {
           `)
           .order('reservation_date', { ascending: false });
 
-        // If not superadmin, only fetch reservations for the user's store
         if (userRole !== 'superadmin') {
           query = query.eq('store_name', storeName);
         }
@@ -86,15 +85,17 @@ export const useReservations = () => {
     mutationFn: async (id: string) => {
       if (!session?.user?.id) throw new Error('User not authenticated');
       
+      // Simplified deletion query
       const { error } = await supabase
         .from('reservations')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .throwOnError();
 
       if (error) throw error;
       return id;
     },
-    onSuccess: () => {
+    onSuccess: (deletedId) => {
       queryClient.invalidateQueries({ queryKey: ['reservations'] });
       toast({
         title: "Réservation supprimée",
