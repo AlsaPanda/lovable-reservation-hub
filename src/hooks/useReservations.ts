@@ -19,7 +19,7 @@ export const useReservations = () => {
       try {
         let query = supabase
           .from('reservations')
-          .select('id, product_id, store_name, quantity, reservation_date, created_at, updated_at, product:products(id, name, image_url)')
+          .select('id, product_id, store_name, quantity, reservation_date, created_at, updated_at, product')
           .order('reservation_date', { ascending: false });
 
         // If not superadmin, only fetch reservations for the user's store
@@ -36,7 +36,7 @@ export const useReservations = () => {
         throw error;
       }
     },
-    enabled: !!session?.user?.id && !!userRole && !!storeName
+    enabled: !!session?.user?.id && !!userRole && !!storeName && window.location.pathname === '/reservations'
   });
 
   const updateReservation = useMutation({

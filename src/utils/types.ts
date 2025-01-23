@@ -9,7 +9,6 @@ export type Profile = {
   brand: 'schmidt' | 'cuisinella';
 };
 
-// Re-export Product type using 'export type'
 export type { Product } from '@/types/products';
 
 export type Reservation = {
@@ -20,6 +19,5 @@ export type Reservation = {
   reservation_date: string;
   created_at: string;
   updated_at: string;
-  product?: import('@/types/products').Product;
-  store?: Profile;
+  product?: any;
 };
