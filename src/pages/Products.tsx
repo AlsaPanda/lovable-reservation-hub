@@ -64,7 +64,6 @@ const Products = () => {
           totalQuantity={totalQuantity}
           isLoading={isReservationLoading}
           productsToReserve={productsToReserve}
-          onQuantityChange={handleQuantityChange}
         />
 
         <ProductGrid
