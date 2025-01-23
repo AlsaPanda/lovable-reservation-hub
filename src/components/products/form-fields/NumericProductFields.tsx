@@ -1,8 +1,3 @@
-import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { UseFormReturn } from "react-hook-form";
-import { Product } from "@/types/products";
-
 /**
  * NumericProductFields Component
  * 
@@ -10,6 +5,15 @@ import { Product } from "@/types/products";
  * Handles initial quantity, purchase price (HT), and sale price (TTC).
  * Includes proper number formatting and validation.
  */
+
+import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { UseFormReturn } from "react-hook-form";
+import { Product } from "@/types/products";
+
+interface NumericProductFieldsProps {
+  form: UseFormReturn<Product>;
+}
 
 const NumericProductFields = ({ form }: NumericProductFieldsProps) => {
   return (
