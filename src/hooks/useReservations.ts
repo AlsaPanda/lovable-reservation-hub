@@ -60,7 +60,7 @@ export const useReservations = () => {
         })
         .eq('id', updatedReservation.id)
         .select()
-        .maybeSingle();
+        .single();
 
       if (error) throw error;
       return data;
@@ -92,7 +92,7 @@ export const useReservations = () => {
         .eq('id', id);
 
       if (error) throw error;
-      return true;
+      return id;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reservations'] });

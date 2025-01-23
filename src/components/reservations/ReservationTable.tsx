@@ -99,7 +99,7 @@ export function ReservationTable({ reservations, onEdit, onDelete }: Reservation
                   <TableCell>{new Date(reservation.reservation_date).toLocaleDateString()}</TableCell>
                   {isSuperAdmin && (
                     <TableCell>
-                      {reservation.store?.store_name || 'N/A'}
+                      {reservation.store_name}
                     </TableCell>
                   )}
                   <TableCell>
