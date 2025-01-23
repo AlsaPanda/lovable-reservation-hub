@@ -4,6 +4,7 @@ export type Product = {
   name: string;
   description: string | null;
   initial_quantity: number;
+  available_quantity?: number;
   image_url: string | null;
   created_at: string;
   updated_at: string;
