@@ -68,12 +68,12 @@ const ReservationActions = ({
           return;
         }
 
-        // Optimized query to get existing reservations
+        // Get existing reservations for this store
         const { data: reservations, error: reservationsError } = await supabase
           .from('reservations')
           .select('product_id')
           .eq('store_name', profileData.store_name)
-          .is('product', null); // Only get reservations without product JSON to avoid recursion
+          .is('product', null); // Prevent recursion
 
         if (reservationsError) {
           console.error('Error fetching reservations:', reservationsError);
