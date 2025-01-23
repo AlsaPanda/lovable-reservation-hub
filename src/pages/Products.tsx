@@ -33,6 +33,14 @@ const Products = () => {
     return <ProductsSkeleton />;
   }
 
+  // Get products that have quantities set for reservation
+  const productsToReserve = filteredProducts
+    .filter(product => quantities[product.reference] > 0)
+    .map(product => ({
+      ...product,
+      initial_quantity: quantities[product.reference]
+    }));
+
   return (
     <>
       <NavBar />
@@ -55,6 +63,7 @@ const Products = () => {
           onReserve={handleReserveAll}
           totalQuantity={totalQuantity}
           isLoading={isReservationLoading}
+          productsToReserve={productsToReserve}
         />
 
         <ProductGrid

@@ -1,22 +1,15 @@
 /**
  * ProductsHeader Component
  * 
- * Main header component for the products page.
- * Contains search functionality, bulk actions, and reservation controls.
- * Adapts its interface based on user role (admin/non-admin).
+ * Main header section for the products page containing search, import/export,
+ * and reservation action components. Manages the overall product list actions.
  */
 
-import { Button } from "@/components/ui/button";
 import { Product } from "@/utils/types";
-import { useSession } from "@supabase/auth-helpers-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { useToast } from "@/components/ui/use-toast";
-import SearchBar from "./SearchBar";
-import ReservationActions from "./ReservationActions";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import ImportExportActions from "./ImportExportActions";
-import { importProducts } from "@/utils/productUtils";
+import ReservationActions from "./ReservationActions";
+import SearchBar from "./SearchBar";
 
 interface ProductsHeaderProps {
   onOpenDialog: () => void;
@@ -25,139 +18,40 @@ interface ProductsHeaderProps {
   onReserve: () => void;
   totalQuantity: number;
   isLoading?: boolean;
+  productsToReserve: Product[];
 }
 
-const ProductsHeader = ({ 
-  onOpenDialog, 
-  onProductsImported, 
-  onSearch, 
+const ProductsHeader = ({
+  onOpenDialog,
+  onProductsImported,
+  onSearch,
   onReserve,
   totalQuantity,
-  isLoading = false
+  isLoading,
+  productsToReserve
 }: ProductsHeaderProps) => {
-  const session = useSession();
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [isLoadingRole, setIsLoadingRole] = useState(true);
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-
-  useEffect(() => {
-    const fetchUserRole = async () => {
-      if (!session?.user?.id) {
-        console.log('No session or user ID available');
-        setIsLoadingRole(false);
-        return;
-      }
-
-      try {
-        console.log('Fetching user role for ID:', session.user.id);
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (error) {
-          console.error('Error fetching user role:', error);
-          toast({
-            variant: "destructive",
-            title: "Erreur",
-            description: "Impossible de récupérer le rôle de l'utilisateur.",
-          });
-        } else if (data) {
-          console.log('User role fetched successfully:', data.role);
-          setUserRole(data.role);
-        }
-      } catch (error) {
-        console.error('Error in fetchUserRole:', error);
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la récupération du rôle.",
-        });
-      } finally {
-        setIsLoadingRole(false);
-      }
-    };
-
-    fetchUserRole();
-  }, [session, toast]);
-
-  const handleResetQuantities = async () => {
-    try {
-      console.log('Attempting to reset quantities');
-      const { error } = await supabase.rpc('reset_all_quantities');
-
-      if (error) {
-        console.error('Error resetting quantities:', error);
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Impossible de réinitialiser les quantités.",
-        });
-        return;
-      }
-
-      await queryClient.invalidateQueries({ queryKey: ['products'] });
-      
-      toast({
-        title: "Quantités réinitialisées",
-        description: "Toutes les quantités ont été remises à zéro.",
-      });
-    } catch (error) {
-      console.error('Error in handleResetQuantities:', error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la réinitialisation.",
-      });
-    }
-  };
-
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const importedProducts = await importProducts(file);
-      onProductsImported(importedProducts);
-    } catch (error) {
-      console.error("Error importing products:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Impossible d'importer les produits.",
-      });
-    }
-  };
-
-  if (isLoadingRole) {
-    return <div>Chargement...</div>;
-  }
-
-  const isAdmin = userRole === 'admin' || userRole === 'superadmin';
-  const canResetQuantities = !isAdmin && (userRole === 'magasin');
+  const { userRole } = useUserProfile();
+  const isAdmin = userRole === "superadmin";
 
   return (
-    <div className="sticky top-0 bg-background z-10 py-4 border-b">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-1 gap-4 items-center">
-          <SearchBar onSearch={onSearch} />
-          {!isAdmin && (
-            <ReservationActions
-              onReserve={onReserve}
-              onReset={handleResetQuantities}
-              totalQuantity={totalQuantity}
-              canResetQuantities={canResetQuantities}
-              isLoading={isLoading}
-            />
-          )}
-        </div>
+    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <SearchBar onSearch={onSearch} />
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         {isAdmin && (
-          <div className="flex gap-2">
-            <Button onClick={onOpenDialog}>Ajouter un produit</Button>
-            <ImportExportActions onFileChange={handleFileChange} />
-          </div>
+          <ImportExportActions
+            onOpenDialog={onOpenDialog}
+            onProductsImported={onProductsImported}
+          />
+        )}
+        {!isAdmin && (
+          <ReservationActions
+            onReserve={onReserve}
+            onReset={() => {}}
+            totalQuantity={totalQuantity}
+            canResetQuantities={totalQuantity > 0}
+            isLoading={isLoading}
+            productsToReserve={productsToReserve}
+          />
         )}
       </div>
     </div>

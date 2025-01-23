@@ -1,5 +1,12 @@
+/**
+ * ReservationActions Component
+ * 
+ * Handles the reservation confirmation dialog and actions for products.
+ * Displays a scrollable list of products to be reserved and manages the reservation process.
+ */
+
 import { Button } from "@/components/ui/button";
-import { Calendar, RotateCcw } from "lucide-react";
+import { Calendar, RotateCcw, AlertTriangle } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,7 +18,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useState } from "react";
+import { Product } from "@/utils/types";
 
 interface ReservationActionsProps {
   onReserve: () => void;
@@ -19,6 +29,7 @@ interface ReservationActionsProps {
   totalQuantity: number;
   canResetQuantities: boolean;
   isLoading?: boolean;
+  productsToReserve: Product[];
 }
 
 const ReservationActions = ({
@@ -27,18 +38,18 @@ const ReservationActions = ({
   totalQuantity,
   canResetQuantities,
   isLoading = false,
+  productsToReserve,
 }: ReservationActionsProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  
-  console.log('ReservationActions rendered with totalQuantity:', totalQuantity);
-  console.log('canResetQuantities:', canResetQuantities);
-  console.log('isLoading:', isLoading);
   
   const handleReserve = () => {
     if (isLoading) return;
     onReserve();
     setIsDialogOpen(false);
   };
+
+  // Check for duplicate reservations
+  const hasDuplicates = productsToReserve.some(product => product.reserved);
 
   return (
     <div className="flex gap-2">
@@ -57,9 +68,38 @@ const ReservationActions = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmer la réservation</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir réserver ces {totalQuantity} produits ?
+              Vous allez réserver les produits suivants :
             </AlertDialogDescription>
           </AlertDialogHeader>
+
+          {hasDuplicates && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                Attention : Certains produits ont déjà été réservés
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <ScrollArea className="h-[200px] rounded-md border p-4">
+            <div className="space-y-2">
+              {productsToReserve.map((product) => (
+                <div 
+                  key={product.reference}
+                  className="flex justify-between items-center py-2 border-b last:border-0"
+                >
+                  <div className="flex-1">
+                    <p className="font-medium">{product.name}</p>
+                    <p className="text-sm text-muted-foreground">Réf: {product.reference}</p>
+                  </div>
+                  <span className="font-medium">
+                    Qté: {product.initial_quantity}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction onClick={handleReserve} disabled={isLoading}>
@@ -71,10 +111,7 @@ const ReservationActions = ({
       <Button
         variant="outline"
         size="default"
-        onClick={() => {
-          console.log('Reset button clicked');
-          onReset();
-        }}
+        onClick={onReset}
         disabled={isLoading}
         className="whitespace-nowrap"
       >
