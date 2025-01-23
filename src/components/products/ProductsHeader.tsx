@@ -20,6 +20,7 @@ interface ProductsHeaderProps {
   totalQuantity: number;
   isLoading?: boolean;
   productsToReserve: Product[];
+  onQuantityChange: (reference: string, quantity: string) => void;
 }
 
 const ProductsHeader = ({
@@ -29,7 +30,8 @@ const ProductsHeader = ({
   onReserve,
   totalQuantity,
   isLoading,
-  productsToReserve
+  productsToReserve,
+  onQuantityChange
 }: ProductsHeaderProps) => {
   const { userRole } = useUserProfile();
   const isAdmin = userRole === "superadmin";
@@ -65,6 +67,7 @@ const ProductsHeader = ({
             canResetQuantities={totalQuantity > 0}
             isLoading={isLoading}
             productsToReserve={productsToReserve}
+            onQuantityChange={onQuantityChange}
           />
         )}
       </div>
