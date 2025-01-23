@@ -17,10 +17,24 @@ export const useReservations = () => {
       if (!session?.user?.id) return [];
       
       try {
+        console.log('Fetching reservations for:', { userRole, storeName });
+        
         let query = supabase
           .from('reservations')
-          .select('id, product_id, store_name, quantity, reservation_date, created_at, updated_at, product:products(id, name, image_url)')
-          .order('reservation_date', { ascending: false });
+          .select(`
+            id,
+            product_id,
+            store_name,
+            quantity,
+            reservation_date,
+            created_at,
+            updated_at,
+            product:products (
+              id,
+              name,
+              image_url
+            )
+          `);
 
         // If not superadmin, only fetch reservations for the user's store
         if (userRole !== 'superadmin') {
@@ -29,10 +43,15 @@ export const useReservations = () => {
 
         const { data, error } = await query;
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching reservations:', error);
+          throw error;
+        }
+
+        console.log('Fetched reservations:', data);
         return data as Reservation[];
       } catch (error) {
-        console.error('Error fetching reservations:', error);
+        console.error('Error in reservation query:', error);
         throw error;
       }
     },
@@ -50,7 +69,7 @@ export const useReservations = () => {
           reservation_date: updatedReservation.reservation_date
         })
         .eq('id', updatedReservation.id)
-        .select('id')
+        .select()
         .maybeSingle();
 
       if (error) throw error;
