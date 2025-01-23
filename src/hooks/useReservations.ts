@@ -17,26 +17,53 @@ export const useReservations = () => {
       if (!session?.user?.id) return [];
       
       try {
+        // First, get the reservations
         let query = supabase
           .from('reservations')
-          .select('id, product_id, store_name, quantity, reservation_date, created_at, updated_at, product:products(id, name, image_url)')
+          .select(`
+            id,
+            product_id,
+            store_name,
+            quantity,
+            reservation_date,
+            created_at,
+            updated_at
+          `)
           .order('reservation_date', { ascending: false });
 
         // If not superadmin, only fetch reservations for the user's store
-        if (userRole !== 'superadmin') {
+        if (userRole !== 'superadmin' && storeName) {
           query = query.eq('store_name', storeName);
         }
 
-        const { data, error } = await query;
+        const { data: reservationsData, error: reservationsError } = await query;
 
-        if (error) throw error;
-        return data as Reservation[];
+        if (reservationsError) throw reservationsError;
+        if (!reservationsData) return [];
+
+        // Then, get all the products for these reservations
+        const productIds = [...new Set(reservationsData.map(r => r.product_id))];
+        
+        const { data: productsData, error: productsError } = await supabase
+          .from('products')
+          .select('id, name, image_url')
+          .in('id', productIds);
+
+        if (productsError) throw productsError;
+
+        // Combine the data
+        const reservationsWithProducts = reservationsData.map(reservation => ({
+          ...reservation,
+          product: productsData?.find(p => p.id === reservation.product_id) || null
+        }));
+
+        return reservationsWithProducts as Reservation[];
       } catch (error) {
         console.error('Error fetching reservations:', error);
         throw error;
       }
     },
-    enabled: !!session?.user?.id && !!userRole && !!storeName
+    enabled: !!session?.user?.id && !!userRole
   });
 
   const updateReservation = useMutation({
@@ -50,7 +77,7 @@ export const useReservations = () => {
           reservation_date: updatedReservation.reservation_date
         })
         .eq('id', updatedReservation.id)
-        .select('id')
+        .select()
         .maybeSingle();
 
       if (error) throw error;
