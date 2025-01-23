@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Reservation } from "@/types/reservations";
+import { Reservation } from "@/utils/types";
 import { useToast } from "@/hooks/use-toast";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -19,22 +19,13 @@ export const useReservations = () => {
       try {
         let query = supabase
           .from('reservations')
-          .select(`
-            id,
-            product_id,
-            store_name,
-            quantity,
-            reservation_date,
-            created_at,
-            updated_at,
-            product_name,
-            product:products (
-              id,
-              name,
-              image_url
-            )
-          `)
+          .select('id, product_id, store_name, quantity, reservation_date, created_at, updated_at, product:products(id, name, image_url)')
           .order('reservation_date', { ascending: false });
+
+        // If not superadmin, only fetch reservations for the user's store
+        if (userRole !== 'superadmin') {
+          query = query.eq('store_name', storeName);
+        }
 
         const { data, error } = await query;
 
@@ -59,7 +50,7 @@ export const useReservations = () => {
           reservation_date: updatedReservation.reservation_date
         })
         .eq('id', updatedReservation.id)
-        .select()
+        .select('id')
         .maybeSingle();
 
       if (error) throw error;
@@ -84,6 +75,8 @@ export const useReservations = () => {
 
   const deleteReservation = useMutation({
     mutationFn: async (id: string) => {
+      if (!session?.user?.id) throw new Error('User not authenticated');
+      
       const { error } = await supabase
         .from('reservations')
         .delete()

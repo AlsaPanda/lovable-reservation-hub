@@ -2,8 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Product } from "@/types/products";
-import { Reservation } from "@/types/reservations";
+import { Product, Reservation } from "@/utils/types";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 
