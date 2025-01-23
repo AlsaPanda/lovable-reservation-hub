@@ -17,9 +17,34 @@ export const useReservations = () => {
       if (!session?.user?.id) return [];
       
       try {
+        console.log('Current user role:', userRole);
+        
         let query = supabase
           .from('reservations')
-          .select('id, product_id, store_name, quantity, reservation_date, created_at, updated_at, product')
+          .select(`
+            id,
+            product_id,
+            store_name,
+            quantity,
+            reservation_date,
+            created_at,
+            updated_at,
+            product_name,
+            product:products (
+              id,
+              reference,
+              name,
+              description,
+              initial_quantity,
+              image_url,
+              created_at,
+              updated_at,
+              purchase_price_ht,
+              sale_price_ttc,
+              product_url,
+              brand
+            )
+          `)
           .order('reservation_date', { ascending: false });
 
         // If not superadmin, only fetch reservations for the user's store
@@ -29,10 +54,20 @@ export const useReservations = () => {
 
         const { data, error } = await query;
 
-        if (error) throw error;
-        return data as Reservation[];
+        if (error) {
+          console.error('Error fetching reservations:', error);
+          throw error;
+        }
+
+        // Transform the data to match the expected format
+        const transformedData = data.map(reservation => ({
+          ...reservation,
+          product: reservation.product ? reservation.product[0] : null
+        }));
+
+        return transformedData as Reservation[];
       } catch (error) {
-        console.error('Error fetching reservations:', error);
+        console.error('Error in useReservations:', error);
         throw error;
       }
     },
@@ -50,7 +85,7 @@ export const useReservations = () => {
           reservation_date: updatedReservation.reservation_date
         })
         .eq('id', updatedReservation.id)
-        .select('id')
+        .select()
         .maybeSingle();
 
       if (error) throw error;
