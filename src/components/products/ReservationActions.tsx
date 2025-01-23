@@ -50,41 +50,23 @@ const ReservationActions = ({
     const fetchExistingReservations = async () => {
       if (!session?.user?.id) return;
 
-      try {
-        // Get user's store_name
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('store_name')
-          .eq('id', session.user.id)
-          .maybeSingle();
+      // Get user's store_name
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('store_name')
+        .eq('id', session.user.id)
+        .single();
 
-        if (profileError) {
-          console.error('Error fetching profile:', profileError);
-          return;
-        }
+      if (!profileData?.store_name) return;
 
-        if (!profileData?.store_name) {
-          console.error('No store_name found');
-          return;
-        }
+      // Get existing reservations for this store
+      const { data: reservations } = await supabase
+        .from('reservations')
+        .select('product_id')
+        .eq('store_name', profileData.store_name);
 
-        // Get existing reservations for this store
-        const { data: reservations, error: reservationsError } = await supabase
-          .from('reservations')
-          .select('product_id')
-          .eq('store_name', profileData.store_name)
-          .is('product', null); // Prevent recursion
-
-        if (reservationsError) {
-          console.error('Error fetching reservations:', reservationsError);
-          return;
-        }
-
-        if (reservations) {
-          setExistingReservations(reservations.map(r => r.product_id));
-        }
-      } catch (error) {
-        console.error('Error in fetchExistingReservations:', error);
+      if (reservations) {
+        setExistingReservations(reservations.map(r => r.product_id));
       }
     };
 
@@ -177,7 +159,7 @@ const ReservationActions = ({
         variant="outline"
         size="default"
         onClick={onReset}
-        disabled={!canResetQuantities || isLoading}
+        disabled={isLoading}
         className="whitespace-nowrap"
       >
         <RotateCcw className="mr-2 h-4 w-4" />
