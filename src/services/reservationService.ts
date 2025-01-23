@@ -85,37 +85,18 @@ export const updateReservationInDb = async (
 };
 
 export const deleteReservationFromDb = async (id: string, userId: string) => {
-  console.log('Attempting to delete reservation:', { id, userId });
-  
+  console.log('Deleting reservation:', id);
   try {
-    // First verify the user has access to this reservation
-    const { data: reservation, error: fetchError } = await supabase
-      .from('reservations')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
-
-    if (fetchError) {
-      console.error('Error fetching reservation before delete:', fetchError);
-      throw fetchError;
-    }
-
-    if (!reservation) {
-      throw new Error('Reservation not found');
-    }
-
-    // Perform the delete operation
-    const { error: deleteError } = await supabase
+    const { error } = await supabase
       .from('reservations')
       .delete()
       .eq('id', id);
 
-    if (deleteError) {
-      console.error('Error deleting reservation:', deleteError);
-      throw deleteError;
+    if (error) {
+      console.error('Error deleting reservation:', error);
+      throw error;
     }
 
-    console.log('Successfully deleted reservation:', id);
     return true;
   } catch (error) {
     console.error('Error in deleteReservationFromDb:', error);
