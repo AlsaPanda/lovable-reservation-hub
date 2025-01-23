@@ -9,12 +9,11 @@ export const useStoreOrders = () => {
     queryKey: ['store-orders'],
     queryFn: async () => {
       try {
-        // Fetch reservations and join with profiles using a direct join on store_name
+        // Fetch only the necessary fields and avoid the recursive trigger
         const { data: reservations, error: reservationsError } = await supabase
           .from('reservations')
           .select(`
             id,
-            product_id,
             store_name,
             quantity,
             reservation_date,
@@ -32,7 +31,7 @@ export const useStoreOrders = () => {
           throw reservationsError;
         }
 
-        // Group reservations by store
+        // Group reservations by store without complex joins
         const ordersByStore = (reservations || []).reduce((acc: any[], reservation) => {
           const existingStore = acc.find(store => store.store_name === reservation.store_name);
           
@@ -55,7 +54,10 @@ export const useStoreOrders = () => {
           return acc;
         }, []);
 
-        return ordersByStore;
+        // Sort stores by their most recent reservation
+        return ordersByStore.sort((a, b) => 
+          new Date(b.last_reservation).getTime() - new Date(a.last_reservation).getTime()
+        );
       } catch (error: any) {
         console.error('Error in store orders query:', error);
         throw error;
