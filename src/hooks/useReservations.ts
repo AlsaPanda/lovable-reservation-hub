@@ -23,9 +23,19 @@ export const useReservations = () => {
           .from('reservations')
           .select(`
             *,
-            product:products!inner (
+            product:products (
+              id,
+              reference,
               name,
-              image_url
+              description,
+              initial_quantity,
+              image_url,
+              created_at,
+              updated_at,
+              purchase_price_ht,
+              sale_price_ttc,
+              product_url,
+              brand
             )
           `)
           .order('reservation_date', { ascending: false });
