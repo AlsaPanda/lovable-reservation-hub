@@ -21,6 +21,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
 import { Product } from "@/utils/types";
+import ProductImage from "./ProductImage";
 
 interface ReservationActionsProps {
   onReserve: () => void;
@@ -47,6 +48,10 @@ const ReservationActions = ({
     setIsDialogOpen(false);
   };
 
+  const truncateText = (text: string, maxLength: number = 20) => {
+    return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+  };
+
   return (
     <div className="flex gap-2">
       <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -68,18 +73,28 @@ const ReservationActions = ({
             </AlertDialogDescription>
           </AlertDialogHeader>
 
-          <ScrollArea className="h-[200px] rounded-md border p-4">
-            <div className="space-y-2">
+          <ScrollArea className="h-[400px] rounded-md border p-4">
+            <div className="space-y-4">
               {productsToReserve.map((product) => (
                 <div 
                   key={product.reference}
-                  className="flex justify-between items-center py-2 border-b last:border-0"
+                  className="flex items-center gap-4 py-3 border-b last:border-0"
                 >
-                  <div className="flex-1">
-                    <p className="font-medium">{product.name}</p>
-                    <p className="text-sm text-muted-foreground">Réf: {product.reference}</p>
+                  <div className="w-20 h-20 flex-shrink-0">
+                    <ProductImage 
+                      imageUrl={product.image_url} 
+                      altText={product.name}
+                    />
                   </div>
-                  <span className="font-medium">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate" title={product.name}>
+                      {truncateText(product.name)}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Réf: {product.reference}
+                    </p>
+                  </div>
+                  <span className="font-medium whitespace-nowrap">
                     Qté: {product.initial_quantity}
                   </span>
                 </div>
