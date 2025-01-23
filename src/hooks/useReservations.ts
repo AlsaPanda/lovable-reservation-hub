@@ -20,7 +20,16 @@ export const useReservations = () => {
         // First, get the basic reservation data
         let query = supabase
           .from('reservations')
-          .select('id, product_id, store_name, quantity, reservation_date, created_at, updated_at, product_name')
+          .select(`
+            id,
+            product_id,
+            store_name,
+            quantity,
+            reservation_date,
+            created_at,
+            updated_at,
+            product_name
+          `)
           .order('reservation_date', { ascending: false });
 
         if (userRole !== 'superadmin') {
@@ -30,11 +39,11 @@ export const useReservations = () => {
         const { data: reservationsData, error: reservationsError } = await query;
         if (reservationsError) throw reservationsError;
 
-        // Then, get the product details separately with all required fields
-        const productIds = reservationsData.map(r => r.product_id);
+        // Then, get the product details separately
+        const productIds = [...new Set(reservationsData.map(r => r.product_id))];
         const { data: productsData, error: productsError } = await supabase
           .from('products')
-          .select('id, name, image_url, reference, description, initial_quantity, created_at, updated_at, purchase_price_ht, sale_price_ttc, product_url, brand')
+          .select('*')
           .in('id', productIds);
 
         if (productsError) throw productsError;
@@ -66,7 +75,7 @@ export const useReservations = () => {
         })
         .eq('id', updatedReservation.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
@@ -95,8 +104,7 @@ export const useReservations = () => {
       const { error } = await supabase
         .from('reservations')
         .delete()
-        .eq('id', id)
-        .single();
+        .eq('id', id);
 
       if (error) throw error;
       return id;
