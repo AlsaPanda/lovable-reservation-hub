@@ -177,7 +177,7 @@ const ReservationActions = ({
         variant="outline"
         size="default"
         onClick={onReset}
-        disabled={isLoading}
+        disabled={!canResetQuantities || isLoading}
         className="whitespace-nowrap"
       >
         <RotateCcw className="mr-2 h-4 w-4" />
