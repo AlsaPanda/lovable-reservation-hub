@@ -50,7 +50,6 @@ const ReservationActions = ({
     const fetchExistingReservations = async () => {
       if (!session?.user?.id) return;
 
-      // Get user's store_name
       const { data: profileData } = await supabase
         .from('profiles')
         .select('store_name')
@@ -59,7 +58,6 @@ const ReservationActions = ({
 
       if (!profileData?.store_name) return;
 
-      // Get existing reservations for this store
       const { data: reservations } = await supabase
         .from('reservations')
         .select('product_id')
@@ -83,14 +81,25 @@ const ReservationActions = ({
     return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
   };
 
-  // Remove duplicate products based on reference
-  const uniqueProductsToReserve = productsToReserve.reduce((acc: Product[], current) => {
-    const exists = acc.find(item => item.reference === current.reference);
-    if (!exists) {
-      acc.push(current);
+  // Create a map of unique products with their total quantities
+  const uniqueProductsMap = productsToReserve.reduce((acc: Map<string, Product>, current) => {
+    if (!acc.has(current.reference)) {
+      acc.set(current.reference, {
+        ...current,
+        initial_quantity: current.initial_quantity
+      });
+    } else {
+      const existing = acc.get(current.reference)!;
+      acc.set(current.reference, {
+        ...existing,
+        initial_quantity: existing.initial_quantity + current.initial_quantity
+      });
     }
     return acc;
-  }, []);
+  }, new Map());
+
+  // Convert map to array
+  const uniqueProductsToReserve = Array.from(uniqueProductsMap.values());
 
   return (
     <div className="flex gap-2">
