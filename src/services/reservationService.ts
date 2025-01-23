@@ -4,62 +4,41 @@ import { Reservation } from "@/utils/types";
 export const fetchReservations = async (userId: string | null, isSuperAdmin: boolean) => {
   console.log('Fetching reservations with params:', { userId, isSuperAdmin });
   
+  if (!userId) {
+    console.error('No userId provided');
+    throw new Error('User not authenticated');
+  }
+
   try {
-    // First get the user's store_name from their profile
-    if (!isSuperAdmin && userId) {
-      const { data: profileData, error: profileError } = await supabase
+    // For non-superadmin, first get their store_name
+    if (!isSuperAdmin) {
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('store_name')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
-      if (profileError) {
-        console.error('Error fetching profile:', profileError);
-        throw profileError;
-      }
+      if (profileError) throw profileError;
+      if (!profile?.store_name) throw new Error('Store not found');
 
-      console.log('User profile data:', profileData);
-
-      let query = supabase
+      const { data, error } = await supabase
         .from('reservations')
-        .select(`
-          *,
-          product:products(*)
-        `)
+        .select('id, product_id, store_name, quantity, reservation_date, created_at, updated_at, product_name')
+        .eq('store_name', profile.store_name)
         .order('reservation_date', { ascending: false });
 
-      // Only filter by store_name if not a superadmin
-      if (!isSuperAdmin && profileData?.store_name) {
-        query = query.eq('store_name', profileData.store_name);
-      }
-
-      const { data: reservationsData, error: reservationsError } = await query;
-
-      if (reservationsError) {
-        console.error('Error fetching reservations:', reservationsError);
-        throw reservationsError;
-      }
-
-      console.log('Fetched reservations data:', reservationsData);
-      return reservationsData as Reservation[];
+      if (error) throw error;
+      return data;
     }
 
     // For superadmin, fetch all reservations
-    const { data: reservationsData, error: reservationsError } = await supabase
+    const { data, error } = await supabase
       .from('reservations')
-      .select(`
-        *,
-        product:products(*)
-      `)
+      .select('id, product_id, store_name, quantity, reservation_date, created_at, updated_at, product_name')
       .order('reservation_date', { ascending: false });
 
-    if (reservationsError) {
-      console.error('Error fetching reservations:', reservationsError);
-      throw reservationsError;
-    }
-
-    console.log('Fetched reservations data:', reservationsData);
-    return reservationsData as Reservation[];
+    if (error) throw error;
+    return data;
   } catch (error) {
     console.error('Error in fetchReservations:', error);
     throw error;
@@ -70,22 +49,32 @@ export const updateReservationInDb = async (
   reservation: Partial<Reservation>,
   userId: string
 ) => {
+  console.log('Updating reservation:', reservation);
   const { data, error } = await supabase
     .from('reservations')
     .update(reservation)
     .eq('id', reservation.id)
-    .select()
-    .single();
+    .select('id')
+    .maybeSingle();
 
-  if (error) throw error;
+  if (error) {
+    console.error('Error updating reservation:', error);
+    throw error;
+  }
   return data;
 };
 
 export const deleteReservationFromDb = async (id: string, userId: string) => {
+  console.log('Deleting reservation:', id);
   const { error } = await supabase
     .from('reservations')
     .delete()
     .eq('id', id);
 
-  if (error) throw error;
+  if (error) {
+    console.error('Error deleting reservation:', error);
+    throw error;
+  }
+
+  return true;
 };
