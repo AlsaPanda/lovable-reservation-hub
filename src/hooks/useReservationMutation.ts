@@ -47,8 +47,17 @@ export const useReservationMutation = () => {
       const storeName = String(profileData.store_name).trim();
       console.log('Formatted store_name for reservations:', storeName);
 
+      // Remove duplicates based on product reference
+      const uniqueProducts = productsToReserve.reduce((acc: Product[], current) => {
+        const exists = acc.find(item => item.reference === current.reference);
+        if (!exists) {
+          acc.push(current);
+        }
+        return acc;
+      }, []);
+
       // Create reservations array with the validated store_name
-      const reservations = productsToReserve
+      const reservations = uniqueProducts
         .filter(product => product.initial_quantity > 0)
         .map(product => ({
           product_id: product.id,

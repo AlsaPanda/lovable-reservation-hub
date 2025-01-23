@@ -19,9 +19,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Product } from "@/utils/types";
 import ProductImage from "./ProductImage";
+import { supabase } from "@/integrations/supabase/client";
+import { useSession } from "@supabase/auth-helpers-react";
 
 interface ReservationActionsProps {
   onReserve: () => void;
@@ -41,7 +43,36 @@ const ReservationActions = ({
   productsToReserve,
 }: ReservationActionsProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [existingReservations, setExistingReservations] = useState<string[]>([]);
+  const session = useSession();
   
+  useEffect(() => {
+    const fetchExistingReservations = async () => {
+      if (!session?.user?.id) return;
+
+      // Get user's store_name
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('store_name')
+        .eq('id', session.user.id)
+        .single();
+
+      if (!profileData?.store_name) return;
+
+      // Get existing reservations for this store
+      const { data: reservations } = await supabase
+        .from('reservations')
+        .select('product_id')
+        .eq('store_name', profileData.store_name);
+
+      if (reservations) {
+        setExistingReservations(reservations.map(r => r.product_id));
+      }
+    };
+
+    fetchExistingReservations();
+  }, [session?.user?.id]);
+
   const handleReserve = () => {
     if (isLoading) return;
     onReserve();
@@ -102,7 +133,7 @@ const ReservationActions = ({
                     <p className="text-sm text-muted-foreground">
                       Réf: {product.reference}
                     </p>
-                    {product.initial_quantity > (product.available_quantity || 0) && (
+                    {existingReservations.includes(product.id) && (
                       <p className="text-sm text-destructive font-medium mt-1">
                         ⚠️ Ce produit a déjà été réservé
                       </p>
