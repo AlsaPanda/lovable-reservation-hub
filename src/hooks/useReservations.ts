@@ -17,28 +17,35 @@ export const useReservations = () => {
       if (!session?.user?.id) return [];
       
       try {
+        // First, get the basic reservation data
         let query = supabase
           .from('reservations')
-          .select(`
-            id,
-            product_id,
-            store_name,
-            quantity,
-            reservation_date,
-            created_at,
-            updated_at,
-            product:products(id, name, image_url)
-          `)
+          .select('id, product_id, store_name, quantity, reservation_date, created_at, updated_at, product_name')
           .order('reservation_date', { ascending: false });
 
         if (userRole !== 'superadmin') {
           query = query.eq('store_name', storeName);
         }
 
-        const { data, error } = await query;
+        const { data: reservationsData, error: reservationsError } = await query;
+        if (reservationsError) throw reservationsError;
 
-        if (error) throw error;
-        return data as Reservation[];
+        // Then, get the product details separately
+        const productIds = reservationsData.map(r => r.product_id);
+        const { data: productsData, error: productsError } = await supabase
+          .from('products')
+          .select('id, name, image_url')
+          .in('id', productIds);
+
+        if (productsError) throw productsError;
+
+        // Map products to reservations
+        const reservationsWithProducts = reservationsData.map(reservation => ({
+          ...reservation,
+          product: productsData.find(p => p.id === reservation.product_id) || null
+        }));
+
+        return reservationsWithProducts as Reservation[];
       } catch (error) {
         console.error('Error fetching reservations:', error);
         throw error;
@@ -47,55 +54,20 @@ export const useReservations = () => {
     enabled: !!session?.user?.id && !!userRole && !!storeName
   });
 
-  const updateReservation = useMutation({
-    mutationFn: async (updatedReservation: Partial<Reservation>) => {
-      if (!session?.user?.id) throw new Error('User not authenticated');
-      
-      const { data, error } = await supabase
-        .from('reservations')
-        .update({
-          quantity: updatedReservation.quantity,
-          reservation_date: updatedReservation.reservation_date
-        })
-        .eq('id', updatedReservation.id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['reservations'] });
-      toast({
-        title: "Réservation mise à jour",
-        description: "La réservation a été mise à jour avec succès.",
-      });
-    },
-    onError: (error: any) => {
-      console.error("Update reservation error:", error);
-      toast({
-        title: "Erreur",
-        description: error.message || "Une erreur est survenue lors de la mise à jour.",
-        variant: "destructive"
-      });
-    }
-  });
-
   const deleteReservation = useMutation({
     mutationFn: async (id: string) => {
       if (!session?.user?.id) throw new Error('User not authenticated');
       
-      // Simplified deletion query
       const { error } = await supabase
         .from('reservations')
         .delete()
         .eq('id', id)
-        .throwOnError();
+        .single();
 
       if (error) throw error;
       return id;
     },
-    onSuccess: (deletedId) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reservations'] });
       toast({
         title: "Réservation supprimée",
@@ -116,7 +88,6 @@ export const useReservations = () => {
     reservations,
     isLoading,
     error,
-    updateReservation,
     deleteReservation
   };
 };
