@@ -29,7 +29,7 @@ export const useUserProfile = () => {
           return;
         }
 
-        if (!session?.user?.id) {
+        if (!session) {
           console.log("No active session found");
           if (mounted) {
             setIsLoading(false);
@@ -42,36 +42,15 @@ export const useUserProfile = () => {
           setEmail(session.user.email);
         }
 
-        // Add retry logic for profile fetch
-        let retryCount = 0;
-        const maxRetries = 3;
-        let profileData;
-        let profileError;
-
-        while (retryCount < maxRetries) {
-          const response = await supabase
-            .from('profiles')
-            .select('role, store_name, brand, store_id')
-            .eq('id', session.user.id)
-            .maybeSingle();
-
-          profileData = response.data;
-          profileError = response.error;
-
-          if (!profileError) break;
-
-          retryCount++;
-          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
-        }
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('role, store_name, brand, store_id')
+          .eq('id', session.user.id)
+          .single();
         
         if (profileError) {
           console.error("Error fetching profile:", profileError);
           if (mounted) {
-            toast({
-              title: "Error",
-              description: "Failed to load user profile. Please try refreshing the page.",
-              variant: "destructive"
-            });
             if (profileError.code === 'PGRST301') {
               navigate('/login');
             }
@@ -90,13 +69,6 @@ export const useUserProfile = () => {
         }
       } catch (error) {
         console.error("Error in fetchUserProfile:", error);
-        if (mounted) {
-          toast({
-            title: "Error",
-            description: "An unexpected error occurred. Please try again.",
-            variant: "destructive"
-          });
-        }
       } finally {
         if (mounted) {
           setIsLoading(false);
