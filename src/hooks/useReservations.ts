@@ -17,10 +17,10 @@ export const useReservations = () => {
       if (!session?.user?.id) return [];
       
       try {
-        // First, fetch reservations with minimal fields
+        // First, fetch reservations with all required fields
         const { data: reservationsData, error: reservationsError } = await supabase
           .from('reservations')
-          .select('id, product_id, store_name, quantity, reservation_date')
+          .select('id, product_id, store_name, quantity, reservation_date, created_at, updated_at')
           .order('reservation_date', { ascending: false });
 
         if (reservationsError) throw reservationsError;
@@ -39,7 +39,7 @@ export const useReservations = () => {
         return reservationsData.map(reservation => ({
           ...reservation,
           product: products?.find(p => p.id === reservation.product_id) || null
-        }));
+        })) as Reservation[];
       } catch (error: any) {
         console.error('Error fetching reservations:', error);
         throw error;
