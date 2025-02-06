@@ -1,10 +1,3 @@
-/**
- * ReservationActions Component
- * 
- * Handles the reservation confirmation dialog and actions for products.
- * Displays a scrollable list of products to be reserved and manages the reservation process.
- */
-
 import { Button } from "@/components/ui/button";
 import { Calendar, RotateCcw } from "lucide-react";
 import {
@@ -50,23 +43,32 @@ const ReservationActions = ({
     const fetchExistingReservations = async () => {
       if (!session?.user?.id) return;
 
-      // Get user's store_name
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('store_name')
-        .eq('id', session.user.id)
-        .single();
+      try {
+        // Get user's store_name
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('store_name')
+          .eq('id', session.user.id)
+          .maybeSingle();
 
-      if (!profileData?.store_name) return;
+        if (!profileData?.store_name) return;
 
-      // Get existing reservations for this store
-      const { data: reservations } = await supabase
-        .from('reservations')
-        .select('product_id')
-        .eq('store_name', profileData.store_name);
+        // Use the new RPC function to get reserved product IDs
+        const { data: reservations, error } = await supabase
+          .rpc('get_store_reservation_products', {
+            store_name_param: profileData.store_name
+          });
 
-      if (reservations) {
-        setExistingReservations(reservations.map(r => r.product_id));
+        if (error) {
+          console.error('Error fetching reservations:', error);
+          return;
+        }
+
+        if (reservations) {
+          setExistingReservations(reservations.map(r => r.product_id));
+        }
+      } catch (error) {
+        console.error('Error in fetchExistingReservations:', error);
       }
     };
 
