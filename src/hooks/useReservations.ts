@@ -17,7 +17,6 @@ export const useReservations = () => {
       if (!session?.user?.id || !storeName) return [];
       
       try {
-        // Use the optimized RPC function
         const { data, error } = await supabase
           .rpc('get_store_reservations', {
             store_name_param: storeName
@@ -114,16 +113,17 @@ export const useReservations = () => {
 
   const deleteReservation = useMutation({
     mutationFn: async (id: string) => {
-      if (!session?.user?.id) throw new Error('User not authenticated');
+      if (!session?.user?.id || !storeName) throw new Error('User not authenticated');
       
-      const { error } = await supabase
-        .from('reservations')
-        .delete()
-        .eq('id', id)
-        .throwOnError();
+      // Use the RPC function instead of direct table access
+      const { data, error } = await supabase
+        .rpc('delete_reservation', {
+          reservation_id: id,
+          user_store_name: storeName
+        });
 
       if (error) throw error;
-      return true;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reservations'] });
