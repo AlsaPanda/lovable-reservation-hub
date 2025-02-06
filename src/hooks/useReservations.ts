@@ -17,17 +17,8 @@ export const useReservations = () => {
       if (!session?.user?.id) return [];
       
       try {
-        let query = supabase
-          .from('reservations')
-          .select('id, product_id, store_name, quantity, reservation_date, created_at, updated_at, product:products(id, name, image_url)')
-          .order('reservation_date', { ascending: false });
-
-        // If not superadmin, only fetch reservations for the user's store
-        if (userRole !== 'superadmin') {
-          query = query.eq('store_name', storeName);
-        }
-
-        const { data, error } = await query;
+        const { data, error } = await supabase
+          .rpc('get_store_reservations', { store_name_param: storeName });
 
         if (error) throw error;
         return data as Reservation[];
@@ -50,7 +41,7 @@ export const useReservations = () => {
           reservation_date: updatedReservation.reservation_date
         })
         .eq('id', updatedReservation.id)
-        .select('id')
+        .select()
         .maybeSingle();
 
       if (error) throw error;
