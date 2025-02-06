@@ -203,8 +203,7 @@ export type Database = {
           reservation_date: string
           created_at: string
           updated_at: string
-          product_name: string
-          product_image_url: string
+          product: Json
         }[]
       }
       get_store_summaries: {

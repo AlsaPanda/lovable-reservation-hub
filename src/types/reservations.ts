@@ -9,6 +9,11 @@ export type Reservation = {
   reservation_date: string;
   created_at: string;
   updated_at: string;
-  product?: Product;
+  product?: {
+    id: string;
+    name: string;
+    image_url: string | null;
+    reference: string;
+  };
   store?: Profile;
 };
