@@ -163,8 +163,8 @@ const ReservationActions = ({
                       Réf: {product.reference}
                     </p>
                     {existingReservations.includes(product.id) && (
-                      <p className="text-sm text-destructive font-medium mt-1">
-                        ⚠️ Ce produit a déjà été réservé
+                      <p className="text-sm text-yellow-600 font-medium mt-1">
+                        ⚠️ Ce produit a déjà été réservé (réservation additionnelle)
                       </p>
                     )}
                   </div>
