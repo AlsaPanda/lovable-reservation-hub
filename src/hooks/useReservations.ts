@@ -17,6 +17,7 @@ export const useReservations = () => {
       if (!session?.user?.id || !storeName) return [];
       
       try {
+        console.log('Fetching reservations for store:', storeName);
         const { data, error } = await supabase
           .rpc('get_store_reservations', {
             store_name_param: storeName
@@ -27,6 +28,7 @@ export const useReservations = () => {
           throw error;
         }
 
+        console.log('Fetched reservations:', data);
         return data as Reservation[];
       } catch (error) {
         console.error('Error in fetchReservations:', error);
@@ -40,6 +42,7 @@ export const useReservations = () => {
     mutationFn: async (updatedReservation: Partial<Reservation>) => {
       if (!session?.user?.id) throw new Error('User not authenticated');
       
+      console.log('Updating reservation:', updatedReservation);
       const { data, error } = await supabase
         .from('reservations')
         .update({
@@ -74,12 +77,16 @@ export const useReservations = () => {
     mutationFn: async (id: string) => {
       if (!session?.user?.id) throw new Error('User not authenticated');
       
+      console.log('Deleting reservation:', id);
       const { error } = await supabase
         .from('reservations')
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Delete error:', error);
+        throw error;
+      }
       return true;
     },
     onSuccess: () => {
