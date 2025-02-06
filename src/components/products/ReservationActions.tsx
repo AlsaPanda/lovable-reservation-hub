@@ -116,8 +116,10 @@ const ReservationActions = ({
   const consolidatedProducts = productsToReserve.reduce((acc: Product[], current) => {
     const existingProduct = acc.find(item => item.reference === current.reference);
     if (existingProduct) {
-      existingProduct.initial_quantity += current.initial_quantity;
+      // Don't modify the original quantity, just add it for display
+      existingProduct.initial_quantity = existingProduct.initial_quantity + current.initial_quantity;
     } else {
+      // Create a new object to avoid modifying the original
       acc.push({ ...current });
     }
     return acc;
