@@ -1,12 +1,3 @@
-/**
- * useProductState Hook
- * 
- * Central state management hook for the products page.
- * Handles product CRUD operations, search functionality,
- * quantity management, and reservation logic.
- * Integrates with Supabase for data persistence.
- */
-
 import { useState, useMemo, useCallback } from "react";
 import { Product } from "@/utils/types";
 import { useProducts } from "@/hooks/useProducts";
@@ -26,12 +17,8 @@ export const useProductState = (userRole: string | null, brand: string) => {
   const { createReservation } = useReservations();
 
   const handleQuantityChange = useCallback((reference: string, newQuantity: string) => {
-    console.log(`[Products] handleQuantityChange called for ${reference} with value:`, newQuantity);
-    
     const cleanValue = newQuantity.replace(/^0+/, '') || "0";
     const quantity = Math.max(0, parseInt(cleanValue));
-    
-    console.log(`[Products] Parsed and cleaned quantity:`, quantity);
     
     setQuantities(prev => ({
       ...prev,
@@ -69,39 +56,32 @@ export const useProductState = (userRole: string | null, brand: string) => {
   };
 
   const filteredProducts = useMemo(() => {
-    return products
-      .filter(product => {
-        if (userRole !== 'superadmin' && product.brand !== brand) {
-          return false;
-        }
+    return products.filter(product => {
+      if (userRole !== 'superadmin' && product.brand !== brand) {
+        return false;
+      }
 
-        const query = searchQuery.trim().toLowerCase();
-        if (!query) return true;
-        
-        const name = String(product.name || '').toLowerCase();
-        const reference = String(product.reference || '').toLowerCase();
-        
-        return name.includes(query) || reference.includes(query);
-      });
+      const query = searchQuery.trim().toLowerCase();
+      if (!query) return true;
+      
+      const name = String(product.name || '').toLowerCase();
+      const reference = String(product.reference || '').toLowerCase();
+      
+      return name.includes(query) || reference.includes(query);
+    });
   }, [products, searchQuery, brand, userRole]);
 
   const totalQuantity = useMemo(() => {
-    const total = Object.values(quantities).reduce((acc, quantity) => acc + quantity, 0);
-    console.log('[Products] Calculated total quantity:', total);
-    return total;
+    return Object.values(quantities).reduce((acc, quantity) => acc + quantity, 0);
   }, [quantities]);
 
   const handleReserveAll = useCallback(() => {
-    console.log('[Products] Starting reservation process');
-    
     const productsToReserve = filteredProducts
       .filter(product => quantities[product.reference] > 0)
       .map(product => ({
         ...product,
         initial_quantity: quantities[product.reference]
       }));
-    
-    console.log('[Products] Products to reserve:', productsToReserve);
     
     if (productsToReserve.length === 0) {
       toast({
@@ -113,9 +93,7 @@ export const useProductState = (userRole: string | null, brand: string) => {
     }
 
     createReservation.mutate(productsToReserve, {
-      onSuccess: () => {
-        setQuantities({});
-      }
+      onSuccess: () => setQuantities({})
     });
   }, [createReservation, filteredProducts, quantities, toast]);
 

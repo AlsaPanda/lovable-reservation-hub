@@ -17,7 +17,6 @@ export const useReservations = () => {
       if (!session?.user?.id || !storeName) return [];
       
       try {
-        console.log('Fetching reservations for store:', storeName);
         const { data, error } = await supabase
           .rpc('get_store_reservations', {
             store_name_param: storeName
@@ -28,7 +27,6 @@ export const useReservations = () => {
           throw error;
         }
 
-        console.log('Fetched reservations:', data);
         return data as Reservation[];
       } catch (error) {
         console.error('Error in fetchReservations:', error);
@@ -44,17 +42,25 @@ export const useReservations = () => {
         throw new Error('User not authenticated or store not found');
       }
 
-      const reservations = productsToReserve.map(product => ({
-        product_id: product.id,
-        store_name: storeName,
-        quantity: product.initial_quantity,
-        product_name: product.name
-      }));
+      // Batch insert all reservations in a single query
+      const reservationsData = productsToReserve
+        .filter(product => product.initial_quantity > 0)
+        .map(product => ({
+          product_id: product.id,
+          store_name: storeName,
+          quantity: product.initial_quantity,
+          product_name: product.name
+        }));
+
+      if (reservationsData.length === 0) {
+        throw new Error('No valid products to reserve');
+      }
 
       const { data, error } = await supabase
         .from('reservations')
-        .insert(reservations)
-        .select();
+        .insert(reservationsData)
+        .select('id, product_id, store_name, quantity, product_name')
+        .throwOnError();
 
       if (error) throw error;
       return data;
@@ -80,7 +86,6 @@ export const useReservations = () => {
     mutationFn: async (updatedReservation: Partial<Reservation>) => {
       if (!session?.user?.id) throw new Error('User not authenticated');
       
-      console.log('Updating reservation:', updatedReservation);
       const { data, error } = await supabase
         .from('reservations')
         .update({
@@ -88,7 +93,7 @@ export const useReservations = () => {
           reservation_date: updatedReservation.reservation_date
         })
         .eq('id', updatedReservation.id)
-        .select()
+        .select('id, quantity, reservation_date')
         .single();
 
       if (error) throw error;
@@ -100,14 +105,6 @@ export const useReservations = () => {
         title: "Réservation mise à jour",
         description: "La réservation a été mise à jour avec succès.",
       });
-    },
-    onError: (error: any) => {
-      console.error("Update reservation error:", error);
-      toast({
-        title: "Erreur",
-        description: error.message || "Une erreur est survenue lors de la mise à jour.",
-        variant: "destructive"
-      });
     }
   });
 
@@ -115,16 +112,13 @@ export const useReservations = () => {
     mutationFn: async (id: string) => {
       if (!session?.user?.id) throw new Error('User not authenticated');
       
-      console.log('Deleting reservation:', id);
       const { error } = await supabase
         .from('reservations')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .throwOnError();
 
-      if (error) {
-        console.error('Delete error:', error);
-        throw error;
-      }
+      if (error) throw error;
       return true;
     },
     onSuccess: () => {
@@ -132,14 +126,6 @@ export const useReservations = () => {
       toast({
         title: "Réservation supprimée",
         description: "La réservation a été supprimée avec succès.",
-      });
-    },
-    onError: (error: any) => {
-      console.error("Delete reservation error:", error);
-      toast({
-        title: "Erreur",
-        description: error.message || "Une erreur est survenue lors de la suppression.",
-        variant: "destructive"
       });
     }
   });
