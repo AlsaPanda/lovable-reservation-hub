@@ -34,18 +34,16 @@ export const useReservations = () => {
     mutationFn: async (updatedReservation: Partial<Reservation>) => {
       if (!session?.user?.id) throw new Error('User not authenticated');
       
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('reservations')
         .update({
           quantity: updatedReservation.quantity,
           reservation_date: updatedReservation.reservation_date
         })
-        .eq('id', updatedReservation.id)
-        .select()
-        .maybeSingle();
+        .eq('id', updatedReservation.id);
 
       if (error) throw error;
-      return data;
+      return updatedReservation;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reservations'] });
