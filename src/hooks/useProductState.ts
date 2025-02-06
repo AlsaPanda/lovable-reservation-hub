@@ -11,7 +11,7 @@ import { useState, useMemo, useCallback } from "react";
 import { Product } from "@/utils/types";
 import { useProducts } from "@/hooks/useProducts";
 import { useProductMutations } from "@/hooks/useProductMutations";
-import { useReservationMutation } from "@/hooks/useReservationMutation";
+import { useReservations } from "@/hooks/useReservations";
 import { useToast } from "@/hooks/use-toast";
 
 export const useProductState = (userRole: string | null, brand: string) => {
@@ -23,7 +23,7 @@ export const useProductState = (userRole: string | null, brand: string) => {
 
   const { data: products = [], isLoading: isProductsLoading } = useProducts();
   const { addProductMutation, updateProductMutation, deleteProductMutation } = useProductMutations();
-  const { addReservationMutation } = useReservationMutation();
+  const { createReservation } = useReservations();
 
   const handleQuantityChange = useCallback((reference: string, newQuantity: string) => {
     console.log(`[Products] handleQuantityChange called for ${reference} with value:`, newQuantity);
@@ -93,7 +93,7 @@ export const useProductState = (userRole: string | null, brand: string) => {
 
   const handleReserveAll = useCallback(() => {
     console.log('[Products] Starting reservation process');
-    if (addReservationMutation.isPending) {
+    if (createReservation.isPending) {
       console.log('[Products] Reservation already in progress, skipping');
       return;
     }
@@ -116,12 +116,12 @@ export const useProductState = (userRole: string | null, brand: string) => {
       return;
     }
 
-    addReservationMutation.mutate(productsToReserve, {
+    createReservation.mutate(productsToReserve, {
       onSuccess: () => {
         setQuantities({});
       }
     });
-  }, [addReservationMutation, filteredProducts, quantities, toast]);
+  }, [createReservation, filteredProducts, quantities, toast]);
 
   return {
     editingProduct,
@@ -139,6 +139,6 @@ export const useProductState = (userRole: string | null, brand: string) => {
     handleReserveAll,
     isProductsLoading,
     deleteProductMutation,
-    isReservationLoading: addReservationMutation.isPending
+    isReservationLoading: createReservation.isPending
   };
 };
