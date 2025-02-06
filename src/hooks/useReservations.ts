@@ -81,10 +81,6 @@ export const useReservations = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reservations'] });
-      toast({
-        title: "Réservation créée",
-        description: "La réservation a été créée avec succès.",
-      });
     },
     onError: (error: any) => {
       console.error("Create reservation error:", error);
