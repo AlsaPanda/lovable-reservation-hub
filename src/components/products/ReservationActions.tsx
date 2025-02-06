@@ -17,6 +17,7 @@ import { Product } from "@/utils/types";
 import ProductImage from "./ProductImage";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@supabase/auth-helpers-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface ReservationActionsProps {
   onReserve: () => void;
@@ -37,14 +38,15 @@ const ReservationActions = ({
 }: ReservationActionsProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [existingReservations, setExistingReservations] = useState<string[]>([]);
+  const [isReserving, setIsReserving] = useState(false);
   const session = useSession();
+  const { toast } = useToast();
   
   useEffect(() => {
     const fetchExistingReservations = async () => {
       if (!session?.user?.id) return;
 
       try {
-        // Get user's store_name
         const { data: profileData } = await supabase
           .from('profiles')
           .select('store_name')
@@ -53,7 +55,6 @@ const ReservationActions = ({
 
         if (!profileData?.store_name) return;
 
-        // Use the new RPC function to get reserved product IDs
         const { data: reservations, error } = await supabase
           .rpc('get_store_reservation_products', {
             store_name_param: profileData.store_name
@@ -75,10 +76,27 @@ const ReservationActions = ({
     fetchExistingReservations();
   }, [session?.user?.id]);
 
-  const handleReserve = () => {
-    if (isLoading) return;
-    onReserve();
-    setIsDialogOpen(false);
+  const handleReserve = async () => {
+    if (isLoading || isReserving) return;
+    
+    try {
+      setIsReserving(true);
+      await onReserve();
+      setIsDialogOpen(false);
+      toast({
+        title: "Réservation effectuée",
+        description: "Les produits ont été réservés avec succès.",
+      });
+    } catch (error: any) {
+      console.error('Reservation error:', error);
+      toast({
+        title: "Erreur de réservation",
+        description: error.message || "Une erreur est survenue lors de la réservation.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsReserving(false);
+    }
   };
 
   const truncateText = (text: string, maxLength: number = 35) => {
@@ -100,7 +118,7 @@ const ReservationActions = ({
         <AlertDialogTrigger asChild>
           <Button
             size="default"
-            disabled={totalQuantity === 0 || isLoading}
+            disabled={totalQuantity === 0 || isLoading || isReserving}
             className="whitespace-nowrap"
           >
             <Calendar className="mr-2 h-4 w-4" />
@@ -150,9 +168,12 @@ const ReservationActions = ({
           </ScrollArea>
 
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleReserve} disabled={isLoading}>
-              Confirmer
+            <AlertDialogCancel disabled={isReserving}>Annuler</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleReserve} 
+              disabled={isLoading || isReserving}
+            >
+              {isReserving ? 'Réservation...' : 'Confirmer'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -161,7 +182,7 @@ const ReservationActions = ({
         variant="outline"
         size="default"
         onClick={onReset}
-        disabled={isLoading}
+        disabled={isLoading || isReserving}
         className="whitespace-nowrap"
       >
         <RotateCcw className="mr-2 h-4 w-4" />
