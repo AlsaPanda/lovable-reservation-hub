@@ -48,7 +48,6 @@ export const useReservations = () => {
         throw new Error('No valid products to reserve');
       }
 
-      // Create reservations one by one to avoid stack depth issues
       const createdReservations = [];
       for (const product of validProducts) {
         const { data, error } = await supabase
@@ -115,7 +114,6 @@ export const useReservations = () => {
     mutationFn: async (id: string) => {
       if (!session?.user?.id || !storeName) throw new Error('User not authenticated');
       
-      // Use the RPC function instead of direct table access
       const { data, error } = await supabase
         .rpc('delete_reservation', {
           reservation_id: id,
