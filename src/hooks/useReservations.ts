@@ -90,9 +90,9 @@ export const useReservations = () => {
       
       const { data, error } = await supabase
         .rpc('update_reservation', {
-          p_id: updatedReservation.id,
-          p_quantity: updatedReservation.quantity,
-          p_reservation_date: updatedReservation.reservation_date
+          reservation_id: updatedReservation.id,
+          new_quantity: updatedReservation.quantity,
+          new_date: updatedReservation.reservation_date
         });
 
       if (error) throw error;
@@ -113,8 +113,7 @@ export const useReservations = () => {
       
       const { data, error } = await supabase
         .rpc('delete_reservation', {
-          reservation_id: id,
-          user_store_name: storeName
+          reservation_id: id
         });
 
       if (error) throw error;
