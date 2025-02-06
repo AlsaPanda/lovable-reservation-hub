@@ -1,3 +1,6 @@
+/**
+ * ReservationActions Component
+ */
 import { Button } from "@/components/ui/button";
 import { Calendar, RotateCcw } from "lucide-react";
 import {
@@ -188,7 +191,7 @@ const ReservationActions = ({
         variant="outline"
         size="default"
         onClick={onReset}
-        disabled={isLoading || isReserving}
+        disabled={!canResetQuantities || isLoading || isReserving}
         className="whitespace-nowrap"
       >
         <RotateCcw className="mr-2 h-4 w-4" />
