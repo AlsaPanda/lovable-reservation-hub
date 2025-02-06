@@ -93,11 +93,7 @@ export const useProductState = (userRole: string | null, brand: string) => {
 
   const handleReserveAll = useCallback(() => {
     console.log('[Products] Starting reservation process');
-    if (createReservation.isPending) {
-      console.log('[Products] Reservation already in progress, skipping');
-      return;
-    }
-
+    
     const productsToReserve = filteredProducts
       .filter(product => quantities[product.reference] > 0)
       .map(product => ({
