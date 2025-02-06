@@ -43,27 +43,31 @@ export const useReservations = () => {
         throw new Error('User not authenticated or store not found');
       }
 
-      const reservationsData = productsToReserve
-        .filter(product => product.initial_quantity > 0)
-        .map(product => ({
-          product_id: product.id,
-          store_name: storeName,
-          quantity: product.initial_quantity,
-          product_name: product.name
-        }));
-
-      if (reservationsData.length === 0) {
+      const validProducts = productsToReserve.filter(product => product.initial_quantity > 0);
+      
+      if (validProducts.length === 0) {
         throw new Error('No valid products to reserve');
       }
 
-      const { data, error } = await supabase
-        .from('reservations')
-        .insert(reservationsData)
-        .select()
-        .throwOnError();
+      // Create reservations one by one to avoid stack depth issues
+      const createdReservations = [];
+      for (const product of validProducts) {
+        const { data, error } = await supabase
+          .from('reservations')
+          .insert({
+            product_id: product.id,
+            store_name: storeName,
+            quantity: product.initial_quantity,
+            product_name: product.name
+          })
+          .select('id')
+          .single();
 
-      if (error) throw error;
-      return data;
+        if (error) throw error;
+        createdReservations.push(data);
+      }
+
+      return createdReservations;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reservations'] });
