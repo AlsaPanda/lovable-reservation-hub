@@ -170,6 +170,16 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      get_store_summaries: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          store_name: string
+          store_id: string
+          total_reservations: number
+          total_products: number
+          last_reservation: string
+        }[]
+      }
       product_exists: {
         Args: {
           ref: string
