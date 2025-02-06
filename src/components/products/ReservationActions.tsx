@@ -112,11 +112,13 @@ const ReservationActions = ({
     return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
   };
 
-  // Remove duplicate products based on reference
-  const uniqueProductsToReserve = productsToReserve.reduce((acc: Product[], current) => {
-    const exists = acc.find(item => item.reference === current.reference);
-    if (!exists) {
-      acc.push(current);
+  // Combine quantities for products with the same reference
+  const consolidatedProducts = productsToReserve.reduce((acc: Product[], current) => {
+    const existingProduct = acc.find(item => item.reference === current.reference);
+    if (existingProduct) {
+      existingProduct.initial_quantity += current.initial_quantity;
+    } else {
+      acc.push({ ...current });
     }
     return acc;
   }, []);
@@ -144,7 +146,7 @@ const ReservationActions = ({
 
           <ScrollArea className="h-[400px] rounded-md border p-4">
             <div className="space-y-4">
-              {uniqueProductsToReserve.map((product) => (
+              {consolidatedProducts.map((product) => (
                 <div 
                   key={product.reference}
                   className="flex items-center gap-4 py-3 border-b last:border-0"
