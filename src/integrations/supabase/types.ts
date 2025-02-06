@@ -121,7 +121,6 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          product: Json | null
           product_id: string
           product_name: string | null
           quantity: number
@@ -132,7 +131,6 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
-          product?: Json | null
           product_id: string
           product_name?: string | null
           quantity: number
@@ -143,7 +141,6 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
-          product?: Json | null
           product_id?: string
           product_name?: string | null
           quantity?: number
