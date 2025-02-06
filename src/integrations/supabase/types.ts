@@ -167,6 +167,22 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      get_reservation_by_id: {
+        Args: {
+          reservation_id: string
+        }
+        Returns: {
+          id: string
+          product_id: string
+          store_name: string
+          quantity: number
+          reservation_date: string
+          created_at: string
+          updated_at: string
+          product_name: string
+          product_image_url: string
+        }[]
+      }
       get_store_reservation_products: {
         Args: {
           store_name_param: string

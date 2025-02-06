@@ -14,16 +14,22 @@ export const useReservations = () => {
   const { data: reservations = [], isLoading, error } = useQuery({
     queryKey: ['reservations', userRole, session?.user?.id, storeName],
     queryFn: async () => {
-      if (!session?.user?.id) return [];
+      if (!session?.user?.id || !storeName) return [];
       
       try {
         const { data, error } = await supabase
-          .rpc('get_store_reservations', { store_name_param: storeName });
+          .rpc('get_store_reservations', {
+            store_name_param: storeName
+          });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching reservations:', error);
+          throw error;
+        }
+
         return data as Reservation[];
       } catch (error) {
-        console.error('Error fetching reservations:', error);
+        console.error('Error in fetchReservations:', error);
         throw error;
       }
     },
@@ -34,16 +40,18 @@ export const useReservations = () => {
     mutationFn: async (updatedReservation: Partial<Reservation>) => {
       if (!session?.user?.id) throw new Error('User not authenticated');
       
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('reservations')
         .update({
           quantity: updatedReservation.quantity,
           reservation_date: updatedReservation.reservation_date
         })
-        .eq('id', updatedReservation.id);
+        .eq('id', updatedReservation.id)
+        .select()
+        .single();
 
       if (error) throw error;
-      return updatedReservation;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reservations'] });
