@@ -33,7 +33,8 @@ export const useReservations = () => {
         throw error;
       }
     },
-    enabled: !!session?.user?.id && !!userRole && !!storeName
+    enabled: !!session?.user?.id && !!userRole && !!storeName,
+    staleTime: 1000 * 60, // Cache for 1 minute
   });
 
   const createReservation = useMutation({
