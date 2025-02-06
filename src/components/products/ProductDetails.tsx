@@ -1,16 +1,9 @@
-/**
- * ProductDetails Component
- * 
- * Renders detailed product information including description, reference number,
- * pricing details (PA HT and PV TTC), and quantity selector for non-admin users.
- * Also provides a link to more product information.
- */
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ExternalLink } from "lucide-react";
 import { Product } from "@/utils/types";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface ProductDetailsProps {
   product: Product;
@@ -23,6 +16,15 @@ const ProductDetails = ({ product, isAdmin, quantity, onQuantityChange }: Produc
   const formatPrice = (price: number | null) => {
     if (price === null) return "N/A";
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(price);
+  };
+
+  const debouncedQuantityChange = useDebounce((value: string) => {
+    onQuantityChange(product.reference, value);
+  }, 300);
+
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    debouncedQuantityChange(value);
   };
 
   return (
@@ -52,7 +54,7 @@ const ProductDetails = ({ product, isAdmin, quantity, onQuantityChange }: Produc
               <Input
                 type="number"
                 value={quantity}
-                onChange={(e) => onQuantityChange(product.reference, e.target.value)}
+                onChange={handleQuantityChange}
                 className="w-24 h-8"
                 min="0"
               />

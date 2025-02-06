@@ -89,14 +89,11 @@ export const useReservations = () => {
       if (!session?.user?.id) throw new Error('User not authenticated');
       
       const { data, error } = await supabase
-        .from('reservations')
-        .update({
-          quantity: updatedReservation.quantity,
-          reservation_date: updatedReservation.reservation_date
-        })
-        .eq('id', updatedReservation.id)
-        .select()
-        .single();
+        .rpc('update_reservation', {
+          p_id: updatedReservation.id,
+          p_quantity: updatedReservation.quantity,
+          p_reservation_date: updatedReservation.reservation_date
+        });
 
       if (error) throw error;
       return data;
