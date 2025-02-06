@@ -12,11 +12,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Product } from "@/utils/types";
 import ProductImage from "./ProductImage";
-import { supabase } from "@/integrations/supabase/client";
-import { useSession } from "@supabase/auth-helpers-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ReservationActionsProps {
@@ -37,46 +35,9 @@ const ReservationActions = ({
   productsToReserve,
 }: ReservationActionsProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [existingReservations, setExistingReservations] = useState<string[]>([]);
   const [isReserving, setIsReserving] = useState(false);
-  const session = useSession();
   const { toast } = useToast();
   
-  useEffect(() => {
-    const fetchExistingReservations = async () => {
-      if (!session?.user?.id) return;
-
-      try {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('store_name')
-          .eq('id', session.user.id)
-          .maybeSingle();
-
-        if (!profileData?.store_name) return;
-
-        const { data: reservations, error } = await supabase
-          .rpc('get_store_reservation_products', {
-            store_name_param: profileData.store_name
-          });
-
-        if (error) {
-          console.error('Error fetching reservations:', error);
-          return;
-        }
-
-        if (reservations) {
-          console.log('Existing reservations:', reservations);
-          setExistingReservations(reservations.map(r => r.product_id));
-        }
-      } catch (error) {
-        console.error('Error in fetchExistingReservations:', error);
-      }
-    };
-
-    fetchExistingReservations();
-  }, [session?.user?.id]);
-
   const handleReserve = async () => {
     if (isLoading || isReserving) {
       console.log('Preventing duplicate reservation - already in progress');
@@ -159,11 +120,6 @@ const ReservationActions = ({
                     <p className="text-sm text-muted-foreground">
                       Réf: {product.reference}
                     </p>
-                    {existingReservations.includes(product.id) && (
-                      <p className="text-sm text-destructive font-medium mt-1">
-                        ⚠️ Ce produit a déjà été réservé
-                      </p>
-                    )}
                   </div>
                   <span className="font-medium whitespace-nowrap">
                     Qté: {product.initial_quantity}
