@@ -240,6 +240,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      update_reservation: {
+        Args: {
+          reservation_id: string
+          new_quantity: number
+          new_date: string
+        }
+        Returns: boolean
+      }
       validate_store_token: {
         Args: {
           store_id: string
