@@ -17,6 +17,7 @@ export const useReservations = () => {
       if (!session?.user?.id || !storeName) return [];
       
       try {
+        // Use the optimized RPC function
         const { data, error } = await supabase
           .rpc('get_store_reservations', {
             store_name_param: storeName
@@ -42,7 +43,6 @@ export const useReservations = () => {
         throw new Error('User not authenticated or store not found');
       }
 
-      // Batch insert all reservations in a single query
       const reservationsData = productsToReserve
         .filter(product => product.initial_quantity > 0)
         .map(product => ({
@@ -59,7 +59,7 @@ export const useReservations = () => {
       const { data, error } = await supabase
         .from('reservations')
         .insert(reservationsData)
-        .select('id, product_id, store_name, quantity, product_name')
+        .select()
         .throwOnError();
 
       if (error) throw error;
@@ -93,7 +93,7 @@ export const useReservations = () => {
           reservation_date: updatedReservation.reservation_date
         })
         .eq('id', updatedReservation.id)
-        .select('id, quantity, reservation_date')
+        .select()
         .single();
 
       if (error) throw error;
