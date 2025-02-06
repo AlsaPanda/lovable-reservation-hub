@@ -55,21 +55,8 @@ export const useReservations = () => {
 
       const createdReservations = [];
       for (const product of validProducts) {
-        console.log(`Attempting to reserve product ${product.id} for store ${storeName}`);
+        console.log(`Creating reservation for product ${product.id} for store ${storeName}`);
         
-        // First check if reservation already exists
-        const { data: existingReservation } = await supabase
-          .from('reservations')
-          .select('*')
-          .eq('product_id', product.id)
-          .eq('store_name', storeName)
-          .maybeSingle();
-
-        if (existingReservation) {
-          console.log(`Reservation already exists for product ${product.id}`);
-          throw new Error(`Une réservation existe déjà pour ${product.name}`);
-        }
-
         const { data, error } = await supabase
           .from('reservations')
           .insert({
