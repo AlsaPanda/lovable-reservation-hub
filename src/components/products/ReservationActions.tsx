@@ -66,6 +66,7 @@ const ReservationActions = ({
         }
 
         if (reservations) {
+          console.log('Existing reservations:', reservations);
           setExistingReservations(reservations.map(r => r.product_id));
         }
       } catch (error) {
@@ -77,9 +78,13 @@ const ReservationActions = ({
   }, [session?.user?.id]);
 
   const handleReserve = async () => {
-    if (isLoading || isReserving) return;
+    if (isLoading || isReserving) {
+      console.log('Preventing duplicate reservation - already in progress');
+      return;
+    }
     
     try {
+      console.log('Starting reservation process');
       setIsReserving(true);
       await onReserve();
       setIsDialogOpen(false);
@@ -95,6 +100,7 @@ const ReservationActions = ({
         variant: "destructive"
       });
     } finally {
+      console.log('Reservation process completed');
       setIsReserving(false);
     }
   };

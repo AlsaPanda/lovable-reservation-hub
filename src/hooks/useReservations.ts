@@ -17,6 +17,7 @@ export const useReservations = () => {
       if (!session?.user?.id || !storeName) return [];
       
       try {
+        console.log("Fetching reservations for store:", storeName);
         const { data, error } = await supabase
           .rpc('get_store_reservations', {
             store_name_param: storeName
@@ -27,6 +28,7 @@ export const useReservations = () => {
           throw error;
         }
 
+        console.log("Fetched reservations:", data);
         return data as Reservation[];
       } catch (error) {
         console.error('Error in fetchReservations:', error);
@@ -34,7 +36,7 @@ export const useReservations = () => {
       }
     },
     enabled: !!session?.user?.id && !!userRole && !!storeName,
-    staleTime: 1000 * 60, // Cache for 1 minute
+    staleTime: 1000 * 60,
   });
 
   const createReservation = useMutation({
@@ -49,8 +51,25 @@ export const useReservations = () => {
         throw new Error('No valid products to reserve');
       }
 
+      console.log("Starting reservation process for products:", validProducts);
+
       const createdReservations = [];
       for (const product of validProducts) {
+        console.log(`Attempting to reserve product ${product.id} for store ${storeName}`);
+        
+        // First check if reservation already exists
+        const { data: existingReservation } = await supabase
+          .from('reservations')
+          .select('*')
+          .eq('product_id', product.id)
+          .eq('store_name', storeName)
+          .maybeSingle();
+
+        if (existingReservation) {
+          console.log(`Reservation already exists for product ${product.id}`);
+          throw new Error(`Une réservation existe déjà pour ${product.name}`);
+        }
+
         const { data, error } = await supabase
           .from('reservations')
           .insert({
@@ -62,7 +81,12 @@ export const useReservations = () => {
           .select('id')
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error(`Error creating reservation for product ${product.id}:`, error);
+          throw error;
+        }
+        
+        console.log(`Successfully created reservation for product ${product.id}:`, data);
         createdReservations.push(data);
       }
 
