@@ -21,9 +21,6 @@ export const AuthStateHandler = () => {
       } else if (event === 'SIGNED_OUT') {
         console.log("User signed out");
         navigate("/login");
-      } else if (event === 'USER_DELETED') {
-        console.log("User account was deleted");
-        navigate("/login");
       } else if (event === 'USER_UPDATED') {
         console.log("User account was updated");
       } else if (event === 'PASSWORD_RECOVERY') {

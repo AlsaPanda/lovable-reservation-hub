@@ -167,6 +167,13 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      delete_reservation: {
+        Args: {
+          reservation_id: string
+          user_store_name: string
+        }
+        Returns: boolean
+      }
       get_reservation_by_id: {
         Args: {
           reservation_id: string
