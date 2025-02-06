@@ -1,6 +1,6 @@
 import NavBar from "@/components/NavBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { ReservationDialog } from "@/components/reservations/ReservationDialog";
 import { ReservationTable } from "@/components/reservations/ReservationTable";
 import { useReservations } from "@/hooks/useReservations";
@@ -25,18 +25,22 @@ const Reservations = () => {
     }
   }, [session, navigate]);
 
-  const handleSubmit = (data: Partial<Reservation>) => {
+  const handleSubmit = useCallback((data: Partial<Reservation>) => {
     if (editingReservation) {
       updateReservation.mutate(data);
       setIsDialogOpen(false);
       setEditingReservation(null);
     }
-  };
+  }, [editingReservation, updateReservation]);
 
-  const handleEdit = (reservation: Reservation) => {
+  const handleEdit = useCallback((reservation: Reservation) => {
     setEditingReservation(reservation);
     setIsDialogOpen(true);
-  };
+  }, []);
+
+  const handleDelete = useCallback((id: string) => {
+    deleteReservation.mutate(id);
+  }, [deleteReservation]);
 
   if (!session) return null;
 
@@ -56,7 +60,7 @@ const Reservations = () => {
             <ReservationTable
               reservations={reservations}
               onEdit={handleEdit}
-              onDelete={(id) => deleteReservation.mutate(id)}
+              onDelete={handleDelete}
             />
           </CardContent>
         </Card>

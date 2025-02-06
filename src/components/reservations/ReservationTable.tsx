@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import { Reservation } from "@/utils/types";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { memo } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,7 +24,7 @@ interface ReservationTableProps {
 
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b";
 
-export function ReservationTable({ reservations, onEdit, onDelete }: ReservationTableProps) {
+export const ReservationTable = memo(({ reservations, onEdit, onDelete }: ReservationTableProps) => {
   const { userRole } = useUserProfile();
   const isSuperAdmin = userRole === 'superadmin';
 
@@ -173,4 +174,6 @@ export function ReservationTable({ reservations, onEdit, onDelete }: Reservation
       ))}
     </div>
   );
-}
+});
+
+ReservationTable.displayName = 'ReservationTable';
