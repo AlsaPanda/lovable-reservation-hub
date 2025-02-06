@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Reservation } from "@/utils/types";
+import { Reservation, Product } from "@/utils/types";
 import { useToast } from "@/hooks/use-toast";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -36,6 +36,44 @@ export const useReservations = () => {
       }
     },
     enabled: !!session?.user?.id && !!userRole && !!storeName
+  });
+
+  const createReservation = useMutation({
+    mutationFn: async (productsToReserve: Product[]) => {
+      if (!session?.user?.id || !storeName) {
+        throw new Error('User not authenticated or store not found');
+      }
+
+      const reservations = productsToReserve.map(product => ({
+        product_id: product.id,
+        store_name: storeName,
+        quantity: product.initial_quantity,
+        product_name: product.name
+      }));
+
+      const { data, error } = await supabase
+        .from('reservations')
+        .insert(reservations)
+        .select();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reservations'] });
+      toast({
+        title: "Réservation créée",
+        description: "La réservation a été créée avec succès.",
+      });
+    },
+    onError: (error: any) => {
+      console.error("Create reservation error:", error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Une erreur est survenue lors de la création de la réservation.",
+        variant: "destructive"
+      });
+    }
   });
 
   const updateReservation = useMutation({
@@ -110,6 +148,7 @@ export const useReservations = () => {
     reservations,
     isLoading,
     error,
+    createReservation,
     updateReservation,
     deleteReservation
   };
